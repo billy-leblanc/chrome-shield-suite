@@ -63,6 +63,137 @@ function ActivityItem({ text, time, type }) {
   );
 }
 
+/* ─── API Key Section ─── */
+function ApiKeySection() {
+  const [keyValue, setKeyValue] = useState("");
+  const [keyStatus, setKeyStatus] = useState("loading"); // "loading" | "saved" | "none"
+  const [showKey, setShowKey] = useState(false);
+  const [inputError, setInputError] = useState("");
+  const [saveConfirm, setSaveConfirm] = useState(false);
+
+  // Load key status on mount
+  useEffect(() => {
+    chrome.storage.local.get("anthropic_api_key", (result) => {
+      if (result.anthropic_api_key) {
+        setKeyStatus("saved");
+      } else {
+        setKeyStatus("none");
+      }
+    });
+  }, []);
+
+  const handleSave = useCallback(() => {
+    setInputError("");
+    const trimmed = keyValue.trim();
+    if (!trimmed) {
+      setInputError("Please enter an API key.");
+      return;
+    }
+    if (!trimmed.startsWith("sk-ant-")) {
+      setInputError("Key must start with sk-ant-");
+      return;
+    }
+    chrome.storage.local.set({ anthropic_api_key: trimmed }, () => {
+      setKeyStatus("saved");
+      setKeyValue("");
+      setShowKey(false);
+      setSaveConfirm(true);
+      setTimeout(() => setSaveConfirm(false), 2500);
+    });
+  }, [keyValue]);
+
+  const handleClear = useCallback(() => {
+    chrome.storage.local.remove("anthropic_api_key", () => {
+      setKeyStatus("none");
+      setKeyValue("");
+      setInputError("");
+      setSaveConfirm(false);
+    });
+  }, []);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Enter") handleSave();
+  }, [handleSave]);
+
+  const statusBadge = () => {
+    if (keyStatus === "loading") return null;
+    if (keyStatus === "saved") {
+      return h("span", {
+        className: "inline-flex items-center gap-1 text-xs font-semibold text-accent-green bg-accent-green/10 px-2 py-0.5 rounded-full"
+      }, "Key saved \u2713");
+    }
+    return h("span", {
+      className: "inline-flex items-center gap-1 text-xs font-semibold text-text-secondary bg-surface-overlay px-2 py-0.5 rounded-full"
+    }, "No key set");
+  };
+
+  return h("div", { className: "px-5 mb-4" },
+    /* Section Header */
+    h("div", { className: "flex items-center justify-between mb-2" },
+      h("h2", { className: "text-xs font-semibold uppercase tracking-wider text-text-secondary" }, "AI Analysis"),
+      statusBadge()
+    ),
+
+    /* Card */
+    h("div", { className: "bg-surface-raised border border-border-subtle rounded-xl p-4 flex flex-col gap-3" },
+      /* Label */
+      h("p", { className: "text-xs text-text-secondary leading-relaxed" },
+        "Anthropic API key \u2014 enables AI memo analysis"
+      ),
+
+      /* Input row */
+      h("div", { className: "flex gap-2" },
+        h("div", { className: "relative flex-1" },
+          h("input", {
+            type: showKey ? "text" : "password",
+            value: keyValue,
+            onInput: (e) => { setKeyValue(e.target.value); setInputError(""); },
+            onKeyDown: handleKeyDown,
+            placeholder: "sk-ant-...",
+            className: "w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-secondary/50 outline-none focus:border-accent-cyan/50 transition-colors pr-9",
+            spellCheck: false,
+            autoComplete: "off",
+          }),
+          /* Show/hide toggle */
+          h("button", {
+            type: "button",
+            onClick: () => setShowKey((v) => !v),
+            className: "absolute right-2.5 top-1/2 -translate-y-1/2 text-text-secondary/60 hover:text-text-secondary transition-colors cursor-pointer",
+            title: showKey ? "Hide key" : "Show key",
+          },
+            showKey
+              ? h("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+                  h("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" })
+                )
+              : h("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
+                  h("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" }),
+                  h("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" })
+                )
+          )
+        ),
+      ),
+
+      /* Error message */
+      inputError && h("p", { className: "text-xs text-accent-red -mt-1" }, inputError),
+
+      /* Save confirmation */
+      saveConfirm && h("p", { className: "text-xs text-accent-green -mt-1 font-semibold" }, "Saved!"),
+
+      /* Action buttons */
+      h("div", { className: "flex gap-2" },
+        h("button", {
+          onClick: handleSave,
+          className: "flex-1 py-2 rounded-lg bg-accent-cyan/15 border border-accent-cyan/30 text-accent-cyan text-xs font-bold hover:bg-accent-cyan/25 transition-colors cursor-pointer"
+        }, "Save"),
+        h("button", {
+          onClick: handleClear,
+          className: "flex-1 py-2 rounded-lg bg-surface-overlay border border-border-subtle text-text-secondary text-xs font-semibold hover:bg-border-subtle transition-colors cursor-pointer"
+        }, "Clear")
+      )
+    )
+  );
+}
+
 /* ─── Main Popup App ─── */
 function PopupApp() {
   const [interceptOn, setInterceptOn] = useState(true);
@@ -121,12 +252,15 @@ function PopupApp() {
     ),
 
     /* Activity */
-    h("div", { className: "px-5 flex-1" },
+    h("div", { className: "px-5 flex-1 mb-4" },
       h("h2", { className: "text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2" }, "Recent Activity"),
       h("div", { className: "bg-surface-raised border border-border-subtle rounded-xl px-4 divide-y divide-border-subtle" },
         activities.map((a, i) => h(ActivityItem, { key: i, ...a }))
       )
     ),
+
+    /* API Key Section */
+    h(ApiKeySection),
 
     /* Footer */
     h("div", { className: "px-5 py-4 text-center" },
