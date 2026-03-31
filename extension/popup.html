@@ -4,10 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Safety Intercept</title>
-  <script src="https://cdn.tailwindcss.com/4"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    body { width: 380px; min-height: 500px; font-family: 'Inter', sans-serif; margin: 0; }
     @theme {
       --color-surface: #0B1120;
       --color-surface-raised: #131B2E;
@@ -21,15 +18,14 @@
       --color-text-secondary: #94A3B8;
       --color-border-subtle: #1E293B;
     }
+    body { width: 380px; min-height: 500px; margin: 0; font-family: system-ui, sans-serif; background: #0B1120; color: #F1F5F9; }
     .glow-cyan { box-shadow: 0 0 20px rgba(34, 211, 238, 0.15); }
     .pulse-dot { animation: pulse-dot 2s infinite; }
     @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   </style>
 </head>
-<body class="bg-surface text-text-primary">
+<body>
   <div id="root"></div>
-  <script src="https://esm.sh/react@19" type="module"></script>
-  <script src="https://esm.sh/react-dom@19/client" type="module"></script>
-  <script type="module" src="popup.js"></script>
+  <script src="popup-bundle.js"></script>
 </body>
 </html>
