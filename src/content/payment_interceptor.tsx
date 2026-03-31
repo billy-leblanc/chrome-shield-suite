@@ -62,6 +62,14 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
       '[data-testid="confirm-button"]',
       '[data-testid="send-money"]'
     ]
+  },
+  'wellsfargo.com': {
+    name: 'Wells Fargo (Zelle)',
+    selectors: [
+      '#submitButtonRef',
+      '[data-testid="submitButton"]',
+      '[data-tracking-ref="WFFormSubmitButton-button-"]', // NEEDS VERIFICATION — analytics attr, may change
+    ]
   }
 };
 

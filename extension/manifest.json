@@ -11,6 +11,7 @@
     "*://*.hsbc.co.uk/*",
     "*://*.barclays.co.uk/*",
     "*://*.revolut.com/*",
+    "*://*.wellsfargo.com/*",
     "https://api.anthropic.com/*"
   ],
   "action": {
@@ -33,7 +34,8 @@
         "*://*.zellepay.com/*",
         "*://*.hsbc.co.uk/*",
         "*://*.barclays.co.uk/*",
-        "*://*.revolut.com/*"
+        "*://*.revolut.com/*",
+        "*://*.wellsfargo.com/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle",
