@@ -16,11 +16,28 @@ interface LLMRiskResult {
   reasoning: string;
 }
 
+// Safe numeric clamp: returns `fallback` if value is NaN or out of range.
+function clampScore(value: number, fallback = 0): number {
+  if (typeof value !== 'number' || !isFinite(value)) return fallback;
+  return Math.max(0, Math.min(100, value));
+}
+
+function scoreToRiskLevel(score: number): RiskAnalysis['riskLevel'] {
+  if (score >= 80) return 'critical';
+  if (score >= 50) return 'high';
+  if (score >= 20) return 'medium';
+  return 'low';
+}
+
 /**
  * Calls the Claude API to analyze a transaction memo for social engineering patterns.
- * Returns null if no API key is configured, or if the call fails/times out.
+ * Returns null if no API key is configured, if the memo is empty/whitespace, or if
+ * the call fails or times out.
  */
 async function analyzeMemoWithLLM(memo: string): Promise<LLMRiskResult | null> {
+  // Skip LLM call entirely for empty or whitespace-only memos.
+  if (!memo || !memo.trim()) return null;
+
   let apiKey: string | undefined;
   try {
     const stored = await chrome.storage.local.get('anthropic_api_key');
@@ -31,6 +48,7 @@ async function analyzeMemoWithLLM(memo: string): Promise<LLMRiskResult | null> {
 
   if (!apiKey) return null;
 
+  // Create a fresh AbortController per request — never reuse across calls.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
@@ -66,7 +84,14 @@ A riskScore of 0 means no threat. 100 means certain fraud. Return no other text.
 
     const json = await response.json();
     const text: string = json?.content?.[0]?.text ?? '';
-    const parsed: LLMRiskResult = JSON.parse(text);
+    if (!text) return null;
+
+    let parsed: LLMRiskResult;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return null;
+    }
 
     if (
       typeof parsed.riskScore !== 'number' ||
@@ -76,7 +101,12 @@ A riskScore of 0 means no threat. 100 means certain fraud. Return no other text.
       return null;
     }
 
-    parsed.riskScore = Math.max(0, Math.min(100, parsed.riskScore));
+    // Clamp and validate riskScore — guard against NaN or out-of-range LLM output.
+    parsed.riskScore = clampScore(parsed.riskScore, 0);
+
+    // Sanitize flags: keep only string values.
+    parsed.flags = parsed.flags.filter((f): f is string => typeof f === 'string');
+
     return parsed;
   } catch {
     clearTimeout(timeout);
@@ -96,53 +126,73 @@ export class RiskEngine {
 
   /**
    * Analyzes a transaction and returns a risk report.
+   * Never throws — returns a safe low-risk default on any error.
    * @param data Contextual data from the page/transaction.
    */
   public static analyze(data: { message?: string; amount?: number; recipient?: string }): RiskAnalysis {
-    let score = 0;
-    const flags: string[] = [];
+    try {
+      // Guard: treat null/undefined data as empty
+      if (!data || typeof data !== 'object') {
+        return this.safeDefault();
+      }
 
-    // 1. Heuristic Pattern Matching (Polymorphic Detection)
-    if (data.message) {
-      this.SCAN_PATTERNS.forEach(({ pattern, category, weight }) => {
-        if (pattern.test(data.message!)) {
-          score += weight;
-          flags.push(category);
-        }
-      });
+      let score = 0;
+      const flags: string[] = [];
 
-      // Detect "Polymorphic" variations (e.g., character substitutions)
-      const cleanedMessage = data.message.replace(/[0-9!@#$%^&*()_+]/g, ' ');
-      if (cleanedMessage !== data.message) {
+      // 1. Heuristic Pattern Matching (Polymorphic Detection)
+      const rawMessage = typeof data.message === 'string' ? data.message : '';
+
+      if (rawMessage) {
         this.SCAN_PATTERNS.forEach(({ pattern, category, weight }) => {
-          if (pattern.test(cleanedMessage)) {
-            score += weight * 0.8; // Slightly lower weight for fuzzy matches
-            if (!flags.includes(category)) flags.push(`Fuzzy ${category}`);
+          if (pattern.test(rawMessage)) {
+            score += weight;
+            flags.push(category);
           }
         });
+
+        // Detect "Polymorphic" variations (e.g., character substitutions)
+        const cleanedMessage = rawMessage.replace(/[0-9!@#$%^&*()_+]/g, ' ');
+        if (cleanedMessage !== rawMessage) {
+          this.SCAN_PATTERNS.forEach(({ pattern, category, weight }) => {
+            if (pattern.test(cleanedMessage)) {
+              score += weight * 0.8; // Slightly lower weight for fuzzy matches
+              if (!flags.includes(category)) flags.push(`Fuzzy ${category}`);
+            }
+          });
+        }
       }
+
+      // 2. High Amount Threshold
+      const amount = typeof data.amount === 'number' && isFinite(data.amount) ? data.amount : 0;
+      if (amount > 500) {
+        score += 20;
+        flags.push('High Amount Transaction');
+      }
+
+      // 3. Clamp Score (handles NaN, overflow, negative)
+      score = clampScore(score, 0);
+
+      // 4. Determine Risk Level
+      const riskLevel = scoreToRiskLevel(score);
+
+      return {
+        score,
+        riskLevel,
+        flags,
+        recommendation: this.getRecommendation(riskLevel),
+      };
+    } catch {
+      // Last-resort fallback: never crash the background worker.
+      return this.safeDefault();
     }
+  }
 
-    // 2. High Amount Threshold
-    if (data.amount && data.amount > 500) {
-      score += 20;
-      flags.push('High Amount Transaction');
-    }
-
-    // 3. Normalize Score
-    score = Math.min(score, 100);
-
-    // 4. Determine Risk Level
-    let riskLevel: RiskAnalysis['riskLevel'] = 'low';
-    if (score >= 80) riskLevel = 'critical';
-    else if (score >= 50) riskLevel = 'high';
-    else if (score >= 20) riskLevel = 'medium';
-
+  private static safeDefault(): RiskAnalysis {
     return {
-      score,
-      riskLevel,
-      flags,
-      recommendation: this.getRecommendation(riskLevel),
+      score: 0,
+      riskLevel: 'low',
+      flags: [],
+      recommendation: this.getRecommendation('low'),
     };
   }
 
@@ -171,54 +221,69 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === 'ANALYZE_RISK') {
-    const heuristicAnalysis = RiskEngine.analyze(message.data);
+  // Only accept messages from content scripts in extension tabs — reject external senders.
+  if (!sender.id || sender.id !== chrome.runtime.id) return false;
 
-    // Run LLM analysis in parallel; fall back to heuristics only on failure/timeout.
-    analyzeMemoWithLLM(message.data?.message ?? '').then((llmResult) => {
+  if (message.type === 'ANALYZE_RISK') {
+    // Validate payload shape before processing.
+    const data = message.data && typeof message.data === 'object' ? message.data : {};
+
+    const heuristicAnalysis = RiskEngine.analyze(data);
+
+    // Run LLM analysis; fall back to heuristics only on failure/timeout.
+    // Empty/whitespace memo skips LLM call inside analyzeMemoWithLLM.
+    const memo = typeof data.message === 'string' ? data.message.trim() : '';
+    analyzeMemoWithLLM(memo).then((llmResult) => {
       let analysis = heuristicAnalysis;
 
       if (llmResult) {
-        // Blend: heuristics 60%, LLM 40%
-        const blendedScore = Math.round(heuristicAnalysis.score * 0.6 + llmResult.riskScore * 0.4);
+        // Blend: heuristics 60%, LLM 40%.
+        // If LLM returns 0 but heuristics are high, heuristic score still dominates (60%).
+        // Both scores are pre-clamped 0–100, so blended result is always 0–100.
+        const blendedScore = clampScore(
+          Math.round(heuristicAnalysis.score * 0.6 + llmResult.riskScore * 0.4),
+          heuristicAnalysis.score // fallback to pure heuristic if blending yields invalid result
+        );
         const mergedFlags = Array.from(new Set([...heuristicAnalysis.flags, ...llmResult.flags]));
-
-        let riskLevel: RiskAnalysis['riskLevel'] = 'low';
-        if (blendedScore >= 80) riskLevel = 'critical';
-        else if (blendedScore >= 50) riskLevel = 'high';
-        else if (blendedScore >= 20) riskLevel = 'medium';
+        const riskLevel = scoreToRiskLevel(blendedScore);
 
         analysis = {
-          score: Math.min(blendedScore, 100),
+          score: blendedScore,
           riskLevel,
           flags: mergedFlags,
           recommendation: RiskEngine.buildRecommendation(riskLevel),
         };
       }
 
-      // Log threat if risk is high
+      // Log threat if risk is high or critical
       if (analysis.riskLevel === 'high' || analysis.riskLevel === 'critical') {
-        chrome.storage.local.get(["threatLog", "stats"], (data) => {
+        chrome.storage.local.get(["threatLog", "stats"], (storageData) => {
+          if (chrome.runtime.lastError) return;
           const newLog = [{
             text: `Intercepted ${analysis.flags.join(', ')}`,
             time: new Date().toLocaleTimeString(),
             type: 'blocked'
-          }, ...(data.threatLog || [])].slice(0, 50);
+          }, ...(storageData.threatLog || [])].slice(0, 50);
 
-          const newStats = { ...data.stats };
-          if (analysis.riskLevel === 'critical') newStats.blocked++;
-          else newStats.warnings++;
+          const newStats = { ...(storageData.stats || { blocked: 0, warnings: 0, safe: 0 }) };
+          if (analysis.riskLevel === 'critical') newStats.blocked = (newStats.blocked || 0) + 1;
+          else newStats.warnings = (newStats.warnings || 0) + 1;
 
           chrome.storage.local.set({ threatLog: newLog, stats: newStats });
         });
       } else {
-        chrome.storage.local.get("stats", (data) => {
-          const newStats = { ...data.stats, safe: (data.stats?.safe || 0) + 1 };
+        chrome.storage.local.get("stats", (storageData) => {
+          if (chrome.runtime.lastError) return;
+          const currentStats = storageData.stats || { blocked: 0, warnings: 0, safe: 0 };
+          const newStats = { ...currentStats, safe: (currentStats.safe || 0) + 1 };
           chrome.storage.local.set({ stats: newStats });
         });
       }
 
       sendResponse(analysis);
+    }).catch(() => {
+      // If the entire async chain throws unexpectedly, respond with heuristic result.
+      sendResponse(heuristicAnalysis);
     });
 
     return true; // Keep the message channel open for the async response
@@ -226,6 +291,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === "GET_STATS") {
     chrome.storage.local.get(["stats", "threatLog", "interceptEnabled"], (data) => {
+      if (chrome.runtime.lastError) {
+        sendResponse({});
+        return;
+      }
       sendResponse(data);
     });
     return true;
@@ -233,6 +302,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === "TOGGLE_INTERCEPT") {
     chrome.storage.local.get("interceptEnabled", (data) => {
+      if (chrome.runtime.lastError) {
+        sendResponse({ interceptEnabled: true });
+        return;
+      }
       const next = !data.interceptEnabled;
       chrome.storage.local.set({ interceptEnabled: next }, () => {
         sendResponse({ interceptEnabled: next });

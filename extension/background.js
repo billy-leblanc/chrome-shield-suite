@@ -1,27 +1,8 @@
-// Safety Intercept - Background Service Worker
-
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.set({
-    interceptEnabled: true,
-    threatLog: [],
-    stats: { blocked: 0, warnings: 0, safe: 0 },
-  });
-});
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === "GET_STATS") {
-    chrome.storage.local.get(["stats", "interceptEnabled"], (data) => {
-      sendResponse(data);
-    });
-    return true;
-  }
-  if (msg.type === "TOGGLE_INTERCEPT") {
-    chrome.storage.local.get("interceptEnabled", (data) => {
-      const next = !data.interceptEnabled;
-      chrome.storage.local.set({ interceptEnabled: next }, () => {
-        sendResponse({ interceptEnabled: next });
-      });
-    });
-    return true;
-  }
-});
+var d=Object.defineProperty;var y=(t,e,r)=>e in t?d(t,e,{enumerable:!0,configurable:!0,writable:!0,value:r}):t[e]=r;var f=(t,e,r)=>y(t,typeof e!="symbol"?e+"":e,r);function g(t,e=0){return typeof t!="number"||!isFinite(t)?e:Math.max(0,Math.min(100,t))}function h(t){return t>=80?"critical":t>=50?"high":t>=20?"medium":"low"}async function p(t){var a,u;if(!t||!t.trim())return null;let e;try{e=(await chrome.storage.local.get("anthropic_api_key")).anthropic_api_key}catch{return null}if(!e)return null;const r=new AbortController,i=setTimeout(()=>r.abort(),5e3);try{const l=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:r.signal,headers:{"Content-Type":"application/json","x-api-key":e,"anthropic-version":"2023-06-01"},body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:256,system:`You are a fraud detection engine for a payment security extension.
+Analyze the provided payment memo/note for social engineering patterns.
+Look specifically for: urgency/pressure tactics, impersonation (bank, government, family),
+fear tactics, romance scam indicators, grandparent/family emergency scams,
+lottery/prize fraud, advance fee fraud, and phishing language.
+Respond ONLY with a valid JSON object in this exact shape:
+{"riskScore": <number 0-100>, "flags": [<string>, ...], "reasoning": "<one sentence>"}
+A riskScore of 0 means no threat. 100 means certain fraud. Return no other text.`,messages:[{role:"user",content:`Payment memo: ${t}`}]})});if(clearTimeout(i),!l.ok)return null;const c=await l.json(),s=((u=(a=c==null?void 0:c.content)==null?void 0:a[0])==null?void 0:u.text)??"";if(!s)return null;let n;try{n=JSON.parse(s)}catch{return null}return typeof n.riskScore!="number"||!Array.isArray(n.flags)||typeof n.reasoning!="string"?null:(n.riskScore=g(n.riskScore,0),n.flags=n.flags.filter(o=>typeof o=="string"),n)}catch{return clearTimeout(i),null}}class m{static analyze(e){try{if(!e||typeof e!="object")return this.safeDefault();let r=0;const i=[],a=typeof e.message=="string"?e.message:"";if(a){this.SCAN_PATTERNS.forEach(({pattern:s,category:n,weight:o})=>{s.test(a)&&(r+=o,i.push(n))});const c=a.replace(/[0-9!@#$%^&*()_+]/g," ");c!==a&&this.SCAN_PATTERNS.forEach(({pattern:s,category:n,weight:o})=>{s.test(c)&&(r+=o*.8,i.includes(n)||i.push(`Fuzzy ${n}`))})}(typeof e.amount=="number"&&isFinite(e.amount)?e.amount:0)>500&&(r+=20,i.push("High Amount Transaction")),r=g(r,0);const l=h(r);return{score:r,riskLevel:l,flags:i,recommendation:this.getRecommendation(l)}}catch{return this.safeDefault()}}static safeDefault(){return{score:0,riskLevel:"low",flags:[],recommendation:this.getRecommendation("low")}}static buildRecommendation(e){return this.getRecommendation(e)}static getRecommendation(e){switch(e){case"critical":return"BLOCK IMMEDIATELY. High probability of malicious intent.";case"high":return"INTERCEPT. Verify recipient identity through a secondary channel.";case"medium":return"CAUTION. This transaction has flags common in social engineering.";default:return"SAFE. No significant threats detected."}}}f(m,"SCAN_PATTERNS",[{pattern:/urgent|immediately|action required|suspended|locked/i,category:"Urgency",weight:30},{pattern:/grandchild|family|accident|hospital|bail/i,category:"Social Engineering (Family)",weight:40},{pattern:/winner|lottery|prize|inheritance|claim now/i,category:"Scam (Lottery)",weight:50},{pattern:/verify your account|security update|identity verification/i,category:"Phishing",weight:30},{pattern:/pay to release|service fee|activation fee/i,category:"Advance Fee Fraud",weight:40},{pattern:/Zelle|Venmo|CashApp|Apple Pay/i,category:"Platform Hook",weight:10}]);chrome.runtime.onInstalled.addListener(()=>{chrome.storage.local.set({interceptEnabled:!0,threatLog:[],stats:{blocked:0,warnings:0,safe:0}}),console.log("Chrome Shield Suite: Initialized")});chrome.runtime.onMessage.addListener((t,e,r)=>{if(!e.id||e.id!==chrome.runtime.id)return!1;if(t.type==="ANALYZE_RISK"){const i=t.data&&typeof t.data=="object"?t.data:{},a=m.analyze(i),u=typeof i.message=="string"?i.message.trim():"";return p(u).then(l=>{let c=a;if(l){const s=g(Math.round(a.score*.6+l.riskScore*.4),a.score),n=Array.from(new Set([...a.flags,...l.flags])),o=h(s);c={score:s,riskLevel:o,flags:n,recommendation:m.buildRecommendation(o)}}c.riskLevel==="high"||c.riskLevel==="critical"?chrome.storage.local.get(["threatLog","stats"],s=>{if(chrome.runtime.lastError)return;const n=[{text:`Intercepted ${c.flags.join(", ")}`,time:new Date().toLocaleTimeString(),type:"blocked"},...s.threatLog||[]].slice(0,50),o={...s.stats||{blocked:0,warnings:0,safe:0}};c.riskLevel==="critical"?o.blocked=(o.blocked||0)+1:o.warnings=(o.warnings||0)+1,chrome.storage.local.set({threatLog:n,stats:o})}):chrome.storage.local.get("stats",s=>{if(chrome.runtime.lastError)return;const n=s.stats||{blocked:0,warnings:0,safe:0},o={...n,safe:(n.safe||0)+1};chrome.storage.local.set({stats:o})}),r(c)}).catch(()=>{r(a)}),!0}if(t.type==="GET_STATS")return chrome.storage.local.get(["stats","threatLog","interceptEnabled"],i=>{if(chrome.runtime.lastError){r({});return}r(i)}),!0;if(t.type==="TOGGLE_INTERCEPT")return chrome.storage.local.get("interceptEnabled",i=>{if(chrome.runtime.lastError){r({interceptEnabled:!0});return}const a=!i.interceptEnabled;chrome.storage.local.set({interceptEnabled:a},()=>{r({interceptEnabled:a})})}),!0});
