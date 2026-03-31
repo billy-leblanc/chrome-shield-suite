@@ -65,11 +65,7 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
   },
   'wellsfargo.com': {
     name: 'Wells Fargo (Zelle)',
-    selectors: [
-      '#submitButtonRef',
-      '[data-testid="submitButton"]',
-      '[data-tracking-ref="WFFormSubmitButton-button-"]',
-    ]
+    selectors: [], // Text-content matching only — see TEXT_FALLBACK_PATTERNS below
   }
 };
 
@@ -78,6 +74,7 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
 const TEXT_FALLBACK_PATTERNS: Record<string, RegExp> = {
   'venmo.com': /^(Pay|Pay Now|Send|Send Money)$/i,
   'zellepay.com': /^Send Money$/i,
+  'wellsfargo.com': /^Send$/i, // Final confirmation screen only — "Next" is intermediate
 };
 
 // Module-level debounce timer for MutationObserver re-scan.
