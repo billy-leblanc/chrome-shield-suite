@@ -3,8 +3,7 @@
  * Designed to handle polymorphic AI threats and social engineering tactics.
  */
 
-// TODO: replace with your deployed Worker URL
-const RELAY_URL = 'https://your-relay.workers.dev/analyze';
+const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
 
 export interface RiskAnalysis {
   score: number; // 0 to 100
