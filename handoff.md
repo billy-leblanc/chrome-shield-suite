@@ -39,3 +39,13 @@ The expansion research is complete. The Unified Shield is structurally ready for
 - **Repository**: All local research and blueprints have been rebased onto the production-hardened `main` branch.
 
 *Architectural integrity verified. The roadmap is clear for Phase 8 integration.*
+
+## Final Polish Pass — 2026-03-30
+
+### Fixes Applied
+- **Prompt injection hardening**: memo wrapped in `<memo>` XML tags; system prompt updated with injection-resistance instruction
+- **MutationObserver**: callback now debounces and re-scans for payment buttons on SPA route changes
+- **Venmo text normalization**: `textContent` normalized (trim + collapse whitespace) before regex match; patterns broadened to cover "Pay Now" / "Send Money"
+
+### Build
+Clean. All 6 output files generated.

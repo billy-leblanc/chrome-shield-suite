@@ -41,10 +41,14 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
 };
 
 // Text-content fallback patterns for platforms that render buttons dynamically.
+// textContent is normalized (trimmed + collapsed whitespace) before matching.
 const TEXT_FALLBACK_PATTERNS: Record<string, RegExp> = {
-  'venmo.com': /^(Pay|Send)$/i,
+  'venmo.com': /^(Pay|Pay Now|Send|Send Money)$/i,
   'zellepay.com': /^Send Money$/i,
 };
+
+// Module-level debounce timer for MutationObserver re-scan.
+let mutationRescanTimer: ReturnType<typeof setTimeout> | null = null;
 
 const getActiveConfig = () => {
   const host = window.location.hostname;
@@ -102,11 +106,15 @@ const Interceptor = () => {
         return true;
       }
       // 2. Text-content fallback for platforms using dynamic button text.
+      // Normalize: trim outer whitespace and collapse internal whitespace runs.
       const textPattern = TEXT_FALLBACK_PATTERNS[domain];
       if (textPattern) {
         const btn = target.tagName === 'BUTTON' ? target : target.closest('button');
-        if (btn && textPattern.test((btn.textContent ?? '').trim())) {
-          return true;
+        if (btn) {
+          const normalizedText = (btn.textContent ?? '').trim().replace(/\s+/g, ' ');
+          if (textPattern.test(normalizedText)) {
+            return true;
+          }
         }
       }
       return false;
@@ -175,11 +183,36 @@ const Interceptor = () => {
     // Use Capturing Phase for immediate interception before site scripts.
     document.addEventListener("click", handleIntercept, { capture: true });
 
-    // MutationObserver: re-evaluate interception readiness when SPA re-renders buttons.
-    // The document-level click listener already covers dynamically added buttons;
-    // the observer is retained to support future selector re-binding if needed.
+    // MutationObserver: re-scan for payment buttons when the SPA re-renders the DOM.
+    // The document-level click listener in handleIntercept covers all clicks, but after a
+    // route change the buttons may have entirely new DOM nodes. The observer debounces a
+    // re-scan so isButtonMatch stays aligned with the live DOM without thrashing.
+    const rescanButtons = () => {
+      // Walk every button in the document and verify at least one matches our selectors.
+      // This is intentionally a read-only scan — the capturing click listener on `document`
+      // already handles the actual interception; we do not re-attach per-element listeners.
+      const buttons = document.querySelectorAll('button, [role="button"]');
+      let found = false;
+      buttons.forEach((el) => {
+        if (!found && isButtonMatch(el as HTMLElement)) {
+          found = true;
+        }
+      });
+      // Log only in development builds to avoid noise in production.
+      if (process.env.NODE_ENV === 'development') {
+        console.debug(`[Shield] MutationObserver re-scan: payment button ${found ? 'present' : 'not found'}`);
+      }
+    };
+
     const observer = new MutationObserver((_mutations) => {
-      // Future: re-bind per-element listeners or validate selectors here.
+      // Debounce: cancel any pending re-scan and schedule a new one 200 ms out.
+      if (mutationRescanTimer !== null) {
+        clearTimeout(mutationRescanTimer);
+      }
+      mutationRescanTimer = setTimeout(() => {
+        mutationRescanTimer = null;
+        rescanButtons();
+      }, 200);
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
