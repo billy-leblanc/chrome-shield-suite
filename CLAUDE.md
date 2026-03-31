@@ -7,7 +7,7 @@ A Chrome extension designed to protect consumers from online scams, specifically
 - **Framework:** React 18 (with React 19 patterns) + Vite
 - **Styling:** Tailwind CSS v4 (Custom Layers)
 - **Manifest Version:** Chrome Extension Manifest V3
-- **Primary Targeting:** PayPal, Venmo, and Zelle Web Portals
+- **Primary Targeting:** PayPal, Venmo, Zelle, HSBC, Barclays, and Revolut
 
 ## Project Structure
 - `src/content/`: Contains `payment_interceptor.tsx` (Unified shield for all platforms).
@@ -21,9 +21,9 @@ A Chrome extension designed to protect consumers from online scams, specifically
 - **Risk Assessment:** Content scripts MUST consult the `RiskEngine` before showing warnings.
 
 ## Current Progress & Critical Decisions
-- **Completed:** Phase 3 (Elite Risk Engine) and Phase 4 (Multi-Portal Expansion).
+- **Completed:** Phase 3 (Risk Engine), Phase 4 (Multi-Portal), and Phase 10 (UK Bank Expansion).
 - **Security:** Recursive audit completed; added `stopImmediatePropagation` and input sanitization.
-- **Next Task:** Integration with real-time AI API for deeper social engineering analysis.
+- **Next Task:** Secure API Relay Enclave (Phase 9) and Global SMS Shield.
 
 ## Verification & Commands
 - **Run Development:** `npm run dev`
