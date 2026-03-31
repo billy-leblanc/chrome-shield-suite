@@ -12,7 +12,7 @@
     "*://*.barclays.co.uk/*",
     "*://*.revolut.com/*",
     "*://*.wellsfargo.com/*",
-    "https://api.anthropic.com/*"
+    "https://*.workers.dev/*"
   ],
   "action": {
     "default_popup": "popup.html",

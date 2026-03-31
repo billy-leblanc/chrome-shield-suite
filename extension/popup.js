@@ -63,49 +63,49 @@ function ActivityItem({ text, time, type }) {
   );
 }
 
-/* ─── API Key Section ─── */
+/* ─── Relay Token Section ─── */
 function ApiKeySection() {
-  const [keyValue, setKeyValue] = useState("");
-  const [keyStatus, setKeyStatus] = useState("loading"); // "loading" | "saved" | "none"
-  const [showKey, setShowKey] = useState(false);
+  const [tokenValue, setTokenValue] = useState("");
+  const [tokenStatus, setTokenStatus] = useState("loading"); // "loading" | "saved" | "none"
+  const [showToken, setShowToken] = useState(false);
   const [inputError, setInputError] = useState("");
   const [saveConfirm, setSaveConfirm] = useState(false);
 
-  // Load key status on mount
+  // Load token status on mount
   useEffect(() => {
-    chrome.storage.local.get("anthropic_api_key", (result) => {
-      if (result.anthropic_api_key) {
-        setKeyStatus("saved");
+    chrome.storage.local.get("relay_auth_token", (result) => {
+      if (result.relay_auth_token) {
+        setTokenStatus("saved");
       } else {
-        setKeyStatus("none");
+        setTokenStatus("none");
       }
     });
   }, []);
 
   const handleSave = useCallback(() => {
     setInputError("");
-    const trimmed = keyValue.trim();
+    const trimmed = tokenValue.trim();
     if (!trimmed) {
-      setInputError("Please enter an API key.");
+      setInputError("Please enter a relay token.");
       return;
     }
-    if (!trimmed.startsWith("sk-ant-")) {
-      setInputError("Key must start with sk-ant-");
+    if (trimmed.length < 16) {
+      setInputError("Token must be at least 16 characters.");
       return;
     }
-    chrome.storage.local.set({ anthropic_api_key: trimmed }, () => {
-      setKeyStatus("saved");
-      setKeyValue("");
-      setShowKey(false);
+    chrome.storage.local.set({ relay_auth_token: trimmed }, () => {
+      setTokenStatus("saved");
+      setTokenValue("");
+      setShowToken(false);
       setSaveConfirm(true);
       setTimeout(() => setSaveConfirm(false), 2500);
     });
-  }, [keyValue]);
+  }, [tokenValue]);
 
   const handleClear = useCallback(() => {
-    chrome.storage.local.remove("anthropic_api_key", () => {
-      setKeyStatus("none");
-      setKeyValue("");
+    chrome.storage.local.remove("relay_auth_token", () => {
+      setTokenStatus("none");
+      setTokenValue("");
       setInputError("");
       setSaveConfirm(false);
     });
@@ -116,15 +116,15 @@ function ApiKeySection() {
   }, [handleSave]);
 
   const statusBadge = () => {
-    if (keyStatus === "loading") return null;
-    if (keyStatus === "saved") {
+    if (tokenStatus === "loading") return null;
+    if (tokenStatus === "saved") {
       return h("span", {
         className: "inline-flex items-center gap-1 text-xs font-semibold text-accent-green bg-accent-green/10 px-2 py-0.5 rounded-full"
-      }, "Key saved \u2713");
+      }, "Token saved \u2713");
     }
     return h("span", {
       className: "inline-flex items-center gap-1 text-xs font-semibold text-text-secondary bg-surface-overlay px-2 py-0.5 rounded-full"
-    }, "No key set");
+    }, "No token set");
   };
 
   return h("div", { className: "px-5 mb-4" },
@@ -138,18 +138,18 @@ function ApiKeySection() {
     h("div", { className: "bg-surface-raised border border-border-subtle rounded-xl p-4 flex flex-col gap-3" },
       /* Label */
       h("p", { className: "text-xs text-text-secondary leading-relaxed" },
-        "Anthropic API key \u2014 enables AI memo analysis"
+        "Shield Relay token \u2014 connects to your secure AI relay"
       ),
 
       /* Input row */
       h("div", { className: "flex gap-2" },
         h("div", { className: "relative flex-1" },
           h("input", {
-            type: showKey ? "text" : "password",
-            value: keyValue,
-            onInput: (e) => { setKeyValue(e.target.value); setInputError(""); },
+            type: showToken ? "text" : "password",
+            value: tokenValue,
+            onInput: (e) => { setTokenValue(e.target.value); setInputError(""); },
             onKeyDown: handleKeyDown,
-            placeholder: "sk-ant-...",
+            placeholder: "Paste your relay token...",
             className: "w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-secondary/50 outline-none focus:border-accent-cyan/50 transition-colors pr-9",
             spellCheck: false,
             autoComplete: "off",
@@ -157,11 +157,11 @@ function ApiKeySection() {
           /* Show/hide toggle */
           h("button", {
             type: "button",
-            onClick: () => setShowKey((v) => !v),
+            onClick: () => setShowToken((v) => !v),
             className: "absolute right-2.5 top-1/2 -translate-y-1/2 text-text-secondary/60 hover:text-text-secondary transition-colors cursor-pointer",
-            title: showKey ? "Hide key" : "Show key",
+            title: showToken ? "Hide token" : "Show token",
           },
-            showKey
+            showToken
               ? h("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
                   h("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" })
                 )
