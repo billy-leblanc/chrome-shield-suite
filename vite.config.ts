@@ -25,12 +25,10 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: {
         popup: path.resolve(__dirname, "index.html"),
-        content: path.resolve(__dirname, "src/content/payment_interceptor.tsx"),
         background: path.resolve(__dirname, "src/background/risk_engine.ts"),
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          if (chunkInfo.name === 'content') return 'content.js';
           if (chunkInfo.name === 'background') return 'background.js';
           return 'assets/[name]-[hash].js';
         },

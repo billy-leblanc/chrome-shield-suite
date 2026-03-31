@@ -1,27 +1,8 @@
-// Safety Intercept - Background Service Worker
-
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.set({
-    interceptEnabled: true,
-    threatLog: [],
-    stats: { blocked: 0, warnings: 0, safe: 0 },
-  });
-});
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type === "GET_STATS") {
-    chrome.storage.local.get(["stats", "interceptEnabled"], (data) => {
-      sendResponse(data);
-    });
-    return true;
-  }
-  if (msg.type === "TOGGLE_INTERCEPT") {
-    chrome.storage.local.get("interceptEnabled", (data) => {
-      const next = !data.interceptEnabled;
-      chrome.storage.local.set({ interceptEnabled: next }, () => {
-        sendResponse({ interceptEnabled: next });
-      });
-    });
-    return true;
-  }
-});
+var h=Object.defineProperty;var u=(r,e,t)=>e in r?h(r,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):r[e]=t;var m=(r,e,t)=>u(r,typeof e!="symbol"?e+"":e,t);async function d(r){var n,s;let e;try{e=(await chrome.storage.local.get("anthropic_api_key")).anthropic_api_key}catch{return null}if(!e)return null;const t=new AbortController,c=setTimeout(()=>t.abort(),5e3);try{const o=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal:t.signal,headers:{"Content-Type":"application/json","x-api-key":e,"anthropic-version":"2023-06-01"},body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:256,system:`You are a fraud detection engine for a payment security extension.
+Analyze the provided payment memo/note for social engineering patterns.
+Look specifically for: urgency/pressure tactics, impersonation (bank, government, family),
+fear tactics, romance scam indicators, grandparent/family emergency scams,
+lottery/prize fraud, advance fee fraud, and phishing language.
+Respond ONLY with a valid JSON object in this exact shape:
+{"riskScore": <number 0-100>, "flags": [<string>, ...], "reasoning": "<one sentence>"}
+A riskScore of 0 means no threat. 100 means certain fraud. Return no other text.`,messages:[{role:"user",content:`Payment memo: ${r}`}]})});if(clearTimeout(c),!o.ok)return null;const a=await o.json(),l=((s=(n=a==null?void 0:a.content)==null?void 0:n[0])==null?void 0:s.text)??"",i=JSON.parse(l);return typeof i.riskScore!="number"||!Array.isArray(i.flags)||typeof i.reasoning!="string"?null:(i.riskScore=Math.max(0,Math.min(100,i.riskScore)),i)}catch{return clearTimeout(c),null}}class g{static analyze(e){let t=0;const c=[];if(e.message){this.SCAN_PATTERNS.forEach(({pattern:o,category:a,weight:l})=>{o.test(e.message)&&(t+=l,c.push(a))});const s=e.message.replace(/[0-9!@#$%^&*()_+]/g," ");s!==e.message&&this.SCAN_PATTERNS.forEach(({pattern:o,category:a,weight:l})=>{o.test(s)&&(t+=l*.8,c.includes(a)||c.push(`Fuzzy ${a}`))})}e.amount&&e.amount>500&&(t+=20,c.push("High Amount Transaction")),t=Math.min(t,100);let n="low";return t>=80?n="critical":t>=50?n="high":t>=20&&(n="medium"),{score:t,riskLevel:n,flags:c,recommendation:this.getRecommendation(n)}}static buildRecommendation(e){return this.getRecommendation(e)}static getRecommendation(e){switch(e){case"critical":return"BLOCK IMMEDIATELY. High probability of malicious intent.";case"high":return"INTERCEPT. Verify recipient identity through a secondary channel.";case"medium":return"CAUTION. This transaction has flags common in social engineering.";default:return"SAFE. No significant threats detected."}}}m(g,"SCAN_PATTERNS",[{pattern:/urgent|immediately|action required|suspended|locked/i,category:"Urgency",weight:30},{pattern:/grandchild|family|accident|hospital|bail/i,category:"Social Engineering (Family)",weight:40},{pattern:/winner|lottery|prize|inheritance|claim now/i,category:"Scam (Lottery)",weight:50},{pattern:/verify your account|security update|identity verification/i,category:"Phishing",weight:30},{pattern:/pay to release|service fee|activation fee/i,category:"Advance Fee Fraud",weight:40},{pattern:/Zelle|Venmo|CashApp|Apple Pay/i,category:"Platform Hook",weight:10}]);chrome.runtime.onInstalled.addListener(()=>{chrome.storage.local.set({interceptEnabled:!0,threatLog:[],stats:{blocked:0,warnings:0,safe:0}}),console.log("Chrome Shield Suite: Initialized")});chrome.runtime.onMessage.addListener((r,e,t)=>{var c;if(r.type==="ANALYZE_RISK"){const n=g.analyze(r.data);return d(((c=r.data)==null?void 0:c.message)??"").then(s=>{let o=n;if(s){const a=Math.round(n.score*.6+s.riskScore*.4),l=Array.from(new Set([...n.flags,...s.flags]));let i="low";a>=80?i="critical":a>=50?i="high":a>=20&&(i="medium"),o={score:Math.min(a,100),riskLevel:i,flags:l,recommendation:g.buildRecommendation(i)}}o.riskLevel==="high"||o.riskLevel==="critical"?chrome.storage.local.get(["threatLog","stats"],a=>{const l=[{text:`Intercepted ${o.flags.join(", ")}`,time:new Date().toLocaleTimeString(),type:"blocked"},...a.threatLog||[]].slice(0,50),i={...a.stats};o.riskLevel==="critical"?i.blocked++:i.warnings++,chrome.storage.local.set({threatLog:l,stats:i})}):chrome.storage.local.get("stats",a=>{var i;const l={...a.stats,safe:(((i=a.stats)==null?void 0:i.safe)||0)+1};chrome.storage.local.set({stats:l})}),t(o)}),!0}if(r.type==="GET_STATS")return chrome.storage.local.get(["stats","threatLog","interceptEnabled"],n=>{t(n)}),!0;if(r.type==="TOGGLE_INTERCEPT")return chrome.storage.local.get("interceptEnabled",n=>{const s=!n.interceptEnabled;chrome.storage.local.set({interceptEnabled:s},()=>{t({interceptEnabled:s})})}),!0});
