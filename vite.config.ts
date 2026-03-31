@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: {
         popup: path.resolve(__dirname, "index.html"),
-        content: path.resolve(__dirname, "src/content/paypal_interceptor.tsx"),
+        content: path.resolve(__dirname, "src/content/payment_interceptor.tsx"),
         background: path.resolve(__dirname, "src/background/risk_engine.ts"),
       },
       output: {

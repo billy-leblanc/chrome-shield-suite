@@ -10,6 +10,80 @@ export interface RiskAnalysis {
   recommendation: string;
 }
 
+interface LLMRiskResult {
+  riskScore: number; // 0 to 100
+  flags: string[];
+  reasoning: string;
+}
+
+/**
+ * Calls the Claude API to analyze a transaction memo for social engineering patterns.
+ * Returns null if no API key is configured, or if the call fails/times out.
+ */
+async function analyzeMemoWithLLM(memo: string): Promise<LLMRiskResult | null> {
+  let apiKey: string | undefined;
+  try {
+    const stored = await chrome.storage.local.get('anthropic_api_key');
+    apiKey = stored.anthropic_api_key;
+  } catch {
+    return null;
+  }
+
+  if (!apiKey) return null;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 256,
+        system: `You are a fraud detection engine for a payment security extension.
+Analyze the provided payment memo/note for social engineering patterns.
+Look specifically for: urgency/pressure tactics, impersonation (bank, government, family),
+fear tactics, romance scam indicators, grandparent/family emergency scams,
+lottery/prize fraud, advance fee fraud, and phishing language.
+Respond ONLY with a valid JSON object in this exact shape:
+{"riskScore": <number 0-100>, "flags": [<string>, ...], "reasoning": "<one sentence>"}
+A riskScore of 0 means no threat. 100 means certain fraud. Return no other text.`,
+        messages: [
+          { role: 'user', content: `Payment memo: ${memo}` }
+        ],
+      }),
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) return null;
+
+    const json = await response.json();
+    const text: string = json?.content?.[0]?.text ?? '';
+    const parsed: LLMRiskResult = JSON.parse(text);
+
+    if (
+      typeof parsed.riskScore !== 'number' ||
+      !Array.isArray(parsed.flags) ||
+      typeof parsed.reasoning !== 'string'
+    ) {
+      return null;
+    }
+
+    parsed.riskScore = Math.max(0, Math.min(100, parsed.riskScore));
+    return parsed;
+  } catch {
+    clearTimeout(timeout);
+    return null;
+  }
+}
+
 export class RiskEngine {
   private static SCAN_PATTERNS = [
     { pattern: /urgent|immediately|action required|suspended|locked/i, category: 'Urgency', weight: 30 },
@@ -72,6 +146,10 @@ export class RiskEngine {
     };
   }
 
+  public static buildRecommendation(level: RiskAnalysis['riskLevel']): string {
+    return this.getRecommendation(level);
+  }
+
   private static getRecommendation(level: RiskAnalysis['riskLevel']): string {
     switch (level) {
       case 'critical': return 'BLOCK IMMEDIATELY. High probability of malicious intent.';
@@ -94,32 +172,56 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'ANALYZE_RISK') {
-    const analysis = RiskEngine.analyze(message.data);
-    
-    // Log threat if risk is high
-    if (analysis.riskLevel === 'high' || analysis.riskLevel === 'critical') {
-      chrome.storage.local.get(["threatLog", "stats"], (data) => {
-        const newLog = [{
-          text: `Intercepted ${analysis.flags.join(', ')}`,
-          time: new Date().toLocaleTimeString(),
-          type: 'blocked'
-        }, ...(data.threatLog || [])].slice(0, 50);
-        
-        const newStats = { ...data.stats };
-        if (analysis.riskLevel === 'critical') newStats.blocked++;
-        else newStats.warnings++;
-        
-        chrome.storage.local.set({ threatLog: newLog, stats: newStats });
-      });
-    } else {
-      chrome.storage.local.get("stats", (data) => {
-        const newStats = { ...data.stats, safe: (data.stats?.safe || 0) + 1 };
-        chrome.storage.local.set({ stats: newStats });
-      });
-    }
+    const heuristicAnalysis = RiskEngine.analyze(message.data);
 
-    sendResponse(analysis);
-    return true;
+    // Run LLM analysis in parallel; fall back to heuristics only on failure/timeout.
+    analyzeMemoWithLLM(message.data?.message ?? '').then((llmResult) => {
+      let analysis = heuristicAnalysis;
+
+      if (llmResult) {
+        // Blend: heuristics 60%, LLM 40%
+        const blendedScore = Math.round(heuristicAnalysis.score * 0.6 + llmResult.riskScore * 0.4);
+        const mergedFlags = Array.from(new Set([...heuristicAnalysis.flags, ...llmResult.flags]));
+
+        let riskLevel: RiskAnalysis['riskLevel'] = 'low';
+        if (blendedScore >= 80) riskLevel = 'critical';
+        else if (blendedScore >= 50) riskLevel = 'high';
+        else if (blendedScore >= 20) riskLevel = 'medium';
+
+        analysis = {
+          score: Math.min(blendedScore, 100),
+          riskLevel,
+          flags: mergedFlags,
+          recommendation: RiskEngine.buildRecommendation(riskLevel),
+        };
+      }
+
+      // Log threat if risk is high
+      if (analysis.riskLevel === 'high' || analysis.riskLevel === 'critical') {
+        chrome.storage.local.get(["threatLog", "stats"], (data) => {
+          const newLog = [{
+            text: `Intercepted ${analysis.flags.join(', ')}`,
+            time: new Date().toLocaleTimeString(),
+            type: 'blocked'
+          }, ...(data.threatLog || [])].slice(0, 50);
+
+          const newStats = { ...data.stats };
+          if (analysis.riskLevel === 'critical') newStats.blocked++;
+          else newStats.warnings++;
+
+          chrome.storage.local.set({ threatLog: newLog, stats: newStats });
+        });
+      } else {
+        chrome.storage.local.get("stats", (data) => {
+          const newStats = { ...data.stats, safe: (data.stats?.safe || 0) + 1 };
+          chrome.storage.local.set({ stats: newStats });
+        });
+      }
+
+      sendResponse(analysis);
+    });
+
+    return true; // Keep the message channel open for the async response
   }
 
   if (message.type === "GET_STATS") {

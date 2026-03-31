@@ -7,7 +7,8 @@
   "host_permissions": [
     "*://*.paypal.com/*",
     "*://*.venmo.com/*",
-    "*://*.zellepay.com/*"
+    "*://*.zellepay.com/*",
+    "https://api.anthropic.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
