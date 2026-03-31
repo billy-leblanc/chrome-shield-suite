@@ -19,4 +19,19 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
+  build: {
+    outDir: "extension",
+    emptyOutDir: false, // Don't delete existing extension files
+    rollupOptions: {
+      input: {
+        popup: path.resolve(__dirname, "index.html"),
+        content: path.resolve(__dirname, "src/content/paypal_interceptor.tsx"),
+      },
+      output: {
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name === 'content' ? 'content.js' : 'assets/[name]-[hash].js';
+        },
+      }
+    }
+  }
 }));
