@@ -127,6 +127,8 @@ const Interceptor = () => {
   const activeRef = React.useRef(getActiveConfig());
   // Guard: prevent overlapping in-flight risk analysis requests.
   const pendingRef = React.useRef(false);
+  // Store the intercepted button so we can re-fire the click on "Proceed Anyway".
+  const interceptedButtonRef = React.useRef<HTMLElement | null>(null);
 
   React.useEffect(() => {
     const active = activeRef.current;
@@ -163,6 +165,9 @@ const Interceptor = () => {
       // Deduplicate: skip if a risk analysis is already in flight.
       if (pendingRef.current) return;
       pendingRef.current = true;
+
+      // Store the button so we can re-fire it if user chooses "Proceed Anyway".
+      interceptedButtonRef.current = target instanceof HTMLElement ? target.closest('button') ?? target : target;
 
       // Context Extraction — read from host document (intentional: we need the page's data).
       // Use textContent for contenteditable; fall back to .value for textarea/input.
@@ -278,7 +283,14 @@ const Interceptor = () => {
             className="btn btn-destructive"
             onClick={() => {
               setShowModal(false);
-              console.warn("[Shield] User ignored high-risk warning.");
+              // Re-fire the original button click without our listener active.
+              const btn = interceptedButtonRef.current;
+              interceptedButtonRef.current = null;
+              if (btn) {
+                document.removeEventListener("click", handleIntercept, true);
+                btn.click();
+                document.addEventListener("click", handleIntercept, { capture: true });
+              }
             }}
           >
             Proceed Anyway
