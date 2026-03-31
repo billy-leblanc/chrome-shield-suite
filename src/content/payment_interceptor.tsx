@@ -69,7 +69,6 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
       '#submitButtonRef',
       '[data-testid="submitButton"]',
       '[data-tracking-ref="WFFormSubmitButton-button-"]',
-      '[data-testid="confirmBtn"]', // Final confirmation step (second screen)
     ]
   }
 };
