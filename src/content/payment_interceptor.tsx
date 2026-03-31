@@ -134,20 +134,22 @@ const Interceptor = () => {
     const { config, domain } = active;
 
     const isButtonMatch = (target: HTMLElement): boolean => {
-      // 1. Try CSS attribute/id/class selectors.
+      const btn = target.tagName === 'BUTTON' ? target : target.closest('button');
+      const normalizedText = (btn?.textContent ?? '').trim().replace(/\s+/g, ' ');
+
+      // 1. Try CSS selectors. For wellsfargo, also require button text to be "Send"
+      //    to distinguish the final confirmation button from intermediate "Next" buttons.
       if (config.selectors.some(sel => target.matches(sel) || target.closest(sel))) {
+        if (domain === 'wellsfargo.com') {
+          return /^Send$/i.test(normalizedText);
+        }
         return true;
       }
       // 2. Text-content fallback for platforms using dynamic button text.
-      // Normalize: trim outer whitespace and collapse internal whitespace runs.
       const textPattern = TEXT_FALLBACK_PATTERNS[domain];
       if (textPattern) {
-        const btn = target.tagName === 'BUTTON' ? target : target.closest('button');
-        if (btn) {
-          const normalizedText = (btn.textContent ?? '').trim().replace(/\s+/g, ' ');
-          if (textPattern.test(normalizedText)) {
-            return true;
-          }
+        if (btn && textPattern.test(normalizedText)) {
+          return true;
         }
       }
       return false;
