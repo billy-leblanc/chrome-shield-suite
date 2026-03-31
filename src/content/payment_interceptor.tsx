@@ -68,7 +68,7 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
     selectors: [
       '#submitButtonRef',
       '[data-testid="submitButton"]',
-      '[data-tracking-ref="WFFormSubmitButton-button-"]', // NEEDS VERIFICATION — analytics attr, may change
+      '[data-tracking-ref="WFFormSubmitButton-button-"]',
     ]
   }
 };
