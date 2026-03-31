@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Safety Intercept",
+  "version": "1.0.0",
+  "description": "A safety-first browser extension with threat monitoring and intercept controls.",
+  "permissions": ["activeTab", "storage", "tabs"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}
