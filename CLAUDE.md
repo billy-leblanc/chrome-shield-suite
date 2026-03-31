@@ -4,27 +4,26 @@
 A Chrome extension designed to protect consumers from online scams, specifically AI-generated fraud. The extension uses real-time interception and an AI "Risk Engine" to block high-risk payments on platforms like PayPal.
 
 ## Tech Stack
-- **Framework:** React 19 + Vite
-- **Styling:** Tailwind CSS v4
+- **Framework:** React 18 (with React 19 patterns) + Vite
+- **Styling:** Tailwind CSS v4 (Custom Layers)
 - **Manifest Version:** Chrome Extension Manifest V3
-- **Primary Targeting:** PayPal Checkout (`://paypal.com*`)
+- **Primary Targeting:** PayPal, Venmo, and Zelle Web Portals
 
 ## Project Structure
-- `src/content/`: Contains `paypal_interceptor.tsx` for DOM-level payment interception.
-- `src/components/`: Shared UI components, including the `SafetyInterceptModal`.
-- `src/background/`: (Planned) Brain/Risk Engine for social engineering analysis.
-- `extension/manifest.json`: Extension configuration and permissions.
+- `src/content/`: Contains `payment_interceptor.tsx` (Unified shield for all platforms).
+- `src/background/`: `risk_engine.ts` (The Brain - AI-powered heuristic analysis).
+- `src/components/`: Shared UI components, including `SafetyInterceptModal`.
+- `extension/`: Built extension files (Service Worker, Assets, Popup).
 
 ## Coding Standards & Conventions
-- **Naming:** Use kebab-case for component filenames (e.g., `safety-intercept-modal.tsx`).
-- **State Management:** Use `chrome.storage.local` for persistent fraud pattern data.
-- **UI:** Ensure all warning modals are injected via Shadow DOM to avoid styling conflicts with target websites.
-- **Interception:** Always use `{ capture: true }` and `event.preventDefault()` to stop transactions before they hit site-native scripts.
+- **Interception:** Use `{ capture: true }` and `MutationObserver` for robust detection.
+- **Isolation:** Mandatory Shadow DOM for all injected UI elements.
+- **Risk Assessment:** Content scripts MUST consult the `RiskEngine` before showing warnings.
 
 ## Current Progress & Critical Decisions
-- **Completed:** Phase 1 (UI Scaffolding via Lovable) and Phase 2 (PayPal Interception via Anti-Gravity).
-- **Next Task:** Implement `src/background/risk_engine.ts` to analyze transaction memos for social engineering patterns.
-- **Decision:** Target PayPal first due to high reported scam volumes.
+- **Completed:** Phase 3 (Elite Risk Engine) and Phase 4 (Multi-Portal Expansion).
+- **Security:** Recursive audit completed; added `stopImmediatePropagation` and input sanitization.
+- **Next Task:** Integration with real-time AI API for deeper social engineering analysis.
 
 ## Verification & Commands
 - **Run Development:** `npm run dev`
