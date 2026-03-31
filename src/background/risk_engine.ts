@@ -126,22 +126,15 @@ export class RiskEngine {
 
   /**
    * Analyzes a transaction and returns a risk report.
-   * Never throws — returns a safe low-risk default on any error.
    * @param data Contextual data from the page/transaction.
    */
-  public static analyze(data: { message?: string; amount?: number; recipient?: string }): RiskAnalysis {
+  public static analyze(data: { message?: string; amount?: number; recipient?: string; platform?: string }): RiskAnalysis {
     try {
-      // Guard: treat null/undefined data as empty
-      if (!data || typeof data !== 'object') {
-        return this.safeDefault();
-      }
-
       let score = 0;
       const flags: string[] = [];
 
       // 1. Heuristic Pattern Matching (Polymorphic Detection)
       const rawMessage = typeof data.message === 'string' ? data.message : '';
-
       if (rawMessage) {
         this.SCAN_PATTERNS.forEach(({ pattern, category, weight }) => {
           if (pattern.test(rawMessage)) {
@@ -162,17 +155,23 @@ export class RiskEngine {
         }
       }
 
-      // 2. High Amount Threshold
+      // 2. Platform-Specific Intelligence
+      if (data.platform === 'Zelle' || data.platform === 'Venmo') {
+        score += 10; // Elevate risk slightly for P2P-only high-fraud platforms
+        flags.push(`${data.platform} Context`);
+      }
+
+      // 3. High Amount Threshold
       const amount = typeof data.amount === 'number' && isFinite(data.amount) ? data.amount : 0;
       if (amount > 500) {
         score += 20;
         flags.push('High Amount Transaction');
       }
 
-      // 3. Clamp Score (handles NaN, overflow, negative)
+      // 4. Normalize and Clamp Score
       score = clampScore(score, 0);
 
-      // 4. Determine Risk Level
+      // 5. Determine Risk Level using helper
       const riskLevel = scoreToRiskLevel(score);
 
       return {
