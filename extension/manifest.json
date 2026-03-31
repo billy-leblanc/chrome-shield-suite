@@ -8,6 +8,9 @@
     "*://*.paypal.com/*",
     "*://*.venmo.com/*",
     "*://*.zellepay.com/*",
+    "*://*.hsbc.co.uk/*",
+    "*://*.barclays.co.uk/*",
+    "*://*.revolut.com/*",
     "https://api.anthropic.com/*"
   ],
   "action": {
@@ -27,7 +30,10 @@
       "matches": [
         "*://*.paypal.com/*",
         "*://*.venmo.com/*",
-        "*://*.zellepay.com/*"
+        "*://*.zellepay.com/*",
+        "*://*.hsbc.co.uk/*",
+        "*://*.barclays.co.uk/*",
+        "*://*.revolut.com/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle",

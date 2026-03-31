@@ -31,3 +31,9 @@
 - [x] Phase 8.7: Post-Reload Verification
     - [x] Verify `shield-host` injection on diagnostic domain (Google)
     - [x] Confirm no more SyntaxErrors in live session (Verified)
+- [/] Phase 10: UK Bank Expansion Research
+    - [/] Research HSBC payment button selectors and URLs
+    - [ ] Research Barclays payment button selectors and URLs
+    - [ ] Research Revolut payment button selectors and URLs
+    - [ ] Document findings in `docs/research/uk_banks_research.md`
+    - [ ] Update `manifest.json` host permissions

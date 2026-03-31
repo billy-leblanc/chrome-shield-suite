@@ -37,6 +37,31 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
       '#sendmoney-button',
       'button[type="submit"]'
     ]
+  },
+  'hsbc.co.uk': {
+    name: 'HSBC',
+    selectors: [
+      'button[aria-label="Confirm payment"]',
+      '.hsbcButtonContinue',
+      'button#submit',
+      '#submit'
+    ]
+  },
+  'barclays.co.uk': {
+    name: 'Barclays',
+    selectors: [
+      '[data-automation="confirm-payment-button"]',
+      '#payment-submit',
+      '.btn-primary.confirm'
+    ]
+  },
+  'revolut.com': {
+    name: 'Revolut',
+    selectors: [
+      '[data-testid="transfer-button"]',
+      '[data-testid="confirm-button"]',
+      '[data-testid="send-money"]'
+    ]
   }
 };
 
