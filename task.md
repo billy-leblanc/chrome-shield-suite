@@ -1,0 +1,29 @@
+# Project: Chrome Shield Suite - Founder's Roadmap
+
+- [/] Phase 3: Scale & Optimize (Risk Engine)
+    - [ ] Implement `src/background/risk_engine.ts` with polymorphic threat detection
+    - [ ] Refactor detection logic for "elite" performance and heuristics
+- [/] Phase 4: Expansion (Zelle & Venmo)
+    - [ ] Research Zelle web portal selectors
+    - [ ] Research Venmo web portal selectors
+    - [ ] Implement `src/content/zelle_interceptor.tsx` and `src/content/venmo_interceptor.tsx`
+    - [ ] Update `manifest.json` for multi-platform support
+- [/] Phase 5: Security Audit & Optimization
+    - [ ] Conduct recursive security audit of all content scripts
+    - [ ] Audit Shadow DOM injection for potential XSS or isolation bypasses
+    - [ ] Fix identified vulnerabilities and document in `memory-decisions.md`
+- [x] Phase 7: Architect & Researcher (Offline Expansion)
+    - [x] Deep Browser Research: Zelle & Venmo button selectors
+    - [x] Expansion Blueprint: Artifacts for `zelle_interceptor.tsx` and `venmo_interceptor.tsx`
+    - [x] Compatibility Check: Risk Engine scoring API alignment
+- [x] Phase 8: P2P Expansion Implementation
+    - [x] Apply Venmo & Zelle production logic to `payment_interceptor.tsx`
+    - [x] Verify build with `npm run build`
+    - [x] Final sync & Push to `main`
+- [x] Diagnostics & Roadmap Preservation
+    - [x] Identify extension errors (ES Module Import Bug)
+    - [x] Create Diagnostic Report for Claude
+    - [x] Preserve Phase 9 Strategic Roadmap
+- [/] Ongoing: Artifact Mirroring
+    - [/] Sync all `*.md` artifacts to project root
+    - [/] Sync research assets to `docs/research/`
