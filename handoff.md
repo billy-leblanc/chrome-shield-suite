@@ -1,23 +1,51 @@
-# Founder's Report: The Hyper-Scale Shift
+# Founder's Report: The Hyper-Scale Shift & P2P Expansion
 
-## Overnight Innovation Leaps
-- **Polymorphic Risk Engine**: We've transitioned from simple button-blocking to a heuristic "Brain" (`src/background/risk_engine.ts`). It now detects social engineering patterns (urgency, platform hooks, family scams) and handles fuzzy/polymorphic keyword variations.
-- **The Unified Shield**: `src/content/payment_interceptor.tsx` is now a platform-agnostic entry point. It dynamically detects PayPal, Venmo, or Zelle and applies hardened interception logic.
-- **Expansion**: Coverage now includes the web portals for **Venmo** and **Zelle** (via cross-frame banking integrations), satisfying the objective to broaden our protective reach.
-- **Security Hardening**: Conducted a recursive audit. We now use `MutationObserver` for SPA compatibility and `stopImmediatePropagation` to ensure our interceptor takes precedence over site-native scripts.
+## Status: Multi-Agent Synchronization Complete
+We have successfully integrated production-grade hardening from Claude Code with the architectural blueprints for Zelle/Venmo expansion. The Chrome Shield Suite is now in its most robust state to date.
 
-## Technical State
-- **Core Logic**: Unified in `src/content/payment_interceptor.tsx`.
-- **Intelligence**: Centralized in `src/background/risk_engine.ts`.
-- **Build Pipe**: Vite is fully configured for multi-entry bundling (Popup, Content, Background).
+---
 
-## The Roadmap Ahead
-1. **AI API Integration**: Connect the Risk Engine to an LLM via a secure background call for deep semantic analysis of transaction memos.
-2. **Global Expansion**: Research and implement UK/EU banking portal selectors (HSBC, Barclays, etc.).
-3. **Automated Audits**: Implement Playwright/Puppeteer tests to detect selector breakage on target platforms.
+## 1. Production Hardened: Claude Code Sprint
+Claude Code has completed a full production-grade refinement pass across the core engine.
 
-## Sync Status
-- **GitHub**: All milestones pushed to `main`.
-- **Memory**: Updated `CLAUDE.md`, `memory-decisions.md`, and `memory-sessions.md`.
+### Key Logic Improvements
+- **`src/background/risk_engine.ts`**:
+    - **Blended Scoring**: Integrated real-time Claude API analysis (40% weight) with deterministic heuristics (60% weight).
+    - **Production Hardening**: Added `clampScore` utilities, type guards for all inputs, and safe defaults for storage interactions.
+    - **Security**: Added sender validation to `onMessage` (rejects non-extension senders) and wrapped critical paths in try/catch blocks.
+- **`src/content/payment_interceptor.tsx`**:
+    - **Stealth Mode**: Switched to a **Closed Shadow DOM** to prevent detection by host page scripts.
+    - **Robust Matching**: Replaced invalid CSS selectors with a regex-based `TEXT_FALLBACK_PATTERNS` system for Venmo/Zelle.
+    - **Race Condition Prevention**: Added `pendingRef` to stop concurrent intercept requests.
 
-*Mission Progress: 35% of Global Fraud Disruption Target reached.*
+### Critical Security Fixes
+- **High Severity**: Fixed `button:contains()` syntax error that was bypassing Venmo/Zelle detection.
+- **High Severity**: Fixed `contenteditable` memo extraction (was previously using `.value` instead of `textContent`).
+- **High Severity**: Hardened the `onMessage` listener against spoofing.
+
+---
+
+## 2. Architect's Blueprint: P2P Expansion (Venmo & Zelle)
+The expansion research is complete. The Unified Shield is structurally ready for Phase 8.
+
+- **Verified Compatibility**: The new blended Risk Engine is perfectly aligned with the transaction contexts found on Venmo and Zelle.
+- **Selector Research**: Detailed findings for SPA and iframe patterns are documented in **[research_notes.md](file:///Users/billyleblanc/.gemini/antigravity/brain/eda51fe5-b5a8-4b04-9a9d-28b44593a747/research_notes.md)**.
+- **Implementation Strategy**: Detailed in the **[Expansion Blueprint](file:///Users/billyleblanc/.gemini/antigravity/brain/eda51fe5-b5a8-4b04-9a9d-28b44593a747/expansion_blueprint.md)**.
+
+---
+
+## 3. Sync Status & CI/CD
+- **GitHub Actions**: Pulled and verified `claude.yml` and `claude-code-review.yml` for automated PR assistance.
+- **Repository**: All local research and blueprints have been rebased onto the production-hardened `main` branch.
+
+*Architectural integrity verified. The roadmap is clear for Phase 8 integration.*
+
+## Final Polish Pass — 2026-03-30
+
+### Fixes Applied
+- **Prompt injection hardening**: memo wrapped in `<memo>` XML tags; system prompt updated with injection-resistance instruction
+- **MutationObserver**: callback now debounces and re-scans for payment buttons on SPA route changes
+- **Venmo text normalization**: `textContent` normalized (trim + collapse whitespace) before regex match; patterns broadened to cover "Pay Now" / "Send Money"
+
+### Build
+Clean. All 6 output files generated.

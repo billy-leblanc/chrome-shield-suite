@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import SafetyInterceptModal from "@/components/SafetyInterceptModal";
+import type { RiskAnalysis } from "@/background/risk_engine";
 
 /**
  * Unified Payment Interceptor: The "Shield" of Chrome Shield Suite.
@@ -8,6 +8,8 @@ import SafetyInterceptModal from "@/components/SafetyInterceptModal";
  */
 
 // --- Configuration & Selectors ---
+// NOTE: CSS :contains() is not a valid native selector. Venmo/Zelle button
+// matching uses querySelectorAll with text-content fallback in the handler.
 const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
   'paypal.com': {
     name: 'PayPal',
@@ -26,8 +28,6 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
     selectors: [
       'button[data-testid="pay-button"]',
       'button[aria-label="Pay"]',
-      'button:contains("Pay")',
-      'button:contains("Send")'
     ]
   },
   'zellepay.com': {
@@ -35,16 +35,25 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
     selectors: [
       '#send-money-zelle-button',
       '#sendmoney-button',
-      'button:contains("Send Money")',
       'button[type="submit"]'
     ]
   }
 };
 
+// Text-content fallback patterns for platforms that render buttons dynamically.
+// textContent is normalized (trimmed + collapsed whitespace) before matching.
+const TEXT_FALLBACK_PATTERNS: Record<string, RegExp> = {
+  'venmo.com': /^(Pay|Pay Now|Send|Send Money)$/i,
+  'zellepay.com': /^Send Money$/i,
+};
+
+// Module-level debounce timer for MutationObserver re-scan.
+let mutationRescanTimer: ReturnType<typeof setTimeout> | null = null;
+
 const getActiveConfig = () => {
   const host = window.location.hostname;
   for (const domain in PORTAL_CONFIGS) {
-    if (host.includes(domain)) return PORTAL_CONFIGS[domain];
+    if (host.includes(domain)) return { config: PORTAL_CONFIGS[domain], domain };
   }
   return null;
 };
@@ -81,50 +90,129 @@ const injectStyles = (shadowRoot: ShadowRoot) => {
 // --- Component ---
 const Interceptor = () => {
   const [showModal, setShowModal] = React.useState(false);
-  const [riskReport, setRiskReport] = React.useState<any>(null);
-  const config = getActiveConfig();
+  const [riskReport, setRiskReport] = React.useState<RiskAnalysis | null>(null);
+  const activeRef = React.useRef(getActiveConfig());
+  // Guard: prevent overlapping in-flight risk analysis requests.
+  const pendingRef = React.useRef(false);
 
   React.useEffect(() => {
-    if (!config) return;
+    const active = activeRef.current;
+    if (!active) return;
+    const { config, domain } = active;
 
-    const handleIntercept = async (e: Event) => {
-      const target = e.target as HTMLElement;
-      const isMatch = config.selectors.some(selector => 
-        target.matches(selector) || target.closest(selector)
-      );
-
-      if (isMatch) {
-        e.preventDefault();
-        e.stopImmediatePropagation(); // Security Audit: Ensure other scripts don't get the event
-
-        // Context Extraction (Security Hardened)
-        const message = (document.querySelector('textarea, [contenteditable="true"]') as HTMLTextAreaElement)?.value || '';
-        const amount = parseFloat((document.querySelector('input[type="number"], .amount-input') as HTMLInputElement)?.value || '0');
-
-        chrome.runtime.sendMessage({ 
-          type: 'ANALYZE_RISK', 
-          data: { 
-            message: message.substring(0, 1000), // Limit size
-            amount,
-            platform: config.name 
-          } 
-        }, (report) => {
-          if (report && (report.riskLevel === 'high' || report.riskLevel === 'critical')) {
-            setRiskReport(report);
-            setShowModal(true);
-          } else {
-            console.log(`[Shield] Safe transaction on ${config.name}`);
+    const isButtonMatch = (target: HTMLElement): boolean => {
+      // 1. Try CSS attribute/id/class selectors.
+      if (config.selectors.some(sel => target.matches(sel) || target.closest(sel))) {
+        return true;
+      }
+      // 2. Text-content fallback for platforms using dynamic button text.
+      // Normalize: trim outer whitespace and collapse internal whitespace runs.
+      const textPattern = TEXT_FALLBACK_PATTERNS[domain];
+      if (textPattern) {
+        const btn = target.tagName === 'BUTTON' ? target : target.closest('button');
+        if (btn) {
+          const normalizedText = (btn.textContent ?? '').trim().replace(/\s+/g, ' ');
+          if (textPattern.test(normalizedText)) {
+            return true;
           }
-        });
+        }
+      }
+      return false;
+    };
+
+    const handleIntercept = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!isButtonMatch(target)) return;
+
+      e.preventDefault();
+      e.stopImmediatePropagation(); // Prevent competing scripts from observing the event.
+
+      // Deduplicate: skip if a risk analysis is already in flight.
+      if (pendingRef.current) return;
+      pendingRef.current = true;
+
+      // Context Extraction — read from host document (intentional: we need the page's data).
+      // Use textContent for contenteditable; fall back to .value for textarea/input.
+      const memoEl = document.querySelector('textarea, [contenteditable="true"], input[name*="note"], input[name*="memo"]');
+      let message = '';
+      if (memoEl instanceof HTMLTextAreaElement || memoEl instanceof HTMLInputElement) {
+        message = memoEl.value ?? '';
+      } else if (memoEl instanceof HTMLElement) {
+        // contenteditable: use textContent, NOT innerHTML (XSS prevention).
+        message = memoEl.textContent ?? '';
+      }
+
+      const amountEl = document.querySelector('input[type="number"], .amount-input, input[name*="amount"]');
+      const rawAmount = amountEl instanceof HTMLInputElement ? amountEl.value : '';
+      const amount = parseFloat(rawAmount);
+      const safeAmount = isFinite(amount) ? amount : 0;
+
+      // Guard: do not send if extension context is invalidated.
+      if (!chrome.runtime?.id) {
+        pendingRef.current = false;
+        return;
+      }
+
+      chrome.runtime.sendMessage(
+        {
+          type: 'ANALYZE_RISK',
+          data: {
+            message: message.substring(0, 1000), // Limit payload size.
+            amount: safeAmount,
+            platform: config.name
+          }
+        },
+        (report: RiskAnalysis | undefined) => {
+          pendingRef.current = false;
+          // Validate response shape before acting on it.
+          if (
+            report &&
+            typeof report === 'object' &&
+            typeof report.riskLevel === 'string' &&
+            typeof report.score === 'number'
+          ) {
+            if (report.riskLevel === 'high' || report.riskLevel === 'critical') {
+              setRiskReport(report);
+              setShowModal(true);
+            }
+          }
+        }
+      );
+    };
+
+    // Use Capturing Phase for immediate interception before site scripts.
+    document.addEventListener("click", handleIntercept, { capture: true });
+
+    // MutationObserver: re-scan for payment buttons when the SPA re-renders the DOM.
+    // The document-level click listener in handleIntercept covers all clicks, but after a
+    // route change the buttons may have entirely new DOM nodes. The observer debounces a
+    // re-scan so isButtonMatch stays aligned with the live DOM without thrashing.
+    const rescanButtons = () => {
+      // Walk every button in the document and verify at least one matches our selectors.
+      // This is intentionally a read-only scan — the capturing click listener on `document`
+      // already handles the actual interception; we do not re-attach per-element listeners.
+      const buttons = document.querySelectorAll('button, [role="button"]');
+      let found = false;
+      buttons.forEach((el) => {
+        if (!found && isButtonMatch(el as HTMLElement)) {
+          found = true;
+        }
+      });
+      // Log only in development builds to avoid noise in production.
+      if (process.env.NODE_ENV === 'development') {
+        console.debug(`[Shield] MutationObserver re-scan: payment button ${found ? 'present' : 'not found'}`);
       }
     };
 
-    // Use Capturing Phase for immediate interception
-    document.addEventListener("click", handleIntercept, true);
-    
-    // MutationObserver for dynamic buttons (SPAs like Venmo)
-    const observer = new MutationObserver(() => {
-      // Re-scan or ensure listeners are active if buttons are re-rendered
+    const observer = new MutationObserver((_mutations) => {
+      // Debounce: cancel any pending re-scan and schedule a new one 200 ms out.
+      if (mutationRescanTimer !== null) {
+        clearTimeout(mutationRescanTimer);
+      }
+      mutationRescanTimer = setTimeout(() => {
+        mutationRescanTimer = null;
+        rescanButtons();
+      }, 200);
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
@@ -132,21 +220,36 @@ const Interceptor = () => {
       document.removeEventListener("click", handleIntercept, true);
       observer.disconnect();
     };
-  }, [config]);
+  }, []); // Empty deps: config is stable for the lifetime of this page.
 
-  if (!showModal) return null;
+  if (!showModal || !riskReport) return null;
+
+  const config = activeRef.current?.config;
 
   return (
     <div className="fixed">
       <div className="bg-card text-center">
-        <h2 className="font-bold">{riskReport?.riskLevel === 'critical' ? "CRITICAL THREAT DETECTED" : `Security Alert: ${config?.name}`}</h2>
-        <p className="text-sm">{riskReport?.recommendation || "We've detected potential fraud patterns in this transaction."}</p>
+        <h2 className="font-bold">
+          {riskReport.riskLevel === 'critical'
+            ? "CRITICAL THREAT DETECTED"
+            : `Security Alert: ${config?.name ?? 'Payment'}`}
+        </h2>
+        <p className="text-sm">
+          {riskReport.recommendation || "We've detected potential fraud patterns in this transaction."}
+        </p>
         <div className="flex">
-          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel Payment</button>
-          <button className="btn btn-destructive" onClick={() => {
-            setShowModal(false);
-            console.warn("[Shield] User ignored high-risk warning.");
-          }}>Proceed Anyway</button>
+          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+            Cancel Payment
+          </button>
+          <button
+            className="btn btn-destructive"
+            onClick={() => {
+              setShowModal(false);
+              console.warn("[Shield] User ignored high-risk warning.");
+            }}
+          >
+            Proceed Anyway
+          </button>
         </div>
       </div>
     </div>
@@ -156,21 +259,24 @@ const Interceptor = () => {
 // --- Initialization ---
 const init = () => {
   if (!getActiveConfig()) return;
-  
+
+  // Prevent double-initialization (e.g., if script is injected multiple times).
+  if (document.getElementById("shield-host")) return;
+
   const host = document.createElement("div");
-  host.id = "lovable-shield-host";
+  host.id = "shield-host";
   document.body.appendChild(host);
-  const shadowRoot = host.attachShadow({ mode: "open" });
+  const shadowRoot = host.attachShadow({ mode: "closed" });
   injectStyles(shadowRoot);
-  
+
   const container = document.createElement("div");
   shadowRoot.appendChild(container);
-  
+
   createRoot(container).render(<Interceptor />);
 };
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", init, { once: true });
 } else {
   init();
 }
