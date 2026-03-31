@@ -26,10 +26,13 @@ export default defineConfig(({ mode }) => ({
       input: {
         popup: path.resolve(__dirname, "index.html"),
         content: path.resolve(__dirname, "src/content/paypal_interceptor.tsx"),
+        background: path.resolve(__dirname, "src/background/risk_engine.ts"),
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === 'content' ? 'content.js' : 'assets/[name]-[hash].js';
+          if (chunkInfo.name === 'content') return 'content.js';
+          if (chunkInfo.name === 'background') return 'background.js';
+          return 'assets/[name]-[hash].js';
         },
       }
     }
