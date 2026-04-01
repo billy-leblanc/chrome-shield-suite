@@ -129,7 +129,7 @@ test.describe("PayPal — CSS selector regression", () => {
   for (const selector of PAYPAL_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
-      { timeout: TEST_TIMEOUT },
+
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -176,7 +176,7 @@ test.describe("Venmo — CSS selector regression", () => {
   for (const selector of VENMO_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
-      { timeout: TEST_TIMEOUT },
+
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -221,7 +221,7 @@ test.describe("Venmo — text-content fallback patterns", () => {
 
   test(
     `at least one button matches text pattern ${VENMO_TEXT_PATTERNS}`,
-    { timeout: TEST_TIMEOUT },
+
     async () => {
       if (skipReason) {
         test.skip(true, skipReason);
@@ -268,7 +268,7 @@ test.describe("Zelle — CSS selector regression", () => {
   for (const selector of ZELLE_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
-      { timeout: TEST_TIMEOUT },
+
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -313,7 +313,7 @@ test.describe("Zelle — text-content fallback patterns", () => {
 
   test(
     `at least one button matches text pattern ${ZELLE_TEXT_PATTERNS}`,
-    { timeout: TEST_TIMEOUT },
+
     async () => {
       if (skipReason) {
         test.skip(true, skipReason);
