@@ -313,6 +313,7 @@ test.describe("Zelle — text-content fallback patterns", () => {
 
   test(
     `at least one button matches text pattern ${ZELLE_TEXT_PATTERNS}`,
+    { timeout: TEST_TIMEOUT },
     async () => {
       if (skipReason) {
         test.skip(true, skipReason);
@@ -324,7 +325,6 @@ test.describe("Zelle — text-content fallback patterns", () => {
         `Zelle text-content fallback pattern ${ZELLE_TEXT_PATTERNS} matched no button — ` +
           `button label "Send Money" may have changed`
       ).toBe(true);
-    },
-    { timeout: TEST_TIMEOUT }
+    }
   );
 });
