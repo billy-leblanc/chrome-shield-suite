@@ -151,6 +151,7 @@ const Interceptor = () => {
   const pendingRef = React.useRef(false);
   // Store the intercepted button so we can re-fire the click on "Proceed Anyway".
   const interceptedButtonRef = React.useRef<HTMLElement | null>(null);
+  const handleInterceptRef = React.useRef<((e: Event) => void) | null>(null);
 
   React.useEffect(() => {
     const active = activeRef.current;
@@ -180,6 +181,7 @@ const Interceptor = () => {
     };
 
     const handleIntercept = (e: Event) => {
+    handleInterceptRef.current = handleIntercept;
       const target = e.target as HTMLElement;
       if (!isButtonMatch(target)) return;
 
@@ -310,10 +312,10 @@ const Interceptor = () => {
               // Re-fire the original button click without our listener active.
               const btn = interceptedButtonRef.current;
               interceptedButtonRef.current = null;
-              if (btn) {
-                document.removeEventListener("click", handleIntercept, true);
+              if (btn && handleInterceptRef.current) {
+                document.removeEventListener("click", handleInterceptRef.current, true);
                 btn.click();
-                document.addEventListener("click", handleIntercept, { capture: true });
+                document.addEventListener("click", handleInterceptRef.current, { capture: true });
               }
             }}
           >

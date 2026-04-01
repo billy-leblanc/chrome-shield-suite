@@ -58,10 +58,12 @@ const TEST_TIMEOUT = 15_000; // 15 s — generous for live network requests
  * Attempt to navigate to a URL and return {ok: true, page} on success or
  * {ok: false, reason} if the page is unreachable (network error or no DOM).
  */
+type NavResult = { ok: true; page: Page; reason?: undefined } | { ok: false; reason: string };
+
 async function tryNavigate(
   browser: Browser,
   url: string
-): Promise<{ ok: true; page: Page } | { ok: false; reason: string }> {
+): Promise<NavResult> {
   let page: Page | undefined;
   try {
     page = await browser.newPage();
@@ -127,6 +129,7 @@ test.describe("PayPal — CSS selector regression", () => {
   for (const selector of PAYPAL_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
+
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -137,8 +140,7 @@ test.describe("PayPal — CSS selector regression", () => {
           count,
           `PayPal CSS selector [${selector}] not found — selector may have changed or been removed from the PayPal DOM`
         ).toBeGreaterThan(0);
-      },
-      { timeout: TEST_TIMEOUT }
+      }
     );
   }
 });
@@ -174,6 +176,7 @@ test.describe("Venmo — CSS selector regression", () => {
   for (const selector of VENMO_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
+
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -184,8 +187,7 @@ test.describe("Venmo — CSS selector regression", () => {
           count,
           `Venmo CSS selector [${selector}] not found — selector may have changed or been removed from the Venmo DOM`
         ).toBeGreaterThan(0);
-      },
-      { timeout: TEST_TIMEOUT }
+      }
     );
   }
 });
@@ -219,6 +221,7 @@ test.describe("Venmo — text-content fallback patterns", () => {
 
   test(
     `at least one button matches text pattern ${VENMO_TEXT_PATTERNS}`,
+
     async () => {
       if (skipReason) {
         test.skip(true, skipReason);
@@ -230,8 +233,7 @@ test.describe("Venmo — text-content fallback patterns", () => {
         `Venmo text-content fallback pattern ${VENMO_TEXT_PATTERNS} matched no button — ` +
           `button labels may have changed ("Pay", "Pay Now", "Send", "Send Money" are all expected)`
       ).toBe(true);
-    },
-    { timeout: TEST_TIMEOUT }
+    }
   );
 });
 
@@ -266,6 +268,7 @@ test.describe("Zelle — CSS selector regression", () => {
   for (const selector of ZELLE_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
+
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -276,8 +279,7 @@ test.describe("Zelle — CSS selector regression", () => {
           count,
           `Zelle CSS selector [${selector}] not found — selector may have changed or been removed from the Zelle DOM`
         ).toBeGreaterThan(0);
-      },
-      { timeout: TEST_TIMEOUT }
+      }
     );
   }
 });
@@ -311,6 +313,7 @@ test.describe("Zelle — text-content fallback patterns", () => {
 
   test(
     `at least one button matches text pattern ${ZELLE_TEXT_PATTERNS}`,
+
     async () => {
       if (skipReason) {
         test.skip(true, skipReason);
@@ -322,7 +325,6 @@ test.describe("Zelle — text-content fallback patterns", () => {
         `Zelle text-content fallback pattern ${ZELLE_TEXT_PATTERNS} matched no button — ` +
           `button label "Send Money" may have changed`
       ).toBe(true);
-    },
-    { timeout: TEST_TIMEOUT }
+    }
   );
 });
