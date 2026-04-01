@@ -181,6 +181,7 @@ const Interceptor = () => {
     };
 
     const handleIntercept = (e: Event) => {
+    handleInterceptRef.current = handleIntercept;
       const target = e.target as HTMLElement;
       if (!isButtonMatch(target)) return;
 
