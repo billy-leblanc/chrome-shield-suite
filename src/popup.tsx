@@ -161,7 +161,7 @@ function ApiKeySection() {
           h("input", {
             type: showToken ? "text" : "password",
             value: tokenValue,
-            onInput: (e) => { setTokenValue(e.target.value); setInputError(""); },
+            onInput: (e: React.FormEvent<HTMLInputElement>) => { setTokenValue((e.target as HTMLInputElement).value); setInputError(""); },
             onKeyDown: handleKeyDown,
             placeholder: "Paste your relay token...",
             className: "w-full bg-surface border border-border-subtle rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-secondary/50 outline-none focus:border-accent-cyan/50 transition-colors pr-9",
