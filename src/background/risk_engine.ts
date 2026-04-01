@@ -43,7 +43,7 @@ async function analyzeMemoWithLLM(memo: string): Promise<LLMRiskResult | null> {
   let relayAuthToken: string | undefined;
   try {
     const stored = await chrome.storage.local.get('relay_auth_token');
-    relayAuthToken = stored.relay_auth_token;
+    relayAuthToken = stored.relay_auth_token as string | undefined;
   } catch {
     return null;
   }
