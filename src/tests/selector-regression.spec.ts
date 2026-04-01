@@ -176,6 +176,7 @@ test.describe("Venmo — CSS selector regression", () => {
   for (const selector of VENMO_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
+      { timeout: TEST_TIMEOUT },
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -186,8 +187,7 @@ test.describe("Venmo — CSS selector regression", () => {
           count,
           `Venmo CSS selector [${selector}] not found — selector may have changed or been removed from the Venmo DOM`
         ).toBeGreaterThan(0);
-      },
-      { timeout: TEST_TIMEOUT }
+      }
     );
   }
 });
