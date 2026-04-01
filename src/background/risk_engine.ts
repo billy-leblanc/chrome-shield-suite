@@ -257,7 +257,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       } else {
         chrome.storage.local.get("stats", (storageData) => {
           if (chrome.runtime.lastError) return;
-          const currentStats = storageData.stats || { blocked: 0, warnings: 0, safe: 0 };
+          const currentStats = (storageData.stats as { blocked: number; warnings: number; safe: number } | undefined) || { blocked: 0, warnings: 0, safe: 0 };
           const newStats = { ...currentStats, safe: (currentStats.safe || 0) + 1 };
           chrome.storage.local.set({ stats: newStats });
         });

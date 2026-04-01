@@ -223,11 +223,12 @@ function PopupApp() {
   useEffect(() => {
     chrome.storage.local.get(["stats", "threatLog"], (result) => {
       if (chrome.runtime.lastError) return;
-      if (result.stats) {
+      const s = result.stats as { blocked?: number; warnings?: number; safe?: number } | undefined;
+      if (s) {
         setStats({
-          blocked: result.stats.blocked ?? 0,
-          warnings: result.stats.warnings ?? 0,
-          safe: result.stats.safe ?? 0,
+          blocked: s.blocked ?? 0,
+          warnings: s.warnings ?? 0,
+          safe: s.safe ?? 0,
         });
       }
       if (Array.isArray(result.threatLog)) {

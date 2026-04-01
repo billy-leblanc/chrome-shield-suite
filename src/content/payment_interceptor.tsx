@@ -312,10 +312,10 @@ const Interceptor = () => {
               // Re-fire the original button click without our listener active.
               const btn = interceptedButtonRef.current;
               interceptedButtonRef.current = null;
-              if (btn) {
-                document.removeEventListener("click", handleIntercept, true);
+              if (btn && handleInterceptRef.current) {
+                document.removeEventListener("click", handleInterceptRef.current, true);
                 btn.click();
-                document.addEventListener("click", handleIntercept, { capture: true });
+                document.addEventListener("click", handleInterceptRef.current, { capture: true });
               }
             }}
           >
