@@ -129,6 +129,7 @@ test.describe("PayPal — CSS selector regression", () => {
   for (const selector of PAYPAL_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
+      { timeout: TEST_TIMEOUT },
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -139,8 +140,7 @@ test.describe("PayPal — CSS selector regression", () => {
           count,
           `PayPal CSS selector [${selector}] not found — selector may have changed or been removed from the PayPal DOM`
         ).toBeGreaterThan(0);
-      },
-      { timeout: TEST_TIMEOUT }
+      }
     );
   }
 });
