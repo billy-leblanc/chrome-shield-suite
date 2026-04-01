@@ -20,19 +20,6 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
   build: {
-    outDir: "extension",
-    emptyOutDir: false, // Don't delete existing extension files
-    rollupOptions: {
-      input: {
-        popup: path.resolve(__dirname, "index.html"),
-        background: path.resolve(__dirname, "src/background/risk_engine.ts"),
-      },
-      output: {
-        entryFileNames: (chunkInfo) => {
-          if (chunkInfo.name === 'background') return 'background.js';
-          return 'assets/[name]-[hash].js';
-        },
-      }
-    }
+    outDir: "dist",
   }
 }));
