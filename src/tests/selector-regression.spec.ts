@@ -58,10 +58,12 @@ const TEST_TIMEOUT = 15_000; // 15 s — generous for live network requests
  * Attempt to navigate to a URL and return {ok: true, page} on success or
  * {ok: false, reason} if the page is unreachable (network error or no DOM).
  */
+type NavResult = { ok: true; page: Page; reason?: undefined } | { ok: false; reason: string };
+
 async function tryNavigate(
   browser: Browser,
   url: string
-): Promise<{ ok: true; page: Page } | { ok: false; reason: string }> {
+): Promise<NavResult> {
   let page: Page | undefined;
   try {
     page = await browser.newPage();
