@@ -5,7 +5,7 @@ const { useState, useEffect, useCallback } = React;
 const h = React.createElement;
 
 /* ─── Safety Intercept Modal ─── */
-function SafetyInterceptModal({ open, onClose, onConfirm, title, message }) {
+function SafetyInterceptModal({ open, onClose, onConfirm, title, message, confirmLabel = "Proceed Anyway", confirmClass = "flex-1 px-4 py-2.5 rounded-xl bg-accent-red text-surface text-sm font-bold hover:bg-accent-red/80 transition-colors cursor-pointer" }) {
   if (!open) return null;
   return h("div", {
     className: "fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm",
@@ -31,8 +31,8 @@ function SafetyInterceptModal({ open, onClose, onConfirm, title, message }) {
         }, "Cancel"),
         h("button", {
           onClick: () => { onConfirm?.(); onClose(); },
-          className: "flex-1 px-4 py-2.5 rounded-xl bg-accent-red text-surface text-sm font-bold hover:bg-accent-red/80 transition-colors cursor-pointer"
-        }, "Proceed Anyway")
+          className: confirmClass
+        }, confirmLabel)
       )
     )
   );
@@ -60,6 +60,20 @@ function ActivityItem({ text, time, type }) {
     h("div", { className: `w-2 h-2 rounded-full ${dotColor} pulse-dot` }),
     h("span", { className: "text-sm text-text-secondary flex-1 truncate" }, text),
     h("span", { className: "text-xs text-text-secondary/60 shrink-0" }, time)
+  );
+}
+
+/* ─── Business / Personal View Toggle ─── */
+function ViewToggle({ view, onChange }) {
+  return h("div", { className: "flex items-center gap-1 bg-surface-raised border border-border-subtle rounded-lg p-0.5 text-xs font-semibold" },
+    h("button", {
+      onClick: () => onChange("personal"),
+      className: `flex-1 py-1.5 rounded-md transition-colors cursor-pointer ${view === "personal" ? "bg-accent-cyan/15 text-accent-cyan" : "text-text-secondary hover:text-text-primary"}`
+    }, "Personal"),
+    h("button", {
+      onClick: () => onChange("business"),
+      className: `flex-1 py-1.5 rounded-md transition-colors cursor-pointer ${view === "business" ? "bg-accent-cyan/15 text-accent-cyan" : "text-text-secondary hover:text-text-primary"}`
+    }, "Business")
   );
 }
 
@@ -198,14 +212,29 @@ function ApiKeySection() {
 function PopupApp() {
   const [interceptOn, setInterceptOn] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [stats] = useState({ blocked: 12, warnings: 5, safe: 847 });
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [view, setView] = useState<"personal" | "business">("personal");
 
-  const activities = [
-    { text: "Blocked suspicious redirect", time: "2m ago", type: "blocked" },
-    { text: "Flagged mixed content on page", time: "15m ago", type: "warning" },
-    { text: "HTTPS verified", time: "1h ago", type: "safe" },
-    { text: "Blocked tracking script", time: "3h ago", type: "blocked" },
-  ];
+  const emptyStats = { blocked: 0, warnings: 0, safe: 0 };
+  const [stats, setStats] = useState(emptyStats);
+  const [activities, setActivities] = useState<Array<{ text: string; time: string; type: string }>>([]);
+
+  // Load real data from chrome.storage.local on mount
+  useEffect(() => {
+    chrome.storage.local.get(["stats", "threatLog"], (result) => {
+      if (chrome.runtime.lastError) return;
+      if (result.stats) {
+        setStats({
+          blocked: result.stats.blocked ?? 0,
+          warnings: result.stats.warnings ?? 0,
+          safe: result.stats.safe ?? 0,
+        });
+      }
+      if (Array.isArray(result.threatLog)) {
+        setActivities(result.threatLog.slice(0, 4));
+      }
+    });
+  }, []);
 
   const toggleIntercept = useCallback(() => {
     if (interceptOn) {
@@ -214,6 +243,33 @@ function PopupApp() {
       setInterceptOn(true);
     }
   }, [interceptOn]);
+
+  const handleResetConfirm = useCallback(() => {
+    chrome.storage.local.remove(["stats", "threatLog"], () => {
+      setStats(emptyStats);
+      setActivities([]);
+    });
+  }, []);
+
+  const total = stats.blocked + stats.warnings + stats.safe;
+
+  // Stat card configs vary by view
+  const statCards = view === "personal"
+    ? [
+        { label: "Blocked", value: stats.blocked, color: "red", icon: "✕" },
+        { label: "Warnings", value: stats.warnings, color: "amber", icon: "!" },
+        { label: "Safe", value: stats.safe, color: "green", icon: "✓" },
+      ]
+    : [
+        { label: "Threats Blocked", value: stats.blocked, color: "red", icon: "✕" },
+        { label: "Flagged Transactions", value: stats.warnings, color: "amber", icon: "!" },
+        { label: "Verified Payments", value: stats.safe, color: "green", icon: "✓" },
+        { label: "Total Analyzed", value: total, color: "cyan", icon: "#" },
+      ];
+
+  const statsGridClass = view === "business"
+    ? "px-5 grid grid-cols-2 gap-3 mb-4"
+    : "px-5 grid grid-cols-3 gap-3 mb-4";
 
   return h("div", { className: "min-h-screen bg-surface flex flex-col" },
     /* Header */
@@ -244,18 +300,25 @@ function PopupApp() {
       }, interceptOn ? "🛡️ Shield Active" : "⚠️ Shield Disabled — Click to Enable")
     ),
 
+    /* View Toggle (Personal / Business) */
+    h("div", { className: "px-5 mb-3" },
+      h(ViewToggle, { view, onChange: setView })
+    ),
+
     /* Stats Grid */
-    h("div", { className: "px-5 grid grid-cols-3 gap-3 mb-4" },
-      h(StatCard, { label: "Blocked", value: stats.blocked, color: "red", icon: "✕" }),
-      h(StatCard, { label: "Warnings", value: stats.warnings, color: "amber", icon: "!" }),
-      h(StatCard, { label: "Safe", value: stats.safe, color: "green", icon: "✓" })
+    h("div", { className: statsGridClass },
+      ...statCards.map((card, i) =>
+        h(StatCard, { key: i, label: card.label, value: card.value, color: card.color as any, icon: card.icon })
+      )
     ),
 
     /* Activity */
     h("div", { className: "px-5 flex-1 mb-4" },
       h("h2", { className: "text-xs font-semibold uppercase tracking-wider text-text-secondary mb-2" }, "Recent Activity"),
       h("div", { className: "bg-surface-raised border border-border-subtle rounded-xl px-4 divide-y divide-border-subtle" },
-        activities.map((a, i) => h(ActivityItem, { key: i, ...a }))
+        activities.length === 0
+          ? h("div", { className: "py-4 text-sm text-text-secondary/60 text-center" }, "No activity yet")
+          : activities.map((a, i) => h(ActivityItem, { key: i, text: a.text, time: a.time, type: a.type }))
       )
     ),
 
@@ -263,17 +326,34 @@ function PopupApp() {
     h(ApiKeySection),
 
     /* Footer */
-    h("div", { className: "px-5 py-4 text-center" },
-      h("span", { className: "text-[10px] text-text-secondary/50 font-medium" }, "Safety Intercept v1.0.0")
+    h("div", { className: "px-5 py-4 flex flex-col items-center gap-2" },
+      h("span", { className: "text-[10px] text-text-secondary/50 font-medium" }, "Safety Intercept v1.0.0"),
+      h("button", {
+        onClick: () => setResetModalOpen(true),
+        className: "text-[10px] text-text-secondary/40 hover:text-accent-red/60 transition-colors cursor-pointer underline underline-offset-2"
+      }, "Reset Stats")
     ),
 
-    /* Modal */
+    /* Disable Shield Modal */
     h(SafetyInterceptModal, {
       open: modalOpen,
       onClose: () => setModalOpen(false),
       onConfirm: () => setInterceptOn(false),
       title: "Disable Protection?",
-      message: "Turning off Safety Intercept will leave your browsing session unprotected. Malicious scripts and unsafe redirects will not be blocked."
+      message: "Turning off Safety Intercept will leave your browsing session unprotected. Malicious scripts and unsafe redirects will not be blocked.",
+      confirmLabel: "Proceed Anyway",
+      confirmClass: "flex-1 px-4 py-2.5 rounded-xl bg-accent-red text-surface text-sm font-bold hover:bg-accent-red/80 transition-colors cursor-pointer",
+    }),
+
+    /* Reset Stats Modal */
+    h(SafetyInterceptModal, {
+      open: resetModalOpen,
+      onClose: () => setResetModalOpen(false),
+      onConfirm: handleResetConfirm,
+      title: "Reset All Stats?",
+      message: "Reset all stats? This cannot be undone. All blocked counts, warnings, and threat history will be permanently cleared.",
+      confirmLabel: "Reset",
+      confirmClass: "flex-1 px-4 py-2.5 rounded-xl bg-accent-red text-surface text-sm font-bold hover:bg-accent-red/80 transition-colors cursor-pointer",
     })
   );
 }
