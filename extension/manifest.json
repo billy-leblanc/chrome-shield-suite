@@ -12,6 +12,9 @@
     "*://*.barclays.co.uk/*",
     "*://*.revolut.com/*",
     "*://*.wellsfargo.com/*",
+    "*://*.chase.com/*",
+    "*://*.bankofamerica.com/*",
+    "*://*.citi.com/*",
     "https://*.workers.dev/*"
   ],
   "action": {
@@ -35,7 +38,10 @@
         "*://*.hsbc.co.uk/*",
         "*://*.barclays.co.uk/*",
         "*://*.revolut.com/*",
-        "*://*.wellsfargo.com/*"
+        "*://*.wellsfargo.com/*",
+        "*://*.chase.com/*",
+        "*://*.bankofamerica.com/*",
+        "*://*.citi.com/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle",

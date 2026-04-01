@@ -68,6 +68,30 @@ const PORTAL_CONFIGS: Record<string, { selectors: string[], name: string }> = {
     selectors: [
       '[data-testid="submitButton"][data-tracking-ref="WFFormSubmitButton-button-"]',
     ] // Only matches the submit button on payment screens, not nav buttons
+  },
+  'chase.com': {
+    name: 'Chase (Zelle)',
+    selectors: [
+      'button[data-testid="send-it-now"]',
+      'button#send-it-now',
+      'button[data-testid="review-send-button"]'
+    ]
+  },
+  'bankofamerica.com': {
+    name: 'Bank of America (Zelle)',
+    selectors: [
+      'button[data-testid="confirm-transfer-button"]',
+      'button#send-button',
+      'button[data-testid="send-money-button"]'
+    ]
+  },
+  'citi.com': {
+    name: 'Citi (Zelle)',
+    selectors: [
+      'button[data-testid="verify-button"]',
+      'button[data-testid="confirm-button"]',
+      'button[data-testid="send-money-button"]'
+    ]
   }
 };
 

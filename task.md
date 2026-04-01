@@ -31,9 +31,24 @@
 - [x] Phase 8.7: Post-Reload Verification
     - [x] Verify `shield-host` injection on diagnostic domain (Google)
     - [x] Confirm no more SyntaxErrors in live session (Verified)
-- [/] Phase 10: UK Bank Expansion Research
-    - [/] Research HSBC payment button selectors and URLs
-    - [ ] Research Barclays payment button selectors and URLs
-    - [ ] Research Revolut payment button selectors and URLs
+- [x] Phase 10: UK Bank Expansion Research
+    - [x] Research HSBC, Barclays, Revolut selectors
+    - [x] Document in `docs/research/uk_banks_research.md`
+    - [x] Update manifest and interceptor
+- [x] Final Synchronization (GitHub)
+    - [x] Rebase and Push all local commits
+    - [x] Integrate work from other agents (Verified)
+- [/] Phase 11: US Primary Bank Expansion (Zelle)
+    - [x] Research Chase Zelle payment button selectors and URLs (Initial)
+    - [x] Research BofA Zelle payment button selectors and URLs (Initial)
+    - [x] Research Citi Zelle payment button selectors and URLs (Initial)
+    - [/] Phase 11.2: Deep Embedded Zelle Research (Chase, BofA, Citi)
+        - [x] Research Chase embedded Zelle selectors
+        - [x] Research BofA embedded Zelle selectors
+        - [x] Research Citi embedded Zelle selectors
+        - [/] Document findings in `docs/research/chase_bofa_citi_research.md`
+        - [ ] Push to GitHub
+    - [ ] Document findings in `docs/research/us_banks_zelle_research.md`
+    - [ ] Update `manifest.json` host permissions
     - [ ] Document findings in `docs/research/uk_banks_research.md`
     - [ ] Update `manifest.json` host permissions
