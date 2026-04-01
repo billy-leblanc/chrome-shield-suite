@@ -91,6 +91,8 @@ export default {
       });
 
       if (!anthropicResponse.ok) {
+        const errBody = await anthropicResponse.text().catch(() => '(unreadable)');
+        console.error('[shield-relay] Anthropic error', anthropicResponse.status, errBody);
         return new Response(JSON.stringify(FALLBACK_RESULT), {
           status: 200,
           headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
@@ -100,16 +102,21 @@ export default {
       const anthropicJson = await anthropicResponse.json();
       const text = anthropicJson?.content?.[0]?.text ?? '';
       if (!text) {
+        console.error('[shield-relay] Empty text in response', JSON.stringify(anthropicJson));
         return new Response(JSON.stringify(FALLBACK_RESULT), {
           status: 200,
           headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         });
       }
 
+      // Strip markdown code fences if the model wrapped the JSON (e.g. ```json ... ```)
+      const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+
       let parsed;
       try {
-        parsed = JSON.parse(text);
-      } catch {
+        parsed = JSON.parse(stripped);
+      } catch (e) {
+        console.error('[shield-relay] JSON parse failed', e.message, 'raw text:', text);
         return new Response(JSON.stringify(FALLBACK_RESULT), {
           status: 200,
           headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
