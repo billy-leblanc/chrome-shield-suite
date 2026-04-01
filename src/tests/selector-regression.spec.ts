@@ -268,6 +268,7 @@ test.describe("Zelle — CSS selector regression", () => {
   for (const selector of ZELLE_SELECTORS) {
     test(
       `selector "${selector}" exists on page`,
+      { timeout: TEST_TIMEOUT },
       async () => {
         if (skipReason) {
           test.skip(true, skipReason);
@@ -278,8 +279,7 @@ test.describe("Zelle — CSS selector regression", () => {
           count,
           `Zelle CSS selector [${selector}] not found — selector may have changed or been removed from the Zelle DOM`
         ).toBeGreaterThan(0);
-      },
-      { timeout: TEST_TIMEOUT }
+      }
     );
   }
 });
