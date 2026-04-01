@@ -151,6 +151,7 @@ const Interceptor = () => {
   const pendingRef = React.useRef(false);
   // Store the intercepted button so we can re-fire the click on "Proceed Anyway".
   const interceptedButtonRef = React.useRef<HTMLElement | null>(null);
+  const handleInterceptRef = React.useRef<((e: Event) => void) | null>(null);
 
   React.useEffect(() => {
     const active = activeRef.current;
