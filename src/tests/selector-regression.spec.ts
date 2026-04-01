@@ -221,6 +221,7 @@ test.describe("Venmo — text-content fallback patterns", () => {
 
   test(
     `at least one button matches text pattern ${VENMO_TEXT_PATTERNS}`,
+    { timeout: TEST_TIMEOUT },
     async () => {
       if (skipReason) {
         test.skip(true, skipReason);
@@ -232,8 +233,7 @@ test.describe("Venmo — text-content fallback patterns", () => {
         `Venmo text-content fallback pattern ${VENMO_TEXT_PATTERNS} matched no button — ` +
           `button labels may have changed ("Pay", "Pay Now", "Send", "Send Money" are all expected)`
       ).toBe(true);
-    },
-    { timeout: TEST_TIMEOUT }
+    }
   );
 });
 
