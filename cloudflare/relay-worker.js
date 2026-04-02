@@ -141,6 +141,22 @@ export default {
         reasoning: parsed.reasoning,
       };
 
+      // Log anonymized analysis data to KV (no memo text — privacy requirement)
+      try {
+        if (env.SHIELD_LOGS) {
+          const logEntry = {
+            riskScore: result.riskScore,
+            flags: result.flags,
+            platform: typeof platform === 'string' ? platform : 'unknown',
+            timestamp: new Date().toISOString(),
+          };
+          await env.SHIELD_LOGS.put(`log:${Date.now()}`, JSON.stringify(logEntry));
+        }
+      } catch (logErr) {
+        // Logging failure must never break the main response
+        console.error('[shield-relay] KV log write failed', logErr?.message ?? logErr);
+      }
+
       return new Response(JSON.stringify(result), {
         status: 200,
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
