@@ -165,7 +165,7 @@ function PopupApp() {
                 <Zap className={`w-7 h-7 ${interceptOn ? "fill-current" : ""}`} />
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-[12px] font-black uppercase tracking-[0.15em]">{interceptOn ? "Dismantle Shield" : "Enable Protection"}</span>
+                <span className="text-[12px] font-black uppercase tracking-[0.15em]">{interceptOn ? "Disable Shield" : "Enable Protection"}</span>
                 <span className="text-[9px] font-bold opacity-40 uppercase tracking-widest">{interceptOn ? "Real-time analysis active" : "Tap to activate security node"}</span>
               </div>
             </Button>
@@ -184,7 +184,7 @@ function PopupApp() {
             </h2>
             <Tabs value={view} onValueChange={(v: any) => setView(v)} className="h-7 w-[150px]">
               <TabsList className="grid w-full grid-cols-2 p-0.5 h-full bg-muted/50 border">
-                <TabsTrigger value="personal" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Account</TabsTrigger>
+                <TabsTrigger value="personal" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Personal</TabsTrigger>
                 <TabsTrigger value="business" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Business</TabsTrigger>
               </TabsList>
             </Tabs>
@@ -215,7 +215,7 @@ function PopupApp() {
                   <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
                     <CheckCircle className="w-6 h-6 text-muted-foreground/20" />
                   </div>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/30">Protocol Secure • No Threats</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/30">No threats detected</p>
                 </div>
               ) : (
                 activities.map((item, i) => (
@@ -246,7 +246,7 @@ function PopupApp() {
                 <div className="relative group">
                   <input 
                     type={showToken ? "text" : "password"}
-                    placeholder="Enclave Secret"
+                    placeholder="Paste your relay token..."
                     value={relayToken}
                     onChange={(e) => setRelayToken(e.target.value)}
                     className="bg-background/80 border border-border/50 rounded-lg px-3 py-1.5 text-[10px] font-mono focus:outline-none focus:ring-1 focus:ring-primary/40 w-[120px] transition-all group-hover:border-border"
@@ -275,18 +275,18 @@ function PopupApp() {
           <div className="w-6 h-6 rounded-md bg-muted/40 flex items-center justify-center border border-border/20">
             <Lock className="w-3 h-3 text-muted-foreground/40" />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50 italic">v1.0.0 Enclave</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50 italic">Safety Intercept v1.0.0</span>
         </div>
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setResetModalOpen(true)}
             className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 hover:text-rose-500/50 transition-colors"
           >
-            Purge History
+            Reset Stats
           </button>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-500/5 border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-emerald-500 shadow-sm shadow-emerald-500/5">
             <CheckCircle className="w-3 h-3" />
-            Secure Node
+            Safety Intercept
           </div>
         </div>
       </footer>
@@ -299,7 +299,7 @@ function PopupApp() {
               <div className="mx-auto w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
                 <ShieldAlert className="w-6 h-6 text-rose-500" />
               </div>
-              <CardTitle className="text-lg font-black tracking-tight">Dismantle Shield?</CardTitle>
+              <CardTitle className="text-lg font-black tracking-tight">Disable Shield?</CardTitle>
               <CardDescription className="text-[11px] leading-relaxed font-medium">Deactivating the security enclave will stop all real-time fraud analysis. Your payments will be unmonitored.</CardDescription>
             </CardHeader>
             <CardFooter className="flex flex-col gap-2 p-6 pt-0">
@@ -317,11 +317,11 @@ function PopupApp() {
               <div className="mx-auto w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
                 <Trash2 className="w-6 h-6 text-rose-500" />
               </div>
-              <CardTitle className="text-lg font-black tracking-tight tracking-[-0.02em]">Purge node history?</CardTitle>
+              <CardTitle className="text-lg font-black tracking-tight tracking-[-0.02em]">Reset all stats?</CardTitle>
               <CardDescription className="text-[11px] leading-relaxed font-medium">This will permanently delete all session threat data and reset node statistics. This action is irreversible.</CardDescription>
             </CardHeader>
             <CardFooter className="flex flex-col gap-2 p-6 pt-0">
-              <Button variant="destructive" className="w-full font-black uppercase tracking-widest text-[11px] h-10 shadow-lg shadow-rose-500/20" onClick={() => { handleResetConfirm(); setResetModalOpen(false); }}>Purge Archives</Button>
+              <Button variant="destructive" className="w-full font-black uppercase tracking-widest text-[11px] h-10 shadow-lg shadow-rose-500/20" onClick={() => { handleResetConfirm(); setResetModalOpen(false); }}>Reset Everything</Button>
               <Button variant="secondary" className="w-full font-bold uppercase tracking-widest text-[11px] h-10" onClick={() => setResetModalOpen(false)}>Cancel</Button>
             </CardFooter>
           </Card>
