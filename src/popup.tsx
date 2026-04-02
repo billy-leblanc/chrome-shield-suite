@@ -157,7 +157,7 @@ function PopupApp() {
             <div style={{ fontSize: 13, fontWeight: 600, color: '#CBD5E1', letterSpacing: '-0.1px' }}>
               Real-time Protection
             </div>
-            <div style={{ fontSize: 11, color: '#334155', marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
               {interceptOn ? 'Scanning all payment activity' : 'Protection is paused'}
             </div>
           </div>
@@ -181,9 +181,12 @@ function PopupApp() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
           {[
-            { label: 'Blocked',  value: stats.blocked,  color: '#F87171', glow: 'rgba(248,113,113,0.12)', accent: 'rgba(248,113,113,0.4)' },
-            { label: 'Warnings', value: stats.warnings, color: '#FBBF24', glow: 'rgba(251,191,36,0.10)',  accent: 'rgba(251,191,36,0.4)'  },
-            { label: 'Safe',     value: stats.safe,     color: '#34D399', glow: 'rgba(52,211,153,0.10)',  accent: 'rgba(52,211,153,0.4)'  },
+            { label: 'Blocked',  value: stats.blocked,  color: '#F87171', glow: 'rgba(248,113,113,0.12)', accent: 'rgba(248,113,113,0.4)',
+              icon: <svg viewBox="0 0 16 16" fill="none" style={{width:14,height:14,marginBottom:4}}><path d="M8 1L2 4v4c0 3.5 2.5 6.7 6 7.4 3.5-.7 6-3.9 6-7.4V4L8 1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M5.5 8.5l2 2 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0" /><path d="M6 6l4 4M10 6l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg> },
+            { label: 'Warnings', value: stats.warnings, color: '#FBBF24', glow: 'rgba(251,191,36,0.10)',  accent: 'rgba(251,191,36,0.4)',
+              icon: <svg viewBox="0 0 16 16" fill="none" style={{width:14,height:14,marginBottom:4}}><path d="M8 2L1.5 13h13L8 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M8 7v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="8" cy="11.5" r="0.6" fill="currentColor"/></svg> },
+            { label: 'Safe',     value: stats.safe,     color: '#34D399', glow: 'rgba(52,211,153,0.10)',  accent: 'rgba(52,211,153,0.4)',
+              icon: <svg viewBox="0 0 16 16" fill="none" style={{width:14,height:14,marginBottom:4}}><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5.5 8.5l2 2 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
           ].map((s) => (
             <div key={s.label} style={{
               background: `linear-gradient(160deg, ${s.glow} 0%, rgba(15,23,42,0.8) 100%)`,
@@ -192,7 +195,8 @@ function PopupApp() {
               textAlign: 'center',
               boxShadow: `0 2px 16px ${s.glow}`,
             }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: s.color, lineHeight: 1, letterSpacing: '-1px' }}>
+              <div style={{ color: s.color, display: 'flex', justifyContent: 'center' }}>{s.icon}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1, letterSpacing: '-1px' }}>
                 {s.value}
               </div>
               <div style={{ fontSize: 9, color: '#475569', marginTop: 5, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
@@ -215,8 +219,22 @@ function PopupApp() {
           overflow: 'hidden',
         }}>
           {activities.length === 0 ? (
-            <div style={{ padding: '20px', textAlign: 'center', fontSize: 12, color: '#334155' }}>
-              No threats detected
+            <div style={{ padding: '20px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                background: 'rgba(52,211,153,0.1)',
+                border: '1px solid rgba(52,211,153,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <svg viewBox="0 0 16 16" fill="none" style={{width:14,height:14,color:'#34D399'}}>
+                  <path d="M8 1L2 4v4c0 3.5 2.5 6.7 6 7.4 3.5-.7 6-3.9 6-7.4V4L8 1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+                  <path d="M5.5 8.5l2 2 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8' }}>All clear</div>
+                <div style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>No threats detected in this session</div>
+              </div>
             </div>
           ) : (
             activities.map((a, i) => {
@@ -259,8 +277,8 @@ function PopupApp() {
       }}>
         <span style={{ fontSize: 10, color: '#1E293B', fontWeight: 500 }}>v1.0.0</span>
         <button onClick={() => setShowResetConfirm(true)} style={{
-          fontSize: 10, color: '#334155', background: 'none', border: 'none',
-          cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2,
+          fontSize: 10, color: '#475569', background: 'none', border: 'none',
+          cursor: 'pointer', letterSpacing: '0.02em',
         }}>
           Reset Stats
         </button>
