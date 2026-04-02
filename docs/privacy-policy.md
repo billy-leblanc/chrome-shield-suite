@@ -11,7 +11,7 @@ Safety Intercept is committed to protecting your privacy while providing real-ti
 ### 2. Data Storage and Security
 - **No Personal Data Collection:** We do **NOT** store your payment details, credit card numbers, bank account numbers, or personally identifiable information (PII).
 - **Local Storage:** Your transaction history, threat logs, and security stats are stored **locally** on your device using browser storage (`chrome.storage.local`). This data never leaves your machine.
-- **Anonymized Analysis:** Data sent to our AI relay is used only for the immediate assessment and is not stored or used for profile building.
+- **Anonymized Analysis:** Data sent to our AI relay is analyzed immediately. We retain anonymized, non-personal metadata (risk score, fraud category flags, payment platform, and timestamp) to improve detection accuracy and generate aggregate fraud statistics. No memo text, payment amounts, account numbers, or personally identifiable information is ever stored.
 
 ### 3. Data Sharing and Sale
 - **No Third-Party Sharing:** We do **NOT** sell, trade, or share your data with any third parties.
