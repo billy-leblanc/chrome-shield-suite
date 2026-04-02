@@ -144,8 +144,11 @@ export default {
       // Log anonymized analysis data to KV (no memo text — privacy requirement)
       try {
         if (env.SHIELD_LOGS) {
+          const score = result.riskScore;
+          const riskLevel = score >= 80 ? 'critical' : score >= 50 ? 'high' : score >= 20 ? 'medium' : 'low';
           const logEntry = {
             riskScore: result.riskScore,
+            riskLevel,
             flags: result.flags,
             platform: typeof platform === 'string' ? platform : 'unknown',
             timestamp: new Date().toISOString(),
