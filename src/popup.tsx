@@ -161,24 +161,16 @@ function PopupApp() {
               {interceptOn ? 'Scanning all payment activity' : 'Protection is paused'}
             </div>
           </div>
-          {/* Toggle switch */}
-          <div onClick={toggleIntercept} style={{
-            width: 44, height: 26, borderRadius: 99, cursor: 'pointer',
-            background: interceptOn ? '#22C55E' : '#1E293B',
-            border: `1px solid ${interceptOn ? '#22C55E' : 'rgba(255,255,255,0.1)'}`,
-            position: 'relative',
-            transition: 'background 0.25s ease, border-color 0.25s ease',
-            flexShrink: 0,
+          <button onClick={toggleIntercept} style={{
+            padding: '6px 14px', borderRadius: 99, cursor: 'pointer',
+            background: interceptOn ? 'rgba(34,197,94,0.1)' : 'rgba(248,113,113,0.08)',
+            border: `1px solid ${interceptOn ? 'rgba(34,197,94,0.3)' : 'rgba(248,113,113,0.3)'}`,
+            color: interceptOn ? '#22C55E' : '#F87171',
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+            transition: 'all 0.2s ease',
           }}>
-            <div style={{
-              position: 'absolute',
-              top: 3, left: interceptOn ? 21 : 3,
-              width: 18, height: 18, borderRadius: '50%',
-              background: 'white',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
-              transition: 'left 0.25s ease',
-            }} />
-          </div>
+            {interceptOn ? 'On' : 'Off'}
+          </button>
         </div>
       </div>
 
