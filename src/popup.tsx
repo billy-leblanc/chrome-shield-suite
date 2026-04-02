@@ -1,6 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Shield, ShieldAlert, ShieldCheck, Activity, AlertTriangle, CheckCircle, Info, Settings, Trash2, Key, ExternalLink, Zap, Lock, ChevronRight } from 'lucide-react';
+import { 
+  Shield, 
+  ShieldCheck, 
+  ShieldAlert, 
+  Activity, 
+  AlertTriangle, 
+  CheckCircle, 
+  Key, 
+  Settings, 
+  History, 
+  Zap, 
+  Check, 
+  Lock,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Trash2
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
@@ -16,12 +33,12 @@ function StatusPill({ active }: { active: boolean }) {
     <div className={`
       relative flex items-center gap-2 px-3 py-1.5 rounded-full border
       ${active 
-        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" 
-        : "bg-destructive/10 border-destructive/20 text-destructive"}
-      transition-all duration-500 animate-in fade-in zoom-in-95
+        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 glow-emerald/20" 
+        : "bg-rose-500/10 border-rose-500/20 text-rose-400"}
+      transition-all duration-500 ease-in-out shadow-sm
     `}>
-      <div className={`w-2 h-2 rounded-full ${active ? "bg-emerald-400 animate-pulse glow-accent" : "bg-destructive"} `} />
-      <span className="text-[10px] font-black uppercase tracking-widest">
+      <div className={`w-2 h-2 rounded-full ${active ? "bg-emerald-400 animate-pulse" : "bg-rose-400"} `} />
+      <span className="text-[10px] font-black uppercase tracking-widest leading-none">
         {active ? "Protected" : "Disabled"}
       </span>
     </div>
@@ -30,42 +47,41 @@ function StatusPill({ active }: { active: boolean }) {
 
 function StatCard({ label, value, icon: Icon, variant }: { label: string; value: number; icon: any; variant: 'danger' | 'warning' | 'success' | 'info' }) {
   const styles = {
-    danger: "text-destructive bg-destructive/5 hover:bg-destructive/10 border-destructive/10 hover:border-destructive/20 transition-all",
-    warning: "text-amber-500 bg-amber-500/5 hover:bg-amber-500/10 border-amber-500/10 hover:border-amber-500/20 transition-all",
-    success: "text-emerald-500 bg-emerald-500/5 hover:bg-emerald-500/10 border-emerald-500/10 hover:border-emerald-500/20 transition-all",
-    info: "text-cyan-500 bg-cyan-500/5 hover:bg-cyan-500/10 border-cyan-500/10 hover:border-cyan-500/20 transition-all",
+    danger: "text-rose-500 bg-rose-500/5 border-rose-500/10 hover:border-rose-500/30",
+    warning: "text-amber-500 bg-amber-500/5 border-amber-500/10 hover:border-amber-500/30",
+    success: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10 hover:border-emerald-500/30",
+    info: "text-sky-500 bg-sky-500/5 border-sky-500/10 hover:border-sky-500/30",
   };
 
   return (
-    <Card className={`relative overflow-hidden bg-card border shadow-sm ${styles[variant]}`}>
-      <CardContent className="p-4 flex items-center justify-between">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">{label}</span>
-          <span className="text-xl font-black tracking-tighter">{value}</span>
+    <Card className={`group relative overflow-hidden bg-card/40 border backdrop-blur-sm transition-all duration-300 ${styles[variant]}`}>
+      <CardContent className="p-4 flex flex-col justify-between h-full gap-3">
+        <div className="flex items-center justify-between w-full">
+          <Icon className="w-4 h-4 opacity-70 group-hover:scale-110 transition-transform" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-50">{label}</span>
         </div>
-        <Icon className="w-5 h-5 opacity-40" />
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black tracking-tighter tabular-nums">{value}</span>
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-function Modal({ open, onClose, onConfirm, title, message, confirmLabel }: { open: boolean, onClose: () => void, onConfirm: () => void, title: string, message: string, confirmLabel: string }) {
-  if (!open) return null;
+function ActivityItem({ text, time, type }: { text: string; time: string; type: string }) {
+  const isBlocked = type === 'blocked';
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
-      <Card className="mx-4 w-full max-w-[320px] shadow-2xl border-border/50 animate-in zoom-in-95 duration-200">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
-            <ShieldAlert className="w-5 h-5 text-destructive" />
-          </div>
-          <CardTitle className="text-lg font-bold">{title}</CardTitle>
-          <CardDescription className="text-xs leading-relaxed">{message}</CardDescription>
-        </CardHeader>
-        <CardFooter className="flex flex-col gap-2 p-6 pt-2">
-          <Button variant="destructive" className="w-full font-bold" onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</Button>
-          <Button variant="secondary" className="w-full font-semibold" onClick={onClose}>Cancel</Button>
-        </CardFooter>
-      </Card>
+    <div className="relative flex items-center justify-between px-4 py-3 group hover:bg-muted/30 transition-colors border-l-2 border-transparent hover:border-primary/30">
+      <div className="flex items-center gap-3">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isBlocked ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'}`}>
+          {isBlocked ? <ShieldAlert className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="text-[11px] font-bold text-foreground/90 truncate">{text}</span>
+          <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">{time}</span>
+        </div>
+      </div>
+      <ChevronRight className="w-3 h-3 text-muted-foreground/20 group-hover:translate-x-0.5 transition-transform" />
     </div>
   );
 }
@@ -77,11 +93,13 @@ function PopupApp() {
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [view, setView] = useState<"personal" | "business">("personal");
   const [relayToken, setRelayToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
   const [isSavingToken, setIsSavingToken] = useState(false);
 
   const [stats, setStats] = useState({ blocked: 0, warnings: 0, safe: 0 });
   const [activities, setActivities] = useState<Array<{ text: string; time: string; type: string }>>([]);
 
+  // Mock data loader — logic preserved
   useEffect(() => {
     chrome.storage.local.get(["stats", "threatLog", "interceptEnabled", "relay_auth_token"], (result) => {
       if (chrome.runtime.lastError) return;
@@ -115,182 +133,209 @@ function PopupApp() {
   }, []);
 
   return (
-    <div className="w-[380px] min-h-[580px] bg-background text-foreground flex flex-col font-sans select-none overflow-hidden">
-      {/* Header Area */}
-      <header className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-border/40 bg-card/10 backdrop-blur-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="relative">
-            <div className={`absolute -inset-1.5 rounded-xl blur-lg transition-all duration-1000 ${interceptOn ? "bg-primary/20 opacity-100" : "bg-destructive/10 opacity-0"}`} />
-            <div className="relative w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary stroke-[2.5px]" />
+    <div className="w-[380px] min-h-[580px] bg-background text-foreground flex flex-col font-sans select-none overflow-hidden antialiased">
+      {/* Premium Header */}
+      <header className="px-6 pt-7 pb-5 flex items-center justify-between bg-card/20 backdrop-blur-xl border-b border-border/40">
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <div className={`absolute -inset-2 rounded-2xl blur-lg transition-all duration-1000 ${interceptOn ? "bg-emerald-500/20 opacity-100" : "bg-rose-500/10 opacity-0"}`} />
+            <div className={`relative w-11 h-11 rounded-2xl border flex items-center justify-center transition-all duration-500 ${interceptOn ? "bg-primary/10 border-primary/20 text-primary glow-primary" : "bg-muted border-border text-muted-foreground"}`}>
+              <Shield className="w-6 h-6 stroke-[2.5px]" />
             </div>
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-sm font-black uppercase tracking-[0.2em] -mb-0.5">Safety Intercept</h1>
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">AI-Powered Payment Protection</span>
+          <div className="flex flex-col gap-0.5">
+            <h1 className="text-[15px] font-black uppercase tracking-[0.18em] leading-tight">Safety Intercept</h1>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] opacity-60">AI-Powered Payment Protection</span>
           </div>
         </div>
         <StatusPill active={interceptOn} />
       </header>
 
-      {/* Hero Activation Card */}
-      <div className="px-6 py-6">
-        <Card className="relative overflow-hidden border-none shadow-none bg-secondary/50 group h-[120px] flex items-center justify-center">
-          <div className={`absolute inset-0 transition-all duration-700 ${interceptOn ? "bg-gradient-to-br from-primary/10 via-background to-transparent" : "bg-gradient-to-br from-destructive/5 to-transparent"}`} />
-          <Button 
-            variant="ghost" 
-            className="relative z-10 w-full h-full p-8 flex flex-col gap-3 hover:bg-transparent active:scale-[0.98] transition-transform"
-            onClick={toggleIntercept}
-          >
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${interceptOn ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "bg-destructive text-destructive-foreground shadow-lg shadow-destructive/20 scale-90"}`}>
-              {interceptOn ? <ShieldCheck className="w-7 h-7" /> : <ShieldAlert className="w-7 h-7" />}
-            </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[11px] font-black uppercase tracking-[0.15em]">{interceptOn ? "Shield is Monitoring" : "Protection Disabled"}</span>
-              <span className="text-[9px] font-medium opacity-60 uppercase tracking-widest">{interceptOn ? "Tap to Deactivate" : "Tap to Arm Enclave"}</span>
-            </div>
-          </Button>
+      {/* Hero Protection Card */}
+      <div className="px-6 pt-6">
+        <Card className="relative overflow-hidden group border-none shadow-none bg-accent/5">
+          <div className={`absolute inset-0 transition-opacity duration-1000 ${interceptOn ? "bg-gradient-to-br from-primary/15 via-background to-background" : "bg-gradient-to-br from-rose-500/5 to-background"}`} />
+          <CardContent className="relative z-10 p-0 flex flex-col items-center justify-center h-[140px]">
+            <Button 
+              variant="ghost" 
+              className="w-full h-full p-8 flex flex-col gap-4 hover:bg-transparent transition-all hover:scale-[1.02] active:scale-[0.98]"
+              onClick={toggleIntercept}
+            >
+              <div className={`w-14 h-14 rounded-3xl flex items-center justify-center transition-all duration-700 ${interceptOn ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-primary/10" : "bg-destructive text-destructive-foreground shadow-xl shadow-rose-500/20 scale-90 ring-4 ring-rose-500/5"}`}>
+                <Zap className={`w-7 h-7 ${interceptOn ? "fill-current" : ""}`} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[12px] font-black uppercase tracking-[0.15em]">{interceptOn ? "Dismantle Shield" : "Enable Protection"}</span>
+                <span className="text-[9px] font-bold opacity-40 uppercase tracking-widest">{interceptOn ? "Real-time analysis active" : "Tap to activate security node"}</span>
+              </div>
+            </Button>
+          </CardContent>
         </Card>
       </div>
 
-      {/* Main Content Area */}
-      <div className="px-6 flex-1 flex flex-col gap-6 overflow-y-auto pb-6">
-        {/* Analytics Section */}
+      {/* Main Dashboard */}
+      <div className="px-6 pt-6 flex-1 flex flex-col gap-7 overflow-y-auto pb-4 custom-scrollbar">
+        {/* Statistics Grid */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70 flex items-center gap-2">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-70 flex items-center gap-2">
               <Activity className="w-3 h-3" />
-              Security Statistics
+              Security Metrics
             </h2>
-            <Tabs value={view} onValueChange={(v: any) => setView(v)} className="w-[140px]">
-              <TabsList className="grid w-full grid-cols-2 h-7 p-0.5 bg-secondary border">
-                <TabsTrigger value="personal" className="text-[9px] font-bold uppercase tracking-tight data-[state=active]:bg-card data-[state=active]:shadow-none">Personal</TabsTrigger>
-                <TabsTrigger value="business" className="text-[9px] font-bold uppercase tracking-tight data-[state=active]:bg-card data-[state=active]:shadow-none">Business</TabsTrigger>
+            <Tabs value={view} onValueChange={(v: any) => setView(v)} className="h-7 w-[150px]">
+              <TabsList className="grid w-full grid-cols-2 p-0.5 h-full bg-muted/50 border">
+                <TabsTrigger value="personal" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Account</TabsTrigger>
+                <TabsTrigger value="business" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Business</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
 
-          <div className={`grid ${view === "business" ? "grid-cols-2 gap-3" : "grid-cols-3 gap-2.5"}`}>
+          <div className={`grid ${view === "business" ? "grid-cols-2 gap-3" : "grid-cols-3 gap-3"}`}>
             <StatCard label="Blocked" value={stats.blocked} icon={ShieldAlert} variant="danger" />
-            <StatCard label="Warnings" value={stats.warnings} icon={AlertTriangle} variant="warning" />
-            <StatCard label="Safe" value={stats.safe} icon={CheckCircle} variant="success" />
-            {view === "business" && <StatCard label="Total" value={stats.blocked + stats.warnings + stats.safe} icon={Activity} variant="info" />}
+            <StatCard label="Alerts" value={stats.warnings} icon={AlertTriangle} variant="warning" />
+            <StatCard label="Secure" value={stats.safe} icon={ShieldCheck} variant="success" />
+            {view === "business" && (
+              <StatCard label="Analyzed" value={stats.blocked + stats.warnings + stats.safe} icon={Activity} variant="info" />
+            )}
           </div>
         </section>
 
-        {/* Timeline Section */}
+        {/* Audit Log / Timeline */}
         <section className="flex-1">
-          <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-70 mb-4 flex items-center gap-2">
-            <Info className="w-3 h-3" />
-            Threat Timeline
-          </h2>
-          <Card className="bg-card/30 border border-border/60">
-            <CardContent className="p-0 divide-y divide-border/20">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-70 flex items-center gap-2">
+              <History className="w-3 h-3" />
+              Threat Timeline
+            </h2>
+          </div>
+          <Card className="bg-card/20 border-border/60 overflow-hidden">
+            <div className="divide-y divide-border/20">
               {activities.length === 0 ? (
-                <div className="py-12 flex flex-col items-center justify-center text-center px-4">
-                  <ShieldCheck className="w-10 h-10 text-muted-foreground/10 mb-3" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-20 italic">Clean Session Protocol Active</p>
+                <div className="py-14 flex flex-col items-center justify-center text-center px-6">
+                  <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                    <CheckCircle className="w-6 h-6 text-muted-foreground/20" />
+                  </div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/30">Protocol Secure • No Threats</p>
                 </div>
               ) : (
                 activities.map((item, i) => (
-                  <div key={i} className="px-4 py-3 flex items-center justify-between group hover:bg-primary/[0.02] transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-1.5 h-6 rounded-full ${item.type === 'blocked' ? 'bg-destructive/40' : 'bg-amber-500/40'}`} />
-                      <div className="flex flex-col">
-                        <span className="text-[11px] font-bold tracking-tight">{item.text}</span>
-                        <span className="text-[9px] font-medium text-muted-foreground opacity-60 uppercase">{item.time}</span>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-3 h-3 text-muted-foreground/20 group-hover:text-primary/40 transition-colors" />
-                  </div>
+                  <ActivityItem key={i} {...item} />
                 ))
               )}
-            </CardContent>
+            </div>
           </Card>
         </section>
 
-        {/* AI Analysis Enclave */}
+        {/* AI Enclave Status */}
         <section className="mt-2">
-          <Card className="bg-card border-dashed border-border shadow-none">
-            <CardHeader className="p-4 py-3 flex flex-row items-center justify-between">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] font-black uppercase tracking-widest tracking-[0.1em]">AI Analysis</span>
-                <span className="text-[9px] font-bold text-muted-foreground flex items-center gap-1">
-                  <div className={`w-1.5 h-1.5 rounded-full ${relayToken ? "bg-cyan-400 glow-cyan animate-pulse" : "bg-muted"}`} />
-                  {relayToken ? "Enclave Secure" : "Awaiting Credentials"}
-                </span>
+          <Card className="bg-muted/30 border-dashed border-border/80">
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Key className="w-3 h-3 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.1em]">AI Analysis</span>
+                </div>
+                <div className="flex items-center gap-1.5 leading-none">
+                  <div className={`w-1.5 h-1.5 rounded-full ${relayToken ? "bg-sky-400 glow-sky" : "bg-muted-foreground/30"}`} />
+                  <span className={`text-[10px] font-bold uppercase tracking-tighter ${relayToken ? "text-sky-400/80" : "text-muted-foreground/50"}`}>
+                    {relayToken ? "Connected" : "Disconnected"}
+                  </span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                <input 
-                  type="password"
-                  placeholder="Secret Key"
-                  value={relayToken}
-                  onChange={(e) => setRelayToken(e.target.value)}
-                  className="bg-secondary/50 border border-border/50 rounded-lg px-3 py-1.5 text-[9px] font-mono focus:outline-none focus:ring-1 focus:ring-primary/40 w-[100px] transition-all"
-                />
+                <div className="relative group">
+                  <input 
+                    type={showToken ? "text" : "password"}
+                    placeholder="Enclave Secret"
+                    value={relayToken}
+                    onChange={(e) => setRelayToken(e.target.value)}
+                    className="bg-background/80 border border-border/50 rounded-lg px-3 py-1.5 text-[10px] font-mono focus:outline-none focus:ring-1 focus:ring-primary/40 w-[120px] transition-all group-hover:border-border"
+                  />
+                  <button onClick={() => setShowToken(!showToken)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground">
+                    {showToken ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                  </button>
+                </div>
                 <Button 
                   size="icon" 
-                  variant="ghost" 
-                  className={`w-7 h-7 rounded-lg ${isSavingToken ? "bg-emerald-500/10 text-emerald-400" : "bg-primary/10 text-primary-foreground/60"}`}
+                  variant="secondary" 
+                  className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${isSavingToken ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-background hover:bg-muted'}`}
                   onClick={handleSaveToken}
                 >
-                  <Key className="w-3.5 h-3.5" />
+                  <Zap className={`w-3.5 h-3.5 ${isSavingToken ? 'fill-emerald-400' : ''}`} />
                 </Button>
               </div>
-            </CardHeader>
+            </div>
           </Card>
         </section>
       </div>
 
-      {/* Footer / Branding Area */}
-      <footer className="px-6 py-5 border-t border-border/40 bg-card/20 flex items-center justify-between">
+      {/* Footer Branding */}
+      <footer className="px-6 py-5 border-t border-border/40 bg-card/10 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-foreground/5 border flex items-center justify-center">
-            <Lock className="w-3 h-3 opacity-30" />
+          <div className="w-6 h-6 rounded-md bg-muted/40 flex items-center justify-center border border-border/20">
+            <Lock className="w-3 h-3 text-muted-foreground/40" />
           </div>
-          <span className="text-[9px] font-black uppercase tracking-widest opacity-20">v1.0.0 Enclave</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50 italic">v1.0.0 Enclave</span>
         </div>
         <div className="flex items-center gap-4">
           <button 
             onClick={() => setResetModalOpen(true)}
-            className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/30 hover:text-destructive/50 transition-colors"
+            className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 hover:text-rose-500/50 transition-colors"
           >
             Purge History
           </button>
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-secondary/80 border text-[8px] font-black uppercase tracking-tighter text-emerald-500 border-emerald-500/20">
-            <CheckCircle className="w-2.5 h-2.5" />
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-500/5 border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-emerald-500 shadow-sm shadow-emerald-500/5">
+            <CheckCircle className="w-3 h-3" />
             Secure Node
           </div>
         </div>
       </footer>
 
-      {/* Modals */}
-      <Modal 
-        open={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        onConfirm={() => chrome.storage.local.set({ interceptEnabled: false }, () => setInterceptOn(false))}
-        title="Dismantle Shield?"
-        message="Deactivating the security enclave stops all real-time fraud analysis. Your payment routes will be unmonitored."
-        confirmLabel="Deactivate"
-      />
+      {/* Confirmation Overlays */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
+          <Card className="mx-4 w-full max-w-[310px] shadow-2xl border-border animate-in zoom-in-95 duration-200">
+            <CardHeader className="text-center pb-3">
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
+                <ShieldAlert className="w-6 h-6 text-rose-500" />
+              </div>
+              <CardTitle className="text-lg font-black tracking-tight">Dismantle Shield?</CardTitle>
+              <CardDescription className="text-[11px] leading-relaxed font-medium">Deactivating the security enclave will stop all real-time fraud analysis. Your payments will be unmonitored.</CardDescription>
+            </CardHeader>
+            <CardFooter className="flex flex-col gap-2 p-6 pt-0">
+              <Button variant="destructive" className="w-full font-black uppercase tracking-widest text-[11px] h-10 shadow-lg shadow-rose-500/20" onClick={() => { chrome.storage.local.set({ interceptEnabled: false }, () => setInterceptOn(false)); setModalOpen(false); }}>Deactivate</Button>
+              <Button variant="secondary" className="w-full font-bold uppercase tracking-widest text-[11px] h-10" onClick={() => setModalOpen(false)}>Maintain Protection</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
 
-      <Modal 
-        open={resetModalOpen} 
-        onClose={() => setResetModalOpen(false)} 
-        onConfirm={handleResetConfirm}
-        title="Purge Archives"
-        message="This will permanently delete all session threat data and reset node statistics. This action is irreversible."
-        confirmLabel="Purge Everything"
-      />
+      {resetModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
+          <Card className="mx-4 w-full max-w-[310px] shadow-2xl border-border animate-in zoom-in-95 duration-200">
+            <CardHeader className="text-center pb-3">
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
+                <Trash2 className="w-6 h-6 text-rose-500" />
+              </div>
+              <CardTitle className="text-lg font-black tracking-tight tracking-[-0.02em]">Purge node history?</CardTitle>
+              <CardDescription className="text-[11px] leading-relaxed font-medium">This will permanently delete all session threat data and reset node statistics. This action is irreversible.</CardDescription>
+            </CardHeader>
+            <CardFooter className="flex flex-col gap-2 p-6 pt-0">
+              <Button variant="destructive" className="w-full font-black uppercase tracking-widest text-[11px] h-10 shadow-lg shadow-rose-500/20" onClick={() => { handleResetConfirm(); setResetModalOpen(false); }}>Purge Archives</Button>
+              <Button variant="secondary" className="w-full font-bold uppercase tracking-widest text-[11px] h-10" onClick={() => setResetModalOpen(false)}>Cancel</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
 
 // Global initialization
 const init = () => {
-  const root = document.getElementById("root");
-  if (root) {
-    createRoot(root).render(<TooltipProvider><PopupApp /></TooltipProvider>);
+  const rootElement = document.getElementById("root");
+  if (rootElement) {
+    createRoot(rootElement).render(<TooltipProvider><PopupApp /></TooltipProvider>);
   }
 };
 
