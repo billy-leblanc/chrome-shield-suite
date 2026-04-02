@@ -145,21 +145,41 @@ function PopupApp() {
         </div>
       </div>
 
-      {/* Toggle Button */}
+      {/* Toggle Row */}
       <div style={{ padding: '16px 22px 0' }}>
-        <button onClick={toggleIntercept} style={{
-          width: '100%', padding: '11px 16px', borderRadius: 10,
-          border: `1px solid ${interceptOn ? 'rgba(56,189,248,0.15)' : 'rgba(248,113,113,0.25)'}`,
-          background: interceptOn
-            ? 'linear-gradient(135deg, rgba(56,189,248,0.06) 0%, rgba(56,189,248,0.02) 100%)'
-            : 'rgba(248,113,113,0.06)',
-          color: interceptOn ? '#38BDF8' : '#F87171',
-          fontSize: 13, fontWeight: 600, cursor: 'pointer',
-          transition: 'all 0.2s ease',
-          letterSpacing: '0.01em',
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '13px 16px', borderRadius: 12,
+          background: 'rgba(255,255,255,0.03)',
+          border: '1px solid rgba(255,255,255,0.07)',
         }}>
-          {interceptOn ? 'Disable Shield' : 'Enable Shield'}
-        </button>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#CBD5E1', letterSpacing: '-0.1px' }}>
+              Real-time Protection
+            </div>
+            <div style={{ fontSize: 11, color: '#334155', marginTop: 2 }}>
+              {interceptOn ? 'Scanning all payment activity' : 'Protection is paused'}
+            </div>
+          </div>
+          {/* Toggle switch */}
+          <div onClick={toggleIntercept} style={{
+            width: 44, height: 26, borderRadius: 99, cursor: 'pointer',
+            background: interceptOn ? '#22C55E' : '#1E293B',
+            border: `1px solid ${interceptOn ? '#22C55E' : 'rgba(255,255,255,0.1)'}`,
+            position: 'relative',
+            transition: 'background 0.25s ease, border-color 0.25s ease',
+            flexShrink: 0,
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 3, left: interceptOn ? 21 : 3,
+              width: 18, height: 18, borderRadius: '50%',
+              background: 'white',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
+              transition: 'left 0.25s ease',
+            }} />
+          </div>
+        </div>
       </div>
 
       {/* Stats */}

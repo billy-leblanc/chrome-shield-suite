@@ -9,25 +9,43 @@
   <canvas id="c16"  width="16"  height="16"  style="border-radius:3px"></canvas>
   <div id="links" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"></div>
   <script>
-    const svgUrl = 'icon-source.svg';
+    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="shieldFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#1a6fa8" stop-opacity="0.6"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M64 8 L116 30 Q118 44 116 66 Q110 96 64 120 Q18 96 12 66 Q10 44 12 30 Z"
+    fill="url(#shieldFill)" stroke="#38BDF8" stroke-width="4" stroke-linejoin="round" filter="url(#glow)"/>
+  <polyline points="42,66 57,82 86,50"
+    fill="none" stroke="white" stroke-width="7"
+    stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
     const sizes = [128, 48, 32, 16];
     const img = new Image();
     img.onload = () => {
       sizes.forEach(sz => {
         const canvas = document.getElementById('c' + sz);
         const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, sz, sz);
         ctx.drawImage(img, 0, 0, sz, sz);
-
         const a = document.createElement('a');
         a.href = canvas.toDataURL('image/png');
         a.download = sz === 128 ? 'icon.png' : `icon${sz}.png`;
-        a.textContent = `Download icon${sz === 128 ? '' : sz}.png`;
-        a.style.cssText = 'background:#38BDF8;color:#0B1120;padding:8px 16px;border-radius:6px;font-weight:700;text-decoration:none';
+        a.textContent = `⬇ Download icon${sz === 128 ? '' : sz}.png`;
+        a.style.cssText = 'background:#38BDF8;color:#0B1120;padding:10px 18px;border-radius:8px;font-weight:700;text-decoration:none;font-size:14px';
         document.getElementById('links').appendChild(a);
       });
+      URL.revokeObjectURL(url);
     };
-    img.src = svgUrl;
+    img.src = url;
   </script>
 </body>
 </html>
