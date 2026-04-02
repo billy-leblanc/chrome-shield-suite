@@ -147,13 +147,29 @@ const Interceptor = () => {
             if (report.riskLevel === 'high' || report.riskLevel === 'critical') {
               setRiskReport(report);
               setShowModal(true);
-              
-              // Analytics: Intercepted
               chrome.runtime.sendMessage({
                 type: 'LOG_EVENT',
                 event: 'intercepted',
                 platform: config.name
               });
+            } else {
+              // Safe — let the click through
+              const btn = interceptedButtonRef.current;
+              interceptedButtonRef.current = null;
+              if (btn && handleInterceptRef.current) {
+                document.removeEventListener("click", handleInterceptRef.current, true);
+                btn.click();
+                document.addEventListener("click", handleInterceptRef.current, { capture: true });
+              }
+            }
+          } else {
+            // No response — let through to avoid blocking the user
+            const btn = interceptedButtonRef.current;
+            interceptedButtonRef.current = null;
+            if (btn && handleInterceptRef.current) {
+              document.removeEventListener("click", handleInterceptRef.current, true);
+              btn.click();
+              document.addEventListener("click", handleInterceptRef.current, { capture: true });
             }
           }
         }
