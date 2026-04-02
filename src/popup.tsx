@@ -67,8 +67,8 @@ function PopupApp() {
             <Shield style={{ width: 20, height: 20, color: '#22D3EE' }} />
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: '#F1F5F9', letterSpacing: '-0.3px' }}>Safety Intercept</div>
-            <div style={{ fontSize: 11, color: '#64748B' }}>AI-Powered Payment Protection</div>
+            <div style={{ fontWeight: 800, fontSize: 16, color: '#F1F5F9', letterSpacing: '-0.5px' }}>Safety Intercept</div>
+            <div style={{ fontSize: 11, color: '#475569', fontWeight: 400, letterSpacing: '0.01em' }}>AI-Powered Payment Protection</div>
           </div>
         </div>
         <div style={{
