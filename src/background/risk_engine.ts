@@ -15,6 +15,7 @@ export type { RiskAnalysis } from '../core/fraud_detector';
 
 const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
 const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
+const RELAY_AUTH_TOKEN = 'shieldrelay2026abc';
 
 /**
  * Reads the relay auth token from chrome.storage then calls callRelayAPI.
@@ -22,18 +23,7 @@ const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
  */
 async function analyzeMemoWithLLM(memo: string, amount?: number, platform?: string) {
   if (!memo || !memo.trim()) return null;
-
-  let relayAuthToken: string | undefined;
-  try {
-    const stored = await chrome.storage.local.get('relay_auth_token');
-    relayAuthToken = stored.relay_auth_token as string | undefined;
-  } catch {
-    return null;
-  }
-
-  if (!relayAuthToken) return null;
-
-  return callRelayAPI(memo, relayAuthToken, RELAY_URL, 5000, amount, platform);
+  return callRelayAPI(memo, RELAY_AUTH_TOKEN, RELAY_URL, 5000, amount, platform);
 }
 
 /**
@@ -41,16 +31,10 @@ async function analyzeMemoWithLLM(memo: string, amount?: number, platform?: stri
  */
 async function shipEventToRelay(eventData: { event: string; platform: string; timestamp: string }) {
   try {
-    const stored = await chrome.storage.local.get('relay_auth_token');
-    if (!stored.relay_auth_token) return;
-
     await fetch(EVENT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...eventData,
-        auth_token: stored.relay_auth_token
-      })
+      body: JSON.stringify({ ...eventData, auth_token: RELAY_AUTH_TOKEN })
     });
   } catch (err) {
     console.error('[Shield] Event sync failed', err);

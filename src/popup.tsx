@@ -1,346 +1,159 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
-import { 
-  Shield, 
-  ShieldCheck, 
-  ShieldAlert, 
-  Activity, 
-  AlertTriangle, 
-  CheckCircle, 
-  Key, 
-  Settings, 
-  History, 
-  Zap, 
-  Check, 
-  Lock,
-  ChevronRight,
-  Eye,
-  EyeOff,
-  Trash2
-} from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+const { Shield, AlertTriangle, CheckCircle, XCircle } = {
+  Shield: (p: any) => (
+    <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  ),
+  AlertTriangle: (p: any) => (
+    <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  CheckCircle: (p: any) => (
+    <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 11.08V12a10 10 0 11-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  ),
+  XCircle: (p: any) => (
+    <svg {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+    </svg>
+  ),
+};
 
-/* ─── Premium Components ─── */
-
-function StatusPill({ active }: { active: boolean }) {
-  return (
-    <div className={`
-      relative flex items-center gap-2 px-3 py-1.5 rounded-full border
-      ${active 
-        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 glow-emerald/20" 
-        : "bg-rose-500/10 border-rose-500/20 text-rose-400"}
-      transition-all duration-500 ease-in-out shadow-sm
-    `}>
-      <div className={`w-2 h-2 rounded-full ${active ? "bg-emerald-400 animate-pulse" : "bg-rose-400"} `} />
-      <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-        {active ? "Protected" : "Disabled"}
-      </span>
-    </div>
-  );
-}
-
-function StatCard({ label, value, icon: Icon, variant }: { label: string; value: number; icon: any; variant: 'danger' | 'warning' | 'success' | 'info' }) {
-  const styles = {
-    danger: "text-rose-500 bg-rose-500/5 border-rose-500/10 hover:border-rose-500/30",
-    warning: "text-amber-500 bg-amber-500/5 border-amber-500/10 hover:border-amber-500/30",
-    success: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10 hover:border-emerald-500/30",
-    info: "text-sky-500 bg-sky-500/5 border-sky-500/10 hover:border-sky-500/30",
-  };
-
-  return (
-    <Card className={`group relative overflow-hidden bg-card/40 border backdrop-blur-sm transition-all duration-300 ${styles[variant]}`}>
-      <CardContent className="p-4 flex flex-col justify-between h-full gap-3">
-        <div className="flex items-center justify-between w-full">
-          <Icon className="w-4 h-4 opacity-70 group-hover:scale-110 transition-transform" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-50">{label}</span>
-        </div>
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-black tracking-tighter tabular-nums">{value}</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ActivityItem({ text, time, type }: { text: string; time: string; type: string }) {
-  const isBlocked = type === 'blocked';
-  return (
-    <div className="relative flex items-center justify-between px-4 py-3 group hover:bg-muted/30 transition-colors border-l-2 border-transparent hover:border-primary/30">
-      <div className="flex items-center gap-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isBlocked ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'}`}>
-          {isBlocked ? <ShieldAlert className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
-        </div>
-        <div className="flex flex-col min-w-0">
-          <span className="text-[11px] font-bold text-foreground/90 truncate">{text}</span>
-          <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">{time}</span>
-        </div>
-      </div>
-      <ChevronRight className="w-3 h-3 text-muted-foreground/20 group-hover:translate-x-0.5 transition-transform" />
-    </div>
-  );
-}
-
-/* ─── Main Popup App ─── */
 function PopupApp() {
   const [interceptOn, setInterceptOn] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [resetModalOpen, setResetModalOpen] = useState(false);
-  const [view, setView] = useState<"personal" | "business">("personal");
-  const [relayToken, setRelayToken] = useState("");
-  const [showToken, setShowToken] = useState(false);
-  const [isSavingToken, setIsSavingToken] = useState(false);
-
   const [stats, setStats] = useState({ blocked: 0, warnings: 0, safe: 0 });
   const [activities, setActivities] = useState<Array<{ text: string; time: string; type: string }>>([]);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // Mock data loader — logic preserved
   useEffect(() => {
-    chrome.storage.local.get(["stats", "threatLog", "interceptEnabled", "relay_auth_token"], (result) => {
+    chrome.storage.local.get(['stats', 'threatLog', 'interceptEnabled'], (result) => {
       if (chrome.runtime.lastError) return;
-      if (result.stats) setStats(result.stats);
-      if (Array.isArray(result.threatLog)) setActivities(result.threatLog.slice(0, 5));
-      if (result.interceptEnabled !== undefined) setInterceptOn(result.interceptEnabled);
-      if (result.relay_auth_token) setRelayToken(result.relay_auth_token);
+      if (result.stats) setStats({
+        blocked: result.stats.blocked ?? 0,
+        warnings: result.stats.warnings ?? 0,
+        safe: result.stats.safe ?? 0,
+      });
+      if (Array.isArray(result.threatLog)) setActivities(result.threatLog.slice(0, 4));
+      if (typeof result.interceptEnabled === 'boolean') setInterceptOn(result.interceptEnabled);
     });
   }, []);
 
   const toggleIntercept = useCallback(() => {
-    if (interceptOn) {
-      setModalOpen(true);
-    } else {
-      chrome.storage.local.set({ interceptEnabled: true }, () => setInterceptOn(true));
-    }
+    const next = !interceptOn;
+    setInterceptOn(next);
+    chrome.storage.local.set({ interceptEnabled: next });
   }, [interceptOn]);
 
-  const handleSaveToken = () => {
-    setIsSavingToken(true);
-    chrome.storage.local.set({ relay_auth_token: relayToken }, () => {
-      setTimeout(() => setIsSavingToken(false), 800);
-    });
-  };
-
-  const handleResetConfirm = useCallback(() => {
-    chrome.storage.local.set({ stats: { blocked: 0, warnings: 0, safe: 0 }, threatLog: [] }, () => {
+  const handleReset = useCallback(() => {
+    chrome.storage.local.remove(['stats', 'threatLog'], () => {
       setStats({ blocked: 0, warnings: 0, safe: 0 });
       setActivities([]);
+      setShowResetConfirm(false);
     });
   }, []);
 
   return (
-    <div className="w-[380px] min-h-[580px] bg-background text-foreground flex flex-col font-sans select-none overflow-hidden antialiased">
-      {/* Premium Header */}
-      <header className="px-6 pt-7 pb-5 flex items-center justify-between bg-card/20 backdrop-blur-xl border-b border-border/40">
-        <div className="flex items-center gap-4">
-          <div className="relative group">
-            <div className={`absolute -inset-2 rounded-2xl blur-lg transition-all duration-1000 ${interceptOn ? "bg-emerald-500/20 opacity-100" : "bg-rose-500/10 opacity-0"}`} />
-            <div className={`relative w-11 h-11 rounded-2xl border flex items-center justify-center transition-all duration-500 ${interceptOn ? "bg-primary/10 border-primary/20 text-primary glow-primary" : "bg-muted border-border text-muted-foreground"}`}>
-              <Shield className="w-6 h-6 stroke-[2.5px]" />
-            </div>
+    <div style={{ width: 380, minHeight: 500, background: '#0B1120', color: '#F1F5F9', fontFamily: 'system-ui, -apple-system, sans-serif', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Header */}
+      <div style={{ padding: '20px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #1E293B' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#0E7490', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Shield style={{ width: 20, height: 20, color: '#22D3EE' }} />
           </div>
-          <div className="flex flex-col gap-0.5">
-            <h1 className="text-[15px] font-black uppercase tracking-[0.18em] leading-tight">Safety Intercept</h1>
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] opacity-60">AI-Powered Payment Protection</span>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: '#F1F5F9', letterSpacing: '-0.3px' }}>Safety Intercept</div>
+            <div style={{ fontSize: 11, color: '#64748B' }}>AI-Powered Payment Protection</div>
           </div>
         </div>
-        <StatusPill active={interceptOn} />
-      </header>
-
-      {/* Hero Protection Card */}
-      <div className="px-6 pt-6">
-        <Card className="relative overflow-hidden group border-none shadow-none bg-accent/5">
-          <div className={`absolute inset-0 transition-opacity duration-1000 ${interceptOn ? "bg-gradient-to-br from-primary/15 via-background to-background" : "bg-gradient-to-br from-rose-500/5 to-background"}`} />
-          <CardContent className="relative z-10 p-0 flex flex-col items-center justify-center h-[140px]">
-            <Button 
-              variant="ghost" 
-              className="w-full h-full p-8 flex flex-col gap-4 hover:bg-transparent transition-all hover:scale-[1.02] active:scale-[0.98]"
-              onClick={toggleIntercept}
-            >
-              <div className={`w-14 h-14 rounded-3xl flex items-center justify-center transition-all duration-700 ${interceptOn ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-primary/10" : "bg-destructive text-destructive-foreground shadow-xl shadow-rose-500/20 scale-90 ring-4 ring-rose-500/5"}`}>
-                <Zap className={`w-7 h-7 ${interceptOn ? "fill-current" : ""}`} />
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-[12px] font-black uppercase tracking-[0.15em]">{interceptOn ? "Disable Shield" : "Enable Protection"}</span>
-                <span className="text-[9px] font-bold opacity-40 uppercase tracking-widest">{interceptOn ? "Real-time analysis active" : "Tap to activate security node"}</span>
-              </div>
-            </Button>
-          </CardContent>
-        </Card>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 99,
+          background: interceptOn ? 'rgba(34,197,94,0.1)' : 'rgba(248,113,113,0.1)',
+          border: `1px solid ${interceptOn ? 'rgba(34,197,94,0.3)' : 'rgba(248,113,113,0.3)'}`,
+        }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: interceptOn ? '#22C55E' : '#F87171', animation: interceptOn ? 'pulse 2s infinite' : 'none' }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: interceptOn ? '#22C55E' : '#F87171', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            {interceptOn ? 'Active' : 'Disabled'}
+          </span>
+        </div>
       </div>
 
-      {/* Main Dashboard */}
-      <div className="px-6 pt-6 flex-1 flex flex-col gap-7 overflow-y-auto pb-4 custom-scrollbar">
-        {/* Statistics Grid */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-70 flex items-center gap-2">
-              <Activity className="w-3 h-3" />
-              Security Metrics
-            </h2>
-            <Tabs value={view} onValueChange={(v: any) => setView(v)} className="h-7 w-[150px]">
-              <TabsList className="grid w-full grid-cols-2 p-0.5 h-full bg-muted/50 border">
-                <TabsTrigger value="personal" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Personal</TabsTrigger>
-                <TabsTrigger value="business" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Business</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          <div className={`grid ${view === "business" ? "grid-cols-2 gap-3" : "grid-cols-3 gap-3"}`}>
-            <StatCard label="Blocked" value={stats.blocked} icon={ShieldAlert} variant="danger" />
-            <StatCard label="Alerts" value={stats.warnings} icon={AlertTriangle} variant="warning" />
-            <StatCard label="Secure" value={stats.safe} icon={ShieldCheck} variant="success" />
-            {view === "business" && (
-              <StatCard label="Analyzed" value={stats.blocked + stats.warnings + stats.safe} icon={Activity} variant="info" />
-            )}
-          </div>
-        </section>
-
-        {/* Audit Log / Timeline */}
-        <section className="flex-1">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-70 flex items-center gap-2">
-              <History className="w-3 h-3" />
-              Threat Timeline
-            </h2>
-          </div>
-          <Card className="bg-card/20 border-border/60 overflow-hidden">
-            <div className="divide-y divide-border/20">
-              {activities.length === 0 ? (
-                <div className="py-14 flex flex-col items-center justify-center text-center px-6">
-                  <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                    <CheckCircle className="w-6 h-6 text-muted-foreground/20" />
-                  </div>
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/30">No threats detected</p>
-                </div>
-              ) : (
-                activities.map((item, i) => (
-                  <ActivityItem key={i} {...item} />
-                ))
-              )}
-            </div>
-          </Card>
-        </section>
-
-        {/* AI Enclave Status */}
-        <section className="mt-2">
-          <Card className="bg-muted/30 border-dashed border-border/80">
-            <div className="p-4 flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <Key className="w-3 h-3 text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.1em]">AI Analysis</span>
-                </div>
-                <div className="flex items-center gap-1.5 leading-none">
-                  <div className={`w-1.5 h-1.5 rounded-full ${relayToken ? "bg-sky-400 glow-sky" : "bg-muted-foreground/30"}`} />
-                  <span className={`text-[10px] font-bold uppercase tracking-tighter ${relayToken ? "text-sky-400/80" : "text-muted-foreground/50"}`}>
-                    {relayToken ? "Connected" : "Disconnected"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="relative group">
-                  <input 
-                    type={showToken ? "text" : "password"}
-                    placeholder="Paste your relay token..."
-                    value={relayToken}
-                    onChange={(e) => setRelayToken(e.target.value)}
-                    className="bg-background/80 border border-border/50 rounded-lg px-3 py-1.5 text-[10px] font-mono focus:outline-none focus:ring-1 focus:ring-primary/40 w-[120px] transition-all group-hover:border-border"
-                  />
-                  <button onClick={() => setShowToken(!showToken)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground">
-                    {showToken ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                  </button>
-                </div>
-                <Button 
-                  size="icon" 
-                  variant="secondary" 
-                  className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${isSavingToken ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-background hover:bg-muted'}`}
-                  onClick={handleSaveToken}
-                >
-                  <Zap className={`w-3.5 h-3.5 ${isSavingToken ? 'fill-emerald-400' : ''}`} />
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </section>
+      {/* Toggle Button */}
+      <div style={{ padding: '12px 20px 0' }}>
+        <button onClick={toggleIntercept} style={{
+          width: '100%', padding: '10px', borderRadius: 10, border: `1px solid ${interceptOn ? '#1E3A5F' : 'rgba(248,113,113,0.3)'}`,
+          background: interceptOn ? '#0F172A' : 'rgba(248,113,113,0.08)', color: interceptOn ? '#22D3EE' : '#F87171',
+          fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+        }}>
+          {interceptOn ? 'Disable Shield' : '⚠ Enable Shield'}
+        </button>
       </div>
 
-      {/* Footer Branding */}
-      <footer className="px-6 py-5 border-t border-border/40 bg-card/10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-muted/40 flex items-center justify-center border border-border/20">
-            <Lock className="w-3 h-3 text-muted-foreground/40" />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50 italic">Safety Intercept v1.0.0</span>
+      {/* Stats */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Protection Stats</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+          {[
+            { label: 'Blocked', value: stats.blocked, color: '#F87171', border: '#7F1D1D' },
+            { label: 'Warnings', value: stats.warnings, color: '#FBBF24', border: '#78350F' },
+            { label: 'Safe', value: stats.safe, color: '#34D399', border: '#064E3B' },
+          ].map((s) => (
+            <div key={s.label} style={{ background: '#0F172A', borderRadius: 10, padding: '12px 10px', borderLeft: `3px solid ${s.border}`, textAlign: 'center' }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 10, color: '#64748B', marginTop: 4, fontWeight: 500 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setResetModalOpen(true)}
-            className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 hover:text-rose-500/50 transition-colors"
-          >
-            Reset Stats
-          </button>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-500/5 border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-emerald-500 shadow-sm shadow-emerald-500/5">
-            <CheckCircle className="w-3 h-3" />
-            Safety Intercept
-          </div>
-        </div>
-      </footer>
+      </div>
 
-      {/* Confirmation Overlays */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
-          <Card className="mx-4 w-full max-w-[310px] shadow-2xl border-border animate-in zoom-in-95 duration-200">
-            <CardHeader className="text-center pb-3">
-              <div className="mx-auto w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
-                <ShieldAlert className="w-6 h-6 text-rose-500" />
+      {/* Activity */}
+      <div style={{ padding: '16px 20px 0', flex: 1 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Recent Activity</div>
+        <div style={{ background: '#0F172A', borderRadius: 10, overflow: 'hidden' }}>
+          {activities.length === 0 ? (
+            <div style={{ padding: '16px', textAlign: 'center', fontSize: 12, color: '#475569' }}>No activity yet</div>
+          ) : (
+            activities.map((a, i) => (
+              <div key={i} style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: i < activities.length - 1 ? '1px solid #1E293B' : 'none' }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.type === 'blocked' ? '#F87171' : '#FBBF24', flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: '#94A3B8', flex: 1 }}>{a.text}</span>
+                <span style={{ fontSize: 10, color: '#475569' }}>{a.time}</span>
               </div>
-              <CardTitle className="text-lg font-black tracking-tight">Disable Shield?</CardTitle>
-              <CardDescription className="text-[11px] leading-relaxed font-medium">Deactivating the security enclave will stop all real-time fraud analysis. Your payments will be unmonitored.</CardDescription>
-            </CardHeader>
-            <CardFooter className="flex flex-col gap-2 p-6 pt-0">
-              <Button variant="destructive" className="w-full font-black uppercase tracking-widest text-[11px] h-10 shadow-lg shadow-rose-500/20" onClick={() => { chrome.storage.local.set({ interceptEnabled: false }, () => setInterceptOn(false)); setModalOpen(false); }}>Deactivate</Button>
-              <Button variant="secondary" className="w-full font-bold uppercase tracking-widest text-[11px] h-10" onClick={() => setModalOpen(false)}>Maintain Protection</Button>
-            </CardFooter>
-          </Card>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #1E293B', marginTop: 16 }}>
+        <span style={{ fontSize: 10, color: '#334155' }}>Safety Intercept v1.0.0</span>
+        <button onClick={() => setShowResetConfirm(true)} style={{ fontSize: 10, color: '#475569', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
+          Reset Stats
+        </button>
+      </div>
+
+      {/* Reset Confirm Modal */}
+      {showResetConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ background: '#131B2E', border: '1px solid #1E293B', borderRadius: 16, padding: 24, width: 300 }}>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>Reset all stats?</div>
+            <div style={{ fontSize: 12, color: '#94A3B8', marginBottom: 20 }}>This will permanently clear all blocked counts, warnings, and threat history.</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setShowResetConfirm(false)} style={{ flex: 1, padding: '8px', borderRadius: 8, background: '#1E293B', border: 'none', color: '#94A3B8', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+              <button onClick={handleReset} style={{ flex: 1, padding: '8px', borderRadius: 8, background: '#F87171', border: 'none', color: '#0B1120', cursor: 'pointer', fontWeight: 700 }}>Reset</button>
+            </div>
+          </div>
         </div>
       )}
 
-      {resetModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
-          <Card className="mx-4 w-full max-w-[310px] shadow-2xl border-border animate-in zoom-in-95 duration-200">
-            <CardHeader className="text-center pb-3">
-              <div className="mx-auto w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
-                <Trash2 className="w-6 h-6 text-rose-500" />
-              </div>
-              <CardTitle className="text-lg font-black tracking-tight tracking-[-0.02em]">Reset all stats?</CardTitle>
-              <CardDescription className="text-[11px] leading-relaxed font-medium">This will permanently delete all session threat data and reset node statistics. This action is irreversible.</CardDescription>
-            </CardHeader>
-            <CardFooter className="flex flex-col gap-2 p-6 pt-0">
-              <Button variant="destructive" className="w-full font-black uppercase tracking-widest text-[11px] h-10 shadow-lg shadow-rose-500/20" onClick={() => { handleResetConfirm(); setResetModalOpen(false); }}>Reset Everything</Button>
-              <Button variant="secondary" className="w-full font-bold uppercase tracking-widest text-[11px] h-10" onClick={() => setResetModalOpen(false)}>Cancel</Button>
-            </CardFooter>
-          </Card>
-        </div>
-      )}
+      <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
     </div>
   );
 }
 
-// Global initialization
-const init = () => {
-  const rootElement = document.getElementById("root");
-  if (rootElement) {
-    createRoot(rootElement).render(<TooltipProvider><PopupApp /></TooltipProvider>);
-  }
-};
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init, { once: true });
-} else {
-  init();
-}
+createRoot(document.getElementById('root')!).render(<PopupApp />);
