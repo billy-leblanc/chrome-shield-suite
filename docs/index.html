@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Safety Intercept — Privacy Policy</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 680px; margin: 60px auto; padding: 0 20px; color: #1e293b; line-height: 1.7; }
+    h1 { font-size: 1.8rem; margin-bottom: 4px; }
+    h3 { margin-top: 2rem; }
+    p, li { color: #334155; }
+    strong { color: #0f172a; }
+    hr { border: none; border-top: 1px solid #e2e8f0; margin: 2rem 0; }
+    a { color: #0ea5e9; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy for Safety Intercept</h1>
+  <p><strong>Effective Date: April 2, 2026</strong></p>
+  <p>Safety Intercept is committed to protecting your privacy while providing real-time security during online payments. This policy explains how we handle your data.</p>
+
+  <h3>1. Data Collection and Analysis</h3>
+  <ul>
+    <li><strong>Payment Interception:</strong> Our extension monitors payment pages (e.g., PayPal, Venmo, Zelle) solely to identify transaction details like the payment memo and amount for real-time fraud analysis.</li>
+    <li><strong>AI Fraud Detection:</strong> When a payment memo is detected, the text is sent to our secure Cloudflare relay for processing by an AI engine. This analysis looks for social engineering patterns (e.g., urgency, impersonation) to calculate a risk score.</li>
+  </ul>
+
+  <h3>2. Data Storage and Security</h3>
+  <ul>
+    <li><strong>No Personal Data Collection:</strong> We do <strong>NOT</strong> store your payment details, credit card numbers, bank account numbers, or personally identifiable information (PII).</li>
+    <li><strong>Local Storage:</strong> Your transaction history, threat logs, and security stats are stored <strong>locally</strong> on your device using browser storage (chrome.storage.local). This data never leaves your machine.</li>
+    <li><strong>Anonymized Analysis:</strong> Data sent to our AI relay is used only for the immediate assessment and is not stored or used for profile building.</li>
+  </ul>
+
+  <h3>3. Data Sharing and Sale</h3>
+  <ul>
+    <li><strong>No Third-Party Sharing:</strong> We do <strong>NOT</strong> sell, trade, or share your data with any third parties.</li>
+    <li><strong>Zero Tracking:</strong> We do not track your browsing history or behavior outside of the specific payment platforms we protect.</li>
+  </ul>
+
+  <h3>4. Your Control</h3>
+  <p>You can enable or disable the extension's intercept features at any time via the extension's popup menu.</p>
+
+  <hr>
+  <p>For questions or support, please visit our <a href="https://github.com/billy-leblanc/chrome-shield-suite">GitHub repository</a>.</p>
+</body>
+</html>
