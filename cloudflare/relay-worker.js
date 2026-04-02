@@ -61,7 +61,7 @@ export default {
       const { event, platform, timestamp } = body;
       try {
         if (env.SHIELD_LOGS) {
-          const logKey = `event:\${timestamp || Date.now()}`;
+          const logKey = `event:${timestamp || Date.now()}`;
           await env.SHIELD_LOGS.put(logKey, JSON.stringify({ event, platform, timestamp }));
         }
         return new Response(JSON.stringify({ ok: true }), {
@@ -98,7 +98,7 @@ export default {
             model: 'claude-haiku-4-5-20251001',
             max_tokens: 256,
             system: SYSTEM_PROMPT,
-            messages: [{ role: 'user', content: `Payment memo: <memo>\${memo}</memo>` }],
+            messages: [{ role: 'user', content: `Payment memo: <memo>${memo}</memo>` }],
           }),
         });
 
@@ -117,7 +117,7 @@ export default {
 
         // Log analysis result to KV
         if (env.SHIELD_LOGS) {
-          await env.SHIELD_LOGS.put(`log:\${Date.now()}`, JSON.stringify({
+          await env.SHIELD_LOGS.put(`log:${Date.now()}`, JSON.stringify({
             riskScore: result.riskScore,
             platform: platform || 'unknown',
             timestamp: new Date().toISOString()
