@@ -59,6 +59,8 @@ export async function callRelayAPI(
   authToken: string,
   relayUrl: string,
   timeoutMs = 5000,
+  amount?: number,
+  platform?: string,
 ): Promise<LLMRiskResult | null> {
   // Skip LLM call entirely for empty or whitespace-only memos.
   if (!memo || !memo.trim()) return null;
@@ -76,7 +78,8 @@ export async function callRelayAPI(
       },
       body: JSON.stringify({
         memo,
-        platform: 'unknown',
+        platform: platform ?? 'unknown',
+        amount: typeof amount === 'number' && isFinite(amount) ? amount : 0,
         auth_token: authToken,
       }),
     });

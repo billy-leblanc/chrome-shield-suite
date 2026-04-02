@@ -20,7 +20,7 @@ const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
  * Reads the relay auth token from chrome.storage then calls callRelayAPI.
  * Returns null if no token is configured or if the call fails.
  */
-async function analyzeMemoWithLLM(memo: string) {
+async function analyzeMemoWithLLM(memo: string, amount?: number, platform?: string) {
   if (!memo || !memo.trim()) return null;
 
   let relayAuthToken: string | undefined;
@@ -33,7 +33,7 @@ async function analyzeMemoWithLLM(memo: string) {
 
   if (!relayAuthToken) return null;
 
-  return callRelayAPI(memo, relayAuthToken, RELAY_URL);
+  return callRelayAPI(memo, relayAuthToken, RELAY_URL, 5000, amount, platform);
 }
 
 /**
@@ -93,8 +93,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const data = message.data && typeof message.data === 'object' ? message.data : {};
     const heuristicAnalysis = FraudDetector.analyze(data);
     const memo = typeof data.message === 'string' ? data.message.trim() : '';
-    
-    analyzeMemoWithLLM(memo).then((llmResult) => {
+    const amount = typeof data.amount === 'number' ? data.amount : undefined;
+    const platform = typeof data.platform === 'string' ? data.platform : undefined;
+
+    analyzeMemoWithLLM(memo, amount, platform).then((llmResult) => {
       let analysis = heuristicAnalysis;
 
       if (llmResult) {

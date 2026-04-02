@@ -78,7 +78,7 @@ export default {
 
     // --- CASE 2: Risk Analysis ---
     if (url.pathname === '/analyze') {
-      const { memo, platform } = body;
+      const { memo, platform, amount } = body;
       if (!memo || typeof memo !== 'string' || !memo.trim()) {
         return new Response(JSON.stringify({ error: 'memo is required' }), {
           status: 400,
@@ -117,9 +117,16 @@ export default {
 
         // Log analysis result to KV
         if (env.SHIELD_LOGS) {
+          const parsedAmount = typeof amount === 'number' && isFinite(amount) ? amount : 0;
+          const amountRange = parsedAmount > 500 ? 'high' : parsedAmount > 100 ? 'medium' : parsedAmount > 0 ? 'low' : 'unknown';
+          const score = result.riskScore;
+          const riskLevel = score >= 80 ? 'critical' : score >= 50 ? 'high' : score >= 20 ? 'medium' : 'low';
           await env.SHIELD_LOGS.put(`log:${Date.now()}`, JSON.stringify({
             riskScore: result.riskScore,
+            riskLevel,
+            flags: result.flags,
             platform: platform || 'unknown',
+            amountRange,
             timestamp: new Date().toISOString()
           }));
         }

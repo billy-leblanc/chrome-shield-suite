@@ -70,6 +70,7 @@ export default {
           proceeded: 0,
           byPlatform: {},
           topFlags: {},
+          byAmountRange: { low: 0, medium: 0, high: 0, unknown: 0 },
         };
 
         // Scan ALL keys (logs and events)
@@ -94,6 +95,9 @@ export default {
                 (data.flags || []).forEach((flag) => {
                   stats.topFlags[flag] = (stats.topFlags[flag] || 0) + 1;
                 });
+
+                const range = data.amountRange || 'unknown';
+                if (range in stats.byAmountRange) stats.byAmountRange[range]++;
               } else if (key.name.startsWith('event:')) {
                 if (data.event === 'intercepted') stats.intercepted++;
                 else if (data.event === 'proceeded') stats.proceeded++;
