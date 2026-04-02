@@ -19,7 +19,11 @@ const PORTAL_CONFIGS: Record<string, PaymentPortalConfig> = {
   },
   'wellsfargo.com': {
     name: 'Wells Fargo',
-    selectors: ['button.primary', 'button#send-money-confirm']
+    selectors: [
+      'button:has([data-localized="hub.button.send-money"])',
+      'button.Button__button___Jo8E3',
+      'button#send-money-confirm',
+    ]
   },
   'chase.com': {
     name: 'Chase',
