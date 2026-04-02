@@ -181,12 +181,9 @@ function PopupApp() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
           {[
-            { label: 'Blocked',  value: stats.blocked,  color: '#F87171', glow: 'rgba(248,113,113,0.12)', accent: 'rgba(248,113,113,0.4)',
-              icon: <svg viewBox="0 0 16 16" fill="none" style={{width:14,height:14,marginBottom:4}}><path d="M8 1L2 4v4c0 3.5 2.5 6.7 6 7.4 3.5-.7 6-3.9 6-7.4V4L8 1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M5.5 8.5l2 2 3-3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0" /><path d="M6 6l4 4M10 6l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg> },
-            { label: 'Warnings', value: stats.warnings, color: '#FBBF24', glow: 'rgba(251,191,36,0.10)',  accent: 'rgba(251,191,36,0.4)',
-              icon: <svg viewBox="0 0 16 16" fill="none" style={{width:14,height:14,marginBottom:4}}><path d="M8 2L1.5 13h13L8 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/><path d="M8 7v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="8" cy="11.5" r="0.6" fill="currentColor"/></svg> },
-            { label: 'Safe',     value: stats.safe,     color: '#34D399', glow: 'rgba(52,211,153,0.10)',  accent: 'rgba(52,211,153,0.4)',
-              icon: <svg viewBox="0 0 16 16" fill="none" style={{width:14,height:14,marginBottom:4}}><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5.5 8.5l2 2 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+            { label: 'Blocked',  value: stats.blocked,  color: '#F87171', glow: 'rgba(248,113,113,0.12)', accent: 'rgba(248,113,113,0.4)' },
+            { label: 'Warnings', value: stats.warnings, color: '#FBBF24', glow: 'rgba(251,191,36,0.10)',  accent: 'rgba(251,191,36,0.4)'  },
+            { label: 'Safe',     value: stats.safe,     color: '#34D399', glow: 'rgba(52,211,153,0.10)',  accent: 'rgba(52,211,153,0.4)'  },
           ].map((s) => (
             <div key={s.label} style={{
               background: `linear-gradient(160deg, ${s.glow} 0%, rgba(15,23,42,0.8) 100%)`,
@@ -195,7 +192,6 @@ function PopupApp() {
               textAlign: 'center',
               boxShadow: `0 2px 16px ${s.glow}`,
             }}>
-              <div style={{ color: s.color, display: 'flex', justifyContent: 'center' }}>{s.icon}</div>
               <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1, letterSpacing: '-1px' }}>
                 {s.value}
               </div>
