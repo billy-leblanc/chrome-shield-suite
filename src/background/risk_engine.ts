@@ -103,7 +103,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           const newLog = [{
             text: `Intercepted: ${Array.from(new Set(analysis.flags)).slice(0, 3).map(f => f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())).join(', ')}`,
             time: new Date().toLocaleTimeString(),
-            type: 'blocked',
+            type: analysis.riskLevel === 'critical' ? 'blocked' : 'warning',
             platform: platform ?? 'unknown',
           }, ...existingLog].slice(0, 50);
 
