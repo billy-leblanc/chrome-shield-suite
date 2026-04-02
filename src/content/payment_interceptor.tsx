@@ -57,17 +57,64 @@ const getActiveConfig = () => {
 const injectStyles = (shadow: ShadowRoot) => {
   const style = document.createElement("style");
   style.textContent = `
-    .fixed { position: fixed; inset: 0; z-index: 999999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); font-family: sans-serif; }
-    .bg-card { background: #1a1a1a; color: white; padding: 2rem; border-radius: 1rem; border: 1px solid #333; max-width: 400px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-    .text-center { text-align: center; }
-    .font-bold { font-weight: 700; margin-bottom: 1rem; color: #00ffff; letter-spacing: 0.05em; }
-    .text-sm { font-size: 0.875rem; line-height: 1.5; color: #ccc; margin-bottom: 1.5rem; }
-    .flex { display: flex; gap: 1rem; justify-content: center; }
-    .btn { padding: 0.75rem 1.5rem; border-radius: 0.5rem; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .btn-secondary { background: #333; color: white; }
-    .btn-secondary:hover { background: #444; }
-    .btn-destructive { background: #ff4444; color: white; }
-    .btn-destructive:hover { background: #cc0000; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    .overlay {
+      position: fixed; inset: 0; z-index: 999999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      background: linear-gradient(160deg, #131B2E 0%, #0D1526 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 28px 24px 24px;
+      width: 360px;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.6);
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 99px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .badge-critical { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #F87171; }
+    .badge-high { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #FBBF24; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .title {
+      font-size: 17px; font-weight: 700; color: #F1F5F9;
+      letter-spacing: -0.4px; line-height: 1.3; margin-bottom: 8px;
+    }
+    .desc {
+      font-size: 13px; color: #64748B; line-height: 1.6; margin-bottom: 22px;
+    }
+    .divider { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 20px; }
+    .flags-label { font-size: 10px; font-weight: 600; color: #334155; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+    .flags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
+    .flag {
+      font-size: 11px; font-weight: 500; color: #94A3B8;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      padding: 3px 10px; border-radius: 99px;
+    }
+    .actions { display: flex; gap: 8px; }
+    .btn {
+      flex: 1; padding: 11px; border-radius: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: none; transition: opacity 0.15s ease; letter-spacing: 0.01em;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-cancel {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      color: #94A3B8;
+    }
+    .btn-proceed {
+      background: rgba(248,113,113,0.12);
+      border: 1px solid rgba(248,113,113,0.25) !important;
+      color: #F87171;
+    }
   `;
   shadow.appendChild(style);
 };
@@ -193,23 +240,39 @@ const Interceptor = () => {
 
   const config = activeRef.current?.config;
 
+  const isCritical = riskReport.riskLevel === 'critical';
+  const cleanFlags = (riskReport.flags ?? []).map((f: string) =>
+    f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  );
+
   return (
-    <div className="fixed">
-      <div className="bg-card text-center">
-        <h2 className="font-bold">
-          {riskReport.riskLevel === 'critical'
-            ? "CRITICAL THREAT DETECTED"
-            : `Security Alert: ${config?.name ?? 'Payment'}`}
-        </h2>
-        <p className="text-sm">
-          {riskReport.recommendation || "We've detected potential fraud patterns in this transaction."}
-        </p>
-        <div className="flex">
-          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+    <div className="overlay">
+      <div className="card">
+        <div className={`badge ${isCritical ? 'badge-critical' : 'badge-high'}`}>
+          <span className="badge-dot" />
+          {isCritical ? 'High Risk Detected' : 'Suspicious Activity'}
+        </div>
+        <div className="title">
+          {isCritical ? 'This payment looks like a scam' : `Unusual pattern on ${config?.name ?? 'this payment'}`}
+        </div>
+        <div className="desc">
+          Our AI flagged this transaction before it was sent. Review the details below before proceeding.
+        </div>
+        <div className="divider" />
+        {cleanFlags.length > 0 && (
+          <>
+            <div className="flags-label">Risk Signals</div>
+            <div className="flags">
+              {cleanFlags.map((f: string, i: number) => <span key={i} className="flag">{f}</span>)}
+            </div>
+          </>
+        )}
+        <div className="actions">
+          <button className="btn btn-cancel" onClick={() => setShowModal(false)}>
             Cancel Payment
           </button>
           <button
-            className="btn btn-destructive"
+            className="btn btn-proceed"
             onClick={() => {
               // Analytics: Proceeded
               if (activeRef.current) {
@@ -236,6 +299,7 @@ const Interceptor = () => {
       </div>
     </div>
   );
+
 };
 
 // --- Initialization ---
