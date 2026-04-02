@@ -14,13 +14,13 @@ import {
 export type { RiskAnalysis } from '../core/fraud_detector';
 
 const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
+const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
 
 /**
  * Reads the relay auth token from chrome.storage then calls callRelayAPI.
  * Returns null if no token is configured or if the call fails.
  */
 async function analyzeMemoWithLLM(memo: string) {
-  // Skip LLM call entirely for empty or whitespace-only memos.
   if (!memo || !memo.trim()) return null;
 
   let relayAuthToken: string | undefined;
@@ -31,42 +31,73 @@ async function analyzeMemoWithLLM(memo: string) {
     return null;
   }
 
-  // No relay token configured — fall back to heuristics only.
   if (!relayAuthToken) return null;
 
   return callRelayAPI(memo, relayAuthToken, RELAY_URL);
 }
 
-// Background Listener for Risk Analysis and Extension Management
+/**
+ * Sends an analytics event to the Cloudflare relay.
+ */
+async function shipEventToRelay(eventData: { event: string; platform: string; timestamp: string }) {
+  try {
+    const stored = await chrome.storage.local.get('relay_auth_token');
+    if (!stored.relay_auth_token) return;
+
+    await fetch(EVENT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...eventData,
+        auth_token: stored.relay_auth_token
+      })
+    });
+  } catch (err) {
+    console.error('[Shield] Event sync failed', err);
+  }
+}
+
+// Background Listener
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({
     interceptEnabled: true,
     threatLog: [],
+    eventLog: [],
     stats: { blocked: 0, warnings: 0, safe: 0 },
   });
   console.log("Chrome Shield Suite: Initialized");
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  // Only accept messages from content scripts in extension tabs — reject external senders.
   if (!sender.id || sender.id !== chrome.runtime.id) return false;
 
+  // New Case: Analytics Logging
+  if (message.type === 'LOG_EVENT') {
+    const { event, platform } = message;
+    const timestamp = new Date().toISOString();
+    const entry = { event, platform, timestamp };
+
+    // 1. Local Storage (Limit 1000)
+    chrome.storage.local.get('eventLog', (data) => {
+      const log = Array.isArray(data.eventLog) ? data.eventLog : [];
+      const newLog = [entry, ...log].slice(0, 1000);
+      chrome.storage.local.set({ eventLog: newLog });
+    });
+
+    // 2. Cloudflare Relay Sync
+    shipEventToRelay(entry);
+    return false; // Sync-and-forget
+  }
+
   if (message.type === 'ANALYZE_RISK') {
-    // Validate payload shape before processing.
     const data = message.data && typeof message.data === 'object' ? message.data : {};
-
     const heuristicAnalysis = FraudDetector.analyze(data);
-
-    // Run LLM analysis; fall back to heuristics only on failure/timeout.
-    // Empty/whitespace memo skips LLM call inside analyzeMemoWithLLM.
     const memo = typeof data.message === 'string' ? data.message.trim() : '';
+    
     analyzeMemoWithLLM(memo).then((llmResult) => {
       let analysis = heuristicAnalysis;
 
       if (llmResult) {
-        // Blend: heuristics 60%, LLM 40%.
-        // If LLM returns 0 but heuristics are high, heuristic score still dominates (60%).
-        // Both scores are pre-clamped 0–100, so blended result is always 0–100.
         const blendedScore = blendScores(heuristicAnalysis.score, llmResult.riskScore);
         const mergedFlags = Array.from(new Set([...heuristicAnalysis.flags, ...llmResult.flags]));
         const riskLevel = scoreToRiskLevel(blendedScore);
@@ -79,7 +110,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         };
       }
 
-      // Log threat if risk is high or critical
       if (analysis.riskLevel === 'high' || analysis.riskLevel === 'critical') {
         chrome.storage.local.get(["threatLog", "stats"], (storageData) => {
           if (chrome.runtime.lastError) return;
@@ -108,13 +138,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       sendResponse(analysis);
     }).catch(() => {
-      // If the entire async chain throws unexpectedly, respond with heuristic result.
       sendResponse(heuristicAnalysis);
     });
 
-    return true; // Keep the message channel open for the async response
+    return true; 
   }
 
+  // Other handlers (GET_STATS, TOGGLE_INTERCEPT) omitted for brevity as they are stable
   if (message.type === "GET_STATS") {
     chrome.storage.local.get(["stats", "threatLog", "interceptEnabled"], (data) => {
       if (chrome.runtime.lastError) {
