@@ -1,152 +1,88 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
+import { 
+  Shield, 
+  ShieldCheck, 
+  ShieldAlert, 
+  Activity, 
+  AlertTriangle, 
+  CheckCircle, 
+  Key, 
+  Settings, 
+  History, 
+  Zap, 
+  Check, 
+  Lock,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Trash2
+} from 'lucide-react';
 
-const h = React.createElement;
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 /* ─── Premium Components ─── */
 
-function ShieldIcon({ className = "w-6 h-6", glow = false }) {
-  return h("div", { className: `relative ${glow ? "glow-primary" : ""}` },
-    h("svg", { 
-      className: `${className} text-primary`, 
-      fill: "none", 
-      viewBox: "0 0 24 24", 
-      stroke: "currentColor", 
-      strokeWidth: 2 
-    },
-      h("path", { 
-        strokeLinecap: "round", 
-        strokeLinejoin: "round", 
-        d: "M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" 
-      })
-    )
+function StatusPill({ active }: { active: boolean }) {
+  return (
+    <div className={`
+      relative flex items-center gap-2 px-3 py-1.5 rounded-full border
+      ${active 
+        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 glow-emerald/20" 
+        : "bg-rose-500/10 border-rose-500/20 text-rose-400"}
+      transition-all duration-500 ease-in-out shadow-sm
+    `}>
+      <div className={`w-2 h-2 rounded-full ${active ? "bg-emerald-400 animate-pulse" : "bg-rose-400"} `} />
+      <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+        {active ? "Protected" : "Disabled"}
+      </span>
+    </div>
   );
 }
 
-function SafetyInterceptModal({ open, onClose, onConfirm, title, message, confirmLabel = "Proceed Anyway", confirmClass = "" }) {
-  if (!open) return null;
-  return h("div", {
-    className: "fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-md transition-all duration-300",
-    onClick: onClose,
-  },
-    h("div", {
-      className: "bg-card border border-border rounded-2xl p-6 mx-4 w-full max-w-[340px] shadow-2xl animate-in zoom-in-95 duration-200",
-      onClick: (e) => e.stopPropagation(),
-    },
-      h("div", { className: "flex flex-col items-center text-center mb-6" },
-        h("div", { className: "w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center mb-4" },
-          h("svg", { className: "w-6 h-6 text-destructive", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 },
-            h("path", { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" })
-          )
-        ),
-        h("h2", { className: "text-lg font-bold tracking-tight text-foreground" }, title),
-        h("p", { className: "text-sm text-muted-foreground mt-2 leading-relaxed" }, message)
-      ),
-      h("div", { className: "flex flex-col gap-2" },
-        h("button", {
-          onClick: () => { onConfirm?.(); onClose(); },
-          className: `w-full py-3 rounded-xl bg-destructive text-destructive-foreground text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all ${confirmClass}`
-        }, confirmLabel),
-        h("button", {
-          onClick: onClose,
-          className: "w-full py-3 rounded-xl bg-secondary text-secondary-foreground text-sm font-semibold hover:bg-secondary/80 transition-colors"
-        }, "Cancel")
-      )
-    )
-  );
-}
-
-function StatCard({ label, value, variant }) {
-  const variants = {
-    danger: "text-destructive bg-destructive/10 border-destructive/20",
-    warning: "text-warning bg-warning/10 border-warning/20",
-    success: "text-accent bg-accent/10 border-accent/20",
-    info: "text-primary bg-primary/10 border-primary/20",
-  };
-  
-  return h("div", { className: `flex flex-col items-center justify-center p-3 rounded-2xl border ${variants[variant || 'info']} transition-all hover:scale-[1.02]` },
-    h("span", { className: "text-xs font-medium opacity-70 mb-1" }, label),
-    h("span", { className: "text-xl font-black tracking-tighter" }, value)
-  );
-}
-
-function ViewToggle({ view, onChange }) {
-  return h("div", { className: "p-1 bg-secondary rounded-xl flex gap-1" },
-    h("button", {
-      onClick: () => onChange("personal"),
-      className: `flex-1 py-1.5 rounded-lg text-[11px] font-bold tracking-wider uppercase transition-all ${
-        view === "personal" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-      }`
-    }, "Personal"),
-    h("button", {
-      onClick: () => onChange("business"),
-      className: `flex-1 py-1.5 rounded-lg text-[11px] font-bold tracking-wider uppercase transition-all ${
-        view === "business" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-      }`
-    }, "Business")
-  );
-}
-
-function ApiKeySection() {
-  const [token, setToken] = useState("");
-  const [showToken, setShowToken] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
-
-  useEffect(() => {
-    chrome.storage.local.get("relay_auth_token", (res) => {
-      if (res.relay_auth_token) setToken(res.relay_auth_token);
-    });
-  }, []);
-
-  const handleSave = () => {
-    setSaveStatus("saving");
-    chrome.storage.local.set({ relay_auth_token: token }, () => {
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
-    });
+function StatCard({ label, value, icon: Icon, variant }: { label: string; value: number; icon: any; variant: 'danger' | 'warning' | 'success' | 'info' }) {
+  const styles = {
+    danger: "text-rose-500 bg-rose-500/5 border-rose-500/10 hover:border-rose-500/30",
+    warning: "text-amber-500 bg-amber-500/5 border-amber-500/10 hover:border-amber-500/30",
+    success: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10 hover:border-emerald-500/30",
+    info: "text-sky-500 bg-sky-500/5 border-sky-500/10 hover:border-sky-500/30",
   };
 
-  return h("div", { className: "px-5 mt-auto border-t border-border pt-5 pb-2" },
-    h("div", { className: "flex items-center justify-between mb-3" },
-      h("label", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground" }, "AI Relay Enclave"),
-      saveStatus === "saved" && h("span", { className: "text-[10px] font-bold text-accent animate-in fade-in slide-in-from-right-1" }, "Synced")
-    ),
-    h("div", { className: "relative mb-4" },
-      h("input", {
-        type: showToken ? "text" : "password",
-        value: token,
-        onChange: (e) => setToken(e.target.value),
-        placeholder: "Enter secret auth token...",
-        className: "w-full bg-secondary border border-border rounded-xl px-4 py-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
-      }),
-      h("button", {
-        onClick: () => setShowToken(!showToken),
-        className: "absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-      }, 
-        showToken 
-          ? h("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, h("path", { d: "M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" }))
-          : h("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, h("path", { d: "M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" }), h("circle", { cx: "12", cy: "12", r: "3" }))
-      )
-    ),
-    h("button", {
-      onClick: handleSave,
-      disabled: saveStatus === "saving",
-      className: "w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-tight hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
-    }, saveStatus === "saving" ? "Syncing..." : "Update Enclave")
+  return (
+    <Card className={`group relative overflow-hidden bg-card/40 border backdrop-blur-sm transition-all duration-300 ${styles[variant]}`}>
+      <CardContent className="p-4 flex flex-col justify-between h-full gap-3">
+        <div className="flex items-center justify-between w-full">
+          <Icon className="w-4 h-4 opacity-70 group-hover:scale-110 transition-transform" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.1em] opacity-50">{label}</span>
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black tracking-tighter tabular-nums">{value}</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
-function ActivityItem({ text, time, type }) {
-  const icon = type === 'blocked' 
-    ? h("div", { className: "w-2 h-2 rounded-full bg-destructive shadow-[0_0_8px_rgba(255,113,113,0.5)]" })
-    : h("div", { className: "w-2 h-2 rounded-full bg-secondary" });
-
-  return h("div", { className: "flex items-center justify-between py-3 group" },
-    h("div", { className: "flex items-center gap-3" },
-      icon,
-      h("span", { className: "text-xs font-semibold text-foreground group-hover:text-primary transition-colors" }, text)
-    ),
-    h("span", { className: "text-[10px] font-medium text-muted-foreground" }, time)
+function ActivityItem({ text, time, type }: { text: string; time: string; type: string }) {
+  const isBlocked = type === 'blocked';
+  return (
+    <div className="relative flex items-center justify-between px-4 py-3 group hover:bg-muted/30 transition-colors border-l-2 border-transparent hover:border-primary/30">
+      <div className="flex items-center gap-3">
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isBlocked ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-500'}`}>
+          {isBlocked ? <ShieldAlert className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="text-[11px] font-bold text-foreground/90 truncate">{text}</span>
+          <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">{time}</span>
+        </div>
+      </div>
+      <ChevronRight className="w-3 h-3 text-muted-foreground/20 group-hover:translate-x-0.5 transition-transform" />
+    </div>
   );
 }
 
@@ -156,16 +92,21 @@ function PopupApp() {
   const [modalOpen, setModalOpen] = useState(false);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [view, setView] = useState<"personal" | "business">("personal");
+  const [relayToken, setRelayToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
+  const [isSavingToken, setIsSavingToken] = useState(false);
 
   const [stats, setStats] = useState({ blocked: 0, warnings: 0, safe: 0 });
   const [activities, setActivities] = useState<Array<{ text: string; time: string; type: string }>>([]);
 
+  // Mock data loader — logic preserved
   useEffect(() => {
-    chrome.storage.local.get(["stats", "threatLog", "interceptEnabled"], (result) => {
+    chrome.storage.local.get(["stats", "threatLog", "interceptEnabled", "relay_auth_token"], (result) => {
       if (chrome.runtime.lastError) return;
       if (result.stats) setStats(result.stats);
-      if (Array.isArray(result.threatLog)) setActivities(result.threatLog.slice(0, 4));
+      if (Array.isArray(result.threatLog)) setActivities(result.threatLog.slice(0, 5));
       if (result.interceptEnabled !== undefined) setInterceptOn(result.interceptEnabled);
+      if (result.relay_auth_token) setRelayToken(result.relay_auth_token);
     });
   }, []);
 
@@ -177,6 +118,13 @@ function PopupApp() {
     }
   }, [interceptOn]);
 
+  const handleSaveToken = () => {
+    setIsSavingToken(true);
+    chrome.storage.local.set({ relay_auth_token: relayToken }, () => {
+      setTimeout(() => setIsSavingToken(false), 800);
+    });
+  };
+
   const handleResetConfirm = useCallback(() => {
     chrome.storage.local.set({ stats: { blocked: 0, warnings: 0, safe: 0 }, threatLog: [] }, () => {
       setStats({ blocked: 0, warnings: 0, safe: 0 });
@@ -184,97 +132,215 @@ function PopupApp() {
     });
   }, []);
 
-  const statCards = view === "personal"
-    ? [
-        { label: "Blocked", value: stats.blocked, variant: "danger" },
-        { label: "Warnings", value: stats.warnings, variant: "warning" },
-        { label: "Safe", value: stats.safe, variant: "success" },
-      ]
-    : [
-        { label: "Blocked", value: stats.blocked, variant: "danger" },
-        { label: "Flagged", value: stats.warnings, variant: "warning" },
-        { label: "Verified", value: stats.safe, variant: "success" },
-        { label: "Total", value: stats.blocked + stats.warnings + stats.safe, variant: "info" },
-      ];
+  return (
+    <div className="w-[380px] min-h-[580px] bg-background text-foreground flex flex-col font-sans select-none overflow-hidden antialiased">
+      {/* Premium Header */}
+      <header className="px-6 pt-7 pb-5 flex items-center justify-between bg-card/20 backdrop-blur-xl border-b border-border/40">
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <div className={`absolute -inset-2 rounded-2xl blur-lg transition-all duration-1000 ${interceptOn ? "bg-emerald-500/20 opacity-100" : "bg-rose-500/10 opacity-0"}`} />
+            <div className={`relative w-11 h-11 rounded-2xl border flex items-center justify-center transition-all duration-500 ${interceptOn ? "bg-primary/10 border-primary/20 text-primary glow-primary" : "bg-muted border-border text-muted-foreground"}`}>
+              <Shield className="w-6 h-6 stroke-[2.5px]" />
+            </div>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <h1 className="text-[15px] font-black uppercase tracking-[0.18em] leading-tight">Safety Intercept</h1>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] opacity-60">AI-Powered Payment Protection</span>
+          </div>
+        </div>
+        <StatusPill active={interceptOn} />
+      </header>
 
-  return h("div", { className: "w-[360px] min-h-[540px] bg-background text-foreground flex flex-col font-sans select-none overflow-hidden" },
-    /* Header */
-    h("header", { className: "px-5 pt-6 pb-4 flex items-center justify-between" },
-      h("div", { className: "flex items-center gap-3" },
-        h(ShieldIcon, { glow: interceptOn }),
-        h("div", null,
-          h("h1", { className: "text-sm font-black uppercase tracking-widest" }, "Shield Suite"),
-          h("div", { className: "flex items-center gap-1.5" },
-            h("div", { className: `w-1.5 h-1.5 rounded-full ${interceptOn ? "bg-accent animate-pulse" : "bg-destructive"}` }),
-            h("span", { className: "text-[10px] font-bold text-muted-foreground" }, interceptOn ? "SYSTEM SECURE" : "UNPROTECTED")
-          )
-        )
-      ),
-      h("button", {
-        onClick: () => setResetModalOpen(true),
-        className: "p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground/50 hover:text-destructive/50"
-      }, h("svg", { className: "w-4 h-4", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", strokeWidth: 2 }, h("path", { d: "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" })))
-    ),
+      {/* Hero Protection Card */}
+      <div className="px-6 pt-6">
+        <Card className="relative overflow-hidden group border-none shadow-none bg-accent/5">
+          <div className={`absolute inset-0 transition-opacity duration-1000 ${interceptOn ? "bg-gradient-to-br from-primary/15 via-background to-background" : "bg-gradient-to-br from-rose-500/5 to-background"}`} />
+          <CardContent className="relative z-10 p-0 flex flex-col items-center justify-center h-[140px]">
+            <Button 
+              variant="ghost" 
+              className="w-full h-full p-8 flex flex-col gap-4 hover:bg-transparent transition-all hover:scale-[1.02] active:scale-[0.98]"
+              onClick={toggleIntercept}
+            >
+              <div className={`w-14 h-14 rounded-3xl flex items-center justify-center transition-all duration-700 ${interceptOn ? "bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-primary/10" : "bg-destructive text-destructive-foreground shadow-xl shadow-rose-500/20 scale-90 ring-4 ring-rose-500/5"}`}>
+                <Zap className={`w-7 h-7 ${interceptOn ? "fill-current" : ""}`} />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[12px] font-black uppercase tracking-[0.15em]">{interceptOn ? "Dismantle Shield" : "Enable Protection"}</span>
+                <span className="text-[9px] font-bold opacity-40 uppercase tracking-widest">{interceptOn ? "Real-time analysis active" : "Tap to activate security node"}</span>
+              </div>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
-    /* Main Toggle Hub */
-    h("div", { className: "px-5 mb-6" },
-      h("div", { className: "relative group" },
-        h("div", { className: `absolute -inset-1 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 ${interceptOn ? "bg-primary" : "bg-destructive"}` }),
-        h("button", {
-          onClick: toggleIntercept,
-          className: "relative w-full py-5 rounded-2xl bg-card border border-border flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98]"
-        },
-          h("span", { className: `text-xl mb-1` }, interceptOn ? "🛡️" : "⚠️"),
-          h("span", { className: "text-xs font-black uppercase tracking-widest" }, interceptOn ? "Deactivate Shield" : "Activate Protection"),
-          h("span", { className: "text-[9px] font-medium text-muted-foreground" }, interceptOn ? "Real-time analysis running" : "Extension is currently dormant")
-        )
-      )
-    ),
+      {/* Main Dashboard */}
+      <div className="px-6 pt-6 flex-1 flex flex-col gap-7 overflow-y-auto pb-4 custom-scrollbar">
+        {/* Statistics Grid */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-70 flex items-center gap-2">
+              <Activity className="w-3 h-3" />
+              Security Metrics
+            </h2>
+            <Tabs value={view} onValueChange={(v: any) => setView(v)} className="h-7 w-[150px]">
+              <TabsList className="grid w-full grid-cols-2 p-0.5 h-full bg-muted/50 border">
+                <TabsTrigger value="personal" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Account</TabsTrigger>
+                <TabsTrigger value="business" className="text-[9px] font-bold uppercase data-[state=active]:bg-card data-[state=active]:shadow-none tracking-tighter">Business</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
 
-    /* Control Panel */
-    h("div", { className: "px-5 flex flex-col gap-5 flex-1" },
-      h("section", null,
-        h("div", { className: "flex items-center justify-between mb-3" },
-          h("h2", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground" }, "Protection Analytics"),
-          h("div", { className: "w-24" }, h(ViewToggle, { view, onChange: setView }))
-        ),
-        h("div", { className: `grid ${view === "business" ? "grid-cols-4" : "grid-cols-3"} gap-2` },
-          ...statCards.map((card, i) => h(StatCard, { key: i, ...card as any }))
-        )
-      ),
+          <div className={`grid ${view === "business" ? "grid-cols-2 gap-3" : "grid-cols-3 gap-3"}`}>
+            <StatCard label="Blocked" value={stats.blocked} icon={ShieldAlert} variant="danger" />
+            <StatCard label="Alerts" value={stats.warnings} icon={AlertTriangle} variant="warning" />
+            <StatCard label="Secure" value={stats.safe} icon={ShieldCheck} variant="success" />
+            {view === "business" && (
+              <StatCard label="Analyzed" value={stats.blocked + stats.warnings + stats.safe} icon={Activity} variant="info" />
+            )}
+          </div>
+        </section>
 
-      h("section", { className: "flex-1" },
-        h("h2", { className: "text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3" }, "Threat Timeline"),
-        h("div", { className: "bg-card border border-border rounded-2xl px-4 divide-y divide-border" },
-          activities.length === 0
-            ? h("div", { className: "py-6 text-xs text-muted-foreground/40 text-center italic" }, "No threats detected in this session")
-            : activities.map((a, i) => h(ActivityItem, { key: i, ...a }))
-        )
-      )
-    ),
+        {/* Audit Log / Timeline */}
+        <section className="flex-1">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-70 flex items-center gap-2">
+              <History className="w-3 h-3" />
+              Threat Timeline
+            </h2>
+          </div>
+          <Card className="bg-card/20 border-border/60 overflow-hidden">
+            <div className="divide-y divide-border/20">
+              {activities.length === 0 ? (
+                <div className="py-14 flex flex-col items-center justify-center text-center px-6">
+                  <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                    <CheckCircle className="w-6 h-6 text-muted-foreground/20" />
+                  </div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/30">Protocol Secure • No Threats</p>
+                </div>
+              ) : (
+                activities.map((item, i) => (
+                  <ActivityItem key={i} {...item} />
+                ))
+              )}
+            </div>
+          </Card>
+        </section>
 
-    /* Config */
-    h(ApiKeySection),
+        {/* AI Enclave Status */}
+        <section className="mt-2">
+          <Card className="bg-muted/30 border-dashed border-border/80">
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <Key className="w-3 h-3 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.1em]">AI Analysis</span>
+                </div>
+                <div className="flex items-center gap-1.5 leading-none">
+                  <div className={`w-1.5 h-1.5 rounded-full ${relayToken ? "bg-sky-400 glow-sky" : "bg-muted-foreground/30"}`} />
+                  <span className={`text-[10px] font-bold uppercase tracking-tighter ${relayToken ? "text-sky-400/80" : "text-muted-foreground/50"}`}>
+                    {relayToken ? "Connected" : "Disconnected"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="relative group">
+                  <input 
+                    type={showToken ? "text" : "password"}
+                    placeholder="Enclave Secret"
+                    value={relayToken}
+                    onChange={(e) => setRelayToken(e.target.value)}
+                    className="bg-background/80 border border-border/50 rounded-lg px-3 py-1.5 text-[10px] font-mono focus:outline-none focus:ring-1 focus:ring-primary/40 w-[120px] transition-all group-hover:border-border"
+                  />
+                  <button onClick={() => setShowToken(!showToken)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground">
+                    {showToken ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                  </button>
+                </div>
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${isSavingToken ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-background hover:bg-muted'}`}
+                  onClick={handleSaveToken}
+                >
+                  <Zap className={`w-3.5 h-3.5 ${isSavingToken ? 'fill-emerald-400' : ''}`} />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </section>
+      </div>
 
-    /* Modals */
-    h(SafetyInterceptModal, {
-      open: modalOpen,
-      onClose: () => setModalOpen(false),
-      onConfirm: () => chrome.storage.local.set({ interceptEnabled: false }, () => setInterceptOn(false)),
-      title: "Disable Protection?",
-      message: "Safety Intercept will stop monitoring payments. This leaves you vulnerable to social engineering scams.",
-      confirmLabel: "Disable Anyway",
-    }),
+      {/* Footer Branding */}
+      <footer className="px-6 py-5 border-t border-border/40 bg-card/10 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-md bg-muted/40 flex items-center justify-center border border-border/20">
+            <Lock className="w-3 h-3 text-muted-foreground/40" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/50 italic">v1.0.0 Enclave</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setResetModalOpen(true)}
+            className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 hover:text-rose-500/50 transition-colors"
+          >
+            Purge History
+          </button>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-500/5 border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-emerald-500 shadow-sm shadow-emerald-500/5">
+            <CheckCircle className="w-3 h-3" />
+            Secure Node
+          </div>
+        </div>
+      </footer>
 
-    h(SafetyInterceptModal, {
-      open: resetModalOpen,
-      onClose: () => setResetModalOpen(false),
-      onConfirm: handleResetConfirm,
-      title: "Clear History",
-      message: "This will permanently delete all threat logs and reset counters to zero. This action cannot be undone.",
-      confirmLabel: "Clear All",
-    })
+      {/* Confirmation Overlays */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
+          <Card className="mx-4 w-full max-w-[310px] shadow-2xl border-border animate-in zoom-in-95 duration-200">
+            <CardHeader className="text-center pb-3">
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
+                <ShieldAlert className="w-6 h-6 text-rose-500" />
+              </div>
+              <CardTitle className="text-lg font-black tracking-tight">Dismantle Shield?</CardTitle>
+              <CardDescription className="text-[11px] leading-relaxed font-medium">Deactivating the security enclave will stop all real-time fraud analysis. Your payments will be unmonitored.</CardDescription>
+            </CardHeader>
+            <CardFooter className="flex flex-col gap-2 p-6 pt-0">
+              <Button variant="destructive" className="w-full font-black uppercase tracking-widest text-[11px] h-10 shadow-lg shadow-rose-500/20" onClick={() => { chrome.storage.local.set({ interceptEnabled: false }, () => setInterceptOn(false)); setModalOpen(false); }}>Deactivate</Button>
+              <Button variant="secondary" className="w-full font-bold uppercase tracking-widest text-[11px] h-10" onClick={() => setModalOpen(false)}>Maintain Protection</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
+
+      {resetModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-200">
+          <Card className="mx-4 w-full max-w-[310px] shadow-2xl border-border animate-in zoom-in-95 duration-200">
+            <CardHeader className="text-center pb-3">
+              <div className="mx-auto w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4">
+                <Trash2 className="w-6 h-6 text-rose-500" />
+              </div>
+              <CardTitle className="text-lg font-black tracking-tight tracking-[-0.02em]">Purge node history?</CardTitle>
+              <CardDescription className="text-[11px] leading-relaxed font-medium">This will permanently delete all session threat data and reset node statistics. This action is irreversible.</CardDescription>
+            </CardHeader>
+            <CardFooter className="flex flex-col gap-2 p-6 pt-0">
+              <Button variant="destructive" className="w-full font-black uppercase tracking-widest text-[11px] h-10 shadow-lg shadow-rose-500/20" onClick={() => { handleResetConfirm(); setResetModalOpen(false); }}>Purge Archives</Button>
+              <Button variant="secondary" className="w-full font-bold uppercase tracking-widest text-[11px] h-10" onClick={() => setResetModalOpen(false)}>Cancel</Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 }
 
-createRoot(document.getElementById("root")).render(h(PopupApp));
+// Global initialization
+const init = () => {
+  const rootElement = document.getElementById("root");
+  if (rootElement) {
+    createRoot(rootElement).render(<TooltipProvider><PopupApp /></TooltipProvider>);
+  }
+};
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init, { once: true });
+} else {
+  init();
+}
