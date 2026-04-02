@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head><title>Export Icon</title></head>
+<body style="background:#111;display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px;font-family:sans-serif;color:white">
+  <h2>Safety Intercept — Icon Export</h2>
+  <canvas id="c128" width="128" height="128" style="border-radius:22px"></canvas>
+  <canvas id="c48"  width="48"  height="48"  style="border-radius:8px"></canvas>
+  <canvas id="c32"  width="32"  height="32"  style="border-radius:6px"></canvas>
+  <canvas id="c16"  width="16"  height="16"  style="border-radius:3px"></canvas>
+  <div id="links" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"></div>
+  <script>
+    const svgUrl = 'icon-source.svg';
+    const sizes = [128, 48, 32, 16];
+    const img = new Image();
+    img.onload = () => {
+      sizes.forEach(sz => {
+        const canvas = document.getElementById('c' + sz);
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, sz, sz);
+        ctx.drawImage(img, 0, 0, sz, sz);
+
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = sz === 128 ? 'icon.png' : `icon${sz}.png`;
+        a.textContent = `Download icon${sz === 128 ? '' : sz}.png`;
+        a.style.cssText = 'background:#38BDF8;color:#0B1120;padding:8px 16px;border-radius:6px;font-weight:700;text-decoration:none';
+        document.getElementById('links').appendChild(a);
+      });
+    };
+    img.src = svgUrl;
+  </script>
+</body>
+</html>

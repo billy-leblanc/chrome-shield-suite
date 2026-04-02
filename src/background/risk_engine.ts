@@ -99,11 +99,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (analysis.riskLevel === 'high' || analysis.riskLevel === 'critical') {
         chrome.storage.local.get(["threatLog", "stats"], (storageData) => {
           if (chrome.runtime.lastError) return;
-          const existingLog = Array.isArray(storageData.threatLog) ? storageData.threatLog as Array<{text: string; time: string; type: string}> : [];
+          const existingLog = Array.isArray(storageData.threatLog) ? storageData.threatLog as Array<{text: string; time: string; type: string; platform?: string}> : [];
           const newLog = [{
             text: `Intercepted ${analysis.flags.join(', ')}`,
             time: new Date().toLocaleTimeString(),
-            type: 'blocked'
+            type: 'blocked',
+            platform: platform ?? 'unknown',
           }, ...existingLog].slice(0, 50);
 
           const existingStats = (storageData.stats as { blocked: number; warnings: number; safe: number } | undefined) || { blocked: 0, warnings: 0, safe: 0 };

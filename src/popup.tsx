@@ -1,16 +1,43 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 
+const PLATFORM_META: Record<string, { label: string; color: string; bg: string }> = {
+  paypal:    { label: 'PayPal',    color: '#60A5FA', bg: 'rgba(96,165,250,0.12)'  },
+  venmo:     { label: 'Venmo',     color: '#34D399', bg: 'rgba(52,211,153,0.12)'  },
+  zelle:     { label: 'Zelle',     color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
+  wellsfargo:{ label: 'Wells Fargo',color: '#FBBF24', bg: 'rgba(251,191,36,0.12)' },
+  hsbc:      { label: 'HSBC',      color: '#F87171', bg: 'rgba(248,113,113,0.12)' },
+  barclays:  { label: 'Barclays',  color: '#38BDF8', bg: 'rgba(56,189,248,0.12)'  },
+  revolut:   { label: 'Revolut',   color: '#818CF8', bg: 'rgba(129,140,248,0.12)' },
+};
+
+function getPlatformMeta(platform?: string) {
+  if (!platform) return null;
+  const key = platform.toLowerCase().replace(/[^a-z]/g, '');
+  return PLATFORM_META[key] ?? null;
+}
+
 const ShieldIcon = (p: any) => (
-  <svg {...p} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+  <svg {...p} viewBox="0 0 24 24" fill="none">
+    <path
+      d="M12 2L4 5.5V11c0 5.25 3.4 10.15 8 11.5 4.6-1.35 8-6.25 8-11.5V5.5L12 2z"
+      fill="currentColor" opacity="0.15"
+    />
+    <path
+      d="M12 2L4 5.5V11c0 5.25 3.4 10.15 8 11.5 4.6-1.35 8-6.25 8-11.5V5.5L12 2z"
+      stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" fill="none"
+    />
+    <path
+      d="M9 12l2 2 4-4"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+    />
   </svg>
 );
 
 function PopupApp() {
   const [interceptOn, setInterceptOn] = useState(true);
   const [stats, setStats] = useState({ blocked: 0, warnings: 0, safe: 0 });
-  const [activities, setActivities] = useState<Array<{ text: string; time: string; type: string }>>([]);
+  const [activities, setActivities] = useState<Array<{ text: string; time: string; type: string; platform?: string }>>([]);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
@@ -62,20 +89,35 @@ function PopupApp() {
         justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Shield icon with scan line */}
           <div style={{
-            width: 40, height: 40, borderRadius: 12,
-            background: 'linear-gradient(135deg, #1e3a5f 0%, #0f2040 100%)',
-            boxShadow: interceptOn ? '0 0 16px rgba(56,189,248,0.25)' : 'none',
+            width: 42, height: 42, borderRadius: 12,
+            background: 'linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)',
+            boxShadow: interceptOn ? '0 0 18px rgba(56,189,248,0.3), inset 0 1px 0 rgba(56,189,248,0.1)' : 'none',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             transition: 'box-shadow 0.4s ease',
+            position: 'relative',
+            overflow: 'hidden',
           }}>
-            <ShieldIcon style={{ width: 22, height: 22, color: interceptOn ? '#38BDF8' : '#475569' }} />
+            <ShieldIcon style={{ width: 24, height: 24, color: interceptOn ? '#38BDF8' : '#475569', position: 'relative', zIndex: 1 }} />
+            {interceptOn && (
+              <div style={{
+                position: 'absolute', top: 0, left: '-100%',
+                width: '60%', height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.15), transparent)',
+                animation: 'scan 3s ease-in-out infinite',
+              }} />
+            )}
           </div>
+
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, color: '#F1F5F9', letterSpacing: '-0.3px' }}>
+            <div style={{
+              fontWeight: 800, fontSize: 15, color: '#F1F5F9',
+              letterSpacing: '-0.5px', lineHeight: 1.2,
+            }}>
               Safety Intercept
             </div>
-            <div style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>
+            <div style={{ fontSize: 11, color: '#475569', marginTop: 2, letterSpacing: '0.02em' }}>
               AI-Powered Payment Protection
             </div>
           </div>
@@ -94,9 +136,9 @@ function PopupApp() {
             animation: interceptOn ? 'pulse 2s infinite' : 'none',
           }} />
           <span style={{
-            fontSize: 10, fontWeight: 600,
+            fontSize: 10, fontWeight: 700,
             color: interceptOn ? '#22C55E' : '#F87171',
-            letterSpacing: '0.06em',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
           }}>
             {interceptOn ? 'Active' : 'Disabled'}
           </span>
@@ -122,26 +164,26 @@ function PopupApp() {
 
       {/* Stats */}
       <div style={{ padding: '20px 22px 0' }}>
-        <div style={{ fontSize: 10, fontWeight: 600, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>
           Protection Stats
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
           {[
-            { label: 'Blocked', value: stats.blocked, color: '#F87171', glow: 'rgba(248,113,113,0.12)', accent: 'rgba(248,113,113,0.5)' },
-            { label: 'Warnings', value: stats.warnings, color: '#FBBF24', glow: 'rgba(251,191,36,0.1)', accent: 'rgba(251,191,36,0.5)' },
-            { label: 'Safe', value: stats.safe, color: '#34D399', glow: 'rgba(52,211,153,0.1)', accent: 'rgba(52,211,153,0.5)' },
+            { label: 'Blocked',  value: stats.blocked,  color: '#F87171', glow: 'rgba(248,113,113,0.12)', accent: 'rgba(248,113,113,0.4)' },
+            { label: 'Warnings', value: stats.warnings, color: '#FBBF24', glow: 'rgba(251,191,36,0.10)',  accent: 'rgba(251,191,36,0.4)'  },
+            { label: 'Safe',     value: stats.safe,     color: '#34D399', glow: 'rgba(52,211,153,0.10)',  accent: 'rgba(52,211,153,0.4)'  },
           ].map((s) => (
             <div key={s.label} style={{
               background: `linear-gradient(160deg, ${s.glow} 0%, rgba(15,23,42,0.8) 100%)`,
               borderRadius: 12, padding: '14px 10px',
               border: `1px solid ${s.accent}`,
               textAlign: 'center',
-              boxShadow: `0 2px 12px ${s.glow}`,
+              boxShadow: `0 2px 16px ${s.glow}`,
             }}>
-              <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1, letterSpacing: '-0.5px' }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: s.color, lineHeight: 1, letterSpacing: '-1px' }}>
                 {s.value}
               </div>
-              <div style={{ fontSize: 10, color: '#475569', marginTop: 5, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 9, color: '#475569', marginTop: 5, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 {s.label}
               </div>
             </div>
@@ -151,7 +193,7 @@ function PopupApp() {
 
       {/* Activity */}
       <div style={{ padding: '20px 22px 0', flex: 1 }}>
-        <div style={{ fontSize: 10, fontWeight: 600, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>
+        <div style={{ fontSize: 10, fontWeight: 600, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>
           Recent Activity
         </div>
         <div style={{
@@ -161,24 +203,37 @@ function PopupApp() {
           overflow: 'hidden',
         }}>
           {activities.length === 0 ? (
-            <div style={{ padding: '18px', textAlign: 'center', fontSize: 12, color: '#334155' }}>
+            <div style={{ padding: '20px', textAlign: 'center', fontSize: 12, color: '#334155' }}>
               No threats detected
             </div>
           ) : (
-            activities.map((a, i) => (
-              <div key={i} style={{
-                padding: '11px 16px', display: 'flex', alignItems: 'center', gap: 10,
-                borderBottom: i < activities.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-              }}>
-                <div style={{
-                  width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                  background: a.type === 'blocked' ? '#F87171' : '#FBBF24',
-                  boxShadow: a.type === 'blocked' ? '0 0 6px rgba(248,113,113,0.6)' : '0 0 6px rgba(251,191,36,0.6)',
-                }} />
-                <span style={{ fontSize: 12, color: '#94A3B8', flex: 1, lineHeight: 1.4 }}>{a.text}</span>
-                <span style={{ fontSize: 10, color: '#334155', flexShrink: 0 }}>{a.time}</span>
-              </div>
-            ))
+            activities.map((a, i) => {
+              const pm = getPlatformMeta(a.platform);
+              return (
+                <div key={i} style={{
+                  padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 10,
+                  borderBottom: i < activities.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                }}>
+                  <div style={{
+                    width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                    background: a.type === 'blocked' ? '#F87171' : '#FBBF24',
+                    boxShadow: a.type === 'blocked' ? '0 0 6px rgba(248,113,113,0.7)' : '0 0 6px rgba(251,191,36,0.7)',
+                  }} />
+                  <span style={{ fontSize: 12, color: '#94A3B8', flex: 1, lineHeight: 1.4 }}>{a.text}</span>
+                  {pm && (
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
+                      color: pm.color, background: pm.bg,
+                      padding: '2px 7px', borderRadius: 99,
+                      flexShrink: 0,
+                    }}>
+                      {pm.label}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 10, color: '#334155', flexShrink: 0 }}>{a.time}</span>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
@@ -234,6 +289,7 @@ function PopupApp() {
 
       <style>{`
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes scan { 0% { left: -60%; } 100% { left: 160%; } }
         button:hover { opacity: 0.85; }
       `}</style>
     </div>

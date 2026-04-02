@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a3a60"/>
+      <stop offset="100%" stop-color="#0f2040"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="rgba(56,189,248,0.18)"/>
+      <stop offset="100%" stop-color="rgba(56,189,248,0)"/>
+    </radialGradient>
+    <linearGradient id="shieldFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(56,189,248,0.22)"/>
+      <stop offset="100%" stop-color="rgba(56,189,248,0.05)"/>
+    </linearGradient>
+    <filter id="checkGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background rounded square -->
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <rect width="128" height="128" rx="28" fill="url(#glow)"/>
+
+  <!-- Shield -->
+  <path
+    d="M64 18 L108 36 Q112 48 110 68 Q106 92 64 110 Q22 92 18 68 Q16 48 20 36 Z"
+    fill="url(#shieldFill)"
+    stroke="#38BDF8"
+    stroke-width="3.5"
+    stroke-linejoin="round"
+  />
+
+  <!-- Checkmark -->
+  <polyline
+    points="44,66 57,80 84,52"
+    fill="none"
+    stroke="#38BDF8"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#checkGlow)"
+  />
+</svg>
