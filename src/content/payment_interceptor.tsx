@@ -20,9 +20,8 @@ const PORTAL_CONFIGS: Record<string, PaymentPortalConfig> = {
   'wellsfargo.com': {
     name: 'Wells Fargo',
     selectors: [
+      'button.Button__primary___tsDHA',
       'button:has([data-localized="hub.button.send-money"])',
-      'button.Button__button___Jo8E3',
-      'button#send-money-confirm',
     ]
   },
   'chase.com': {
@@ -92,8 +91,8 @@ const Interceptor = () => {
       const btn = target.tagName === 'BUTTON' ? target : target.closest('button');
       const normalizedText = (btn?.textContent ?? '').trim().replace(/\s+/g, ' ');
 
-      if (config.selectors.some(sel => target.matches(sel) || target.closest(sel))) {
-        if (domain === 'wellsfargo.com') return /^Send$/i.test(normalizedText);
+      if (config.selectors.some(sel => { try { return target.matches(sel) || !!target.closest(sel); } catch { return false; } })) {
+        if (domain === 'wellsfargo.com') return /Send/i.test(normalizedText);
         return true;
       }
       const textPattern = TEXT_FALLBACK_PATTERNS[domain];
@@ -112,7 +111,8 @@ const Interceptor = () => {
       if (pendingRef.current) return;
       pendingRef.current = true;
 
-      interceptedButtonRef.current = target instanceof HTMLElement ? target.closest('button') ?? target : target;
+      const resolvedBtn = target instanceof HTMLElement ? (target.closest('button') ?? target) : target;
+      interceptedButtonRef.current = resolvedBtn instanceof HTMLButtonElement ? resolvedBtn : (resolvedBtn.closest('button') as HTMLButtonElement | null) ?? null;
 
       const memoEl = document.querySelector('textarea, [contenteditable="true"], input[name*="note"], input[name*="memo"]');
       let message = '';
