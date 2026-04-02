@@ -101,7 +101,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           if (chrome.runtime.lastError) return;
           const existingLog = Array.isArray(storageData.threatLog) ? storageData.threatLog as Array<{text: string; time: string; type: string; platform?: string}> : [];
           const newLog = [{
-            text: `Intercepted ${analysis.flags.join(', ')}`,
+            text: `Intercepted: ${Array.from(new Set(analysis.flags)).slice(0, 3).map(f => f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())).join(', ')}`,
             time: new Date().toLocaleTimeString(),
             type: 'blocked',
             platform: platform ?? 'unknown',
