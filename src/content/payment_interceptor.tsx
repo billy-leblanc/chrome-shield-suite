@@ -241,9 +241,13 @@ const Interceptor = () => {
   const config = activeRef.current?.config;
 
   const isCritical = riskReport.riskLevel === 'critical';
-  const cleanFlags = (riskReport.flags ?? []).map((f: string) =>
-    f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-  );
+  const cleanFlags = Array.from(new Set(
+    (riskReport.flags ?? []).map((f: string) =>
+      f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim()
+    )
+  )).filter((f, i, arr) =>
+    !arr.some((other, j) => j !== i && other.startsWith(f) && other !== f)
+  ).slice(0, 3);
 
   return (
     <div className="overlay">
