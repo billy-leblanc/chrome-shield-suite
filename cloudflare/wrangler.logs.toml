@@ -1,0 +1,8 @@
+name = "shield-logs-viewer"
+main = "log-viewer.js"
+compatibility_date = "2024-01-01"
+
+# Same KV namespace used by the main shield-relay worker.
+[[kv_namespaces]]
+binding = "SHIELD_LOGS"
+id = "c0532a48ef81423ba9d9fbaa40b55cde"
