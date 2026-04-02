@@ -63,8 +63,8 @@ function PopupApp() {
       {/* Header */}
       <div style={{ padding: '20px 20px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #1E293B' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#0E7490', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Shield style={{ width: 20, height: 20, color: '#22D3EE' }} />
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#0F3460', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Shield style={{ width: 20, height: 20, color: '#38BDF8' }} />
           </div>
           <div>
             <div style={{ fontWeight: 800, fontSize: 16, color: '#F1F5F9', letterSpacing: '-0.5px' }}>Safety Intercept</div>
@@ -87,7 +87,7 @@ function PopupApp() {
       <div style={{ padding: '12px 20px 0' }}>
         <button onClick={toggleIntercept} style={{
           width: '100%', padding: '10px', borderRadius: 10, border: `1px solid ${interceptOn ? '#1E3A5F' : 'rgba(248,113,113,0.3)'}`,
-          background: interceptOn ? '#0F172A' : 'rgba(248,113,113,0.08)', color: interceptOn ? '#22D3EE' : '#F87171',
+          background: interceptOn ? '#0F172A' : 'rgba(248,113,113,0.08)', color: interceptOn ? '#38BDF8' : '#F87171',
           fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
         }}>
           {interceptOn ? 'Disable Shield' : '⚠ Enable Shield'}
