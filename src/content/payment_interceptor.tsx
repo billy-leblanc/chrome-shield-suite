@@ -324,10 +324,10 @@ const Interceptor = () => {
         el.addEventListener('input', () => {
           cachedMemo = readPayPalMemo();
           if (paypalMemoTimer) clearTimeout(paypalMemoTimer);
-          // Pre-analyze 2s after the user stops typing
+          // Pre-analyze 800ms after the user stops typing
           paypalMemoTimer = setTimeout(() => {
             if (cachedMemo.trim()) analyzePayPal();
-          }, 2000);
+          }, 800);
         });
       };
 
