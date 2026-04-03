@@ -44,6 +44,13 @@ export const SCAN_PATTERNS = [
   { pattern: /verify your account|security update|identity verification/i, category: 'Phishing', weight: 30 },
   { pattern: /pay to release|service fee|activation fee/i, category: 'Advance Fee Fraud', weight: 40 },
   { pattern: /Zelle|Venmo|CashApp|Apple Pay/i, category: 'Platform Hook', weight: 10 },
+  // Email-specific patterns
+  { pattern: /click here to verify|confirm your identity|update your payment/i, category: 'Email Phishing', weight: 35 },
+  { pattern: /your account (has been|will be) (suspended|closed|locked|compromised)/i, category: 'Account Threat', weight: 40 },
+  { pattern: /dear (customer|user|valued member|account holder)/i, category: 'Generic Salutation', weight: 15 },
+  { pattern: /wire transfer|bitcoin|cryptocurrency|gift card/i, category: 'Suspicious Payment Method', weight: 30 },
+  { pattern: /password (reset|expired|compromised)|unusual (sign-in|activity|login)/i, category: 'Credential Phishing', weight: 35 },
+  { pattern: /package.*delivery.*failed|shipping.*label|tracking.*number.*confirm/i, category: 'Fake Shipping', weight: 30 },
 ];
 
 /**
