@@ -231,8 +231,28 @@ const Interceptor = () => {
 
     document.addEventListener("click", handleIntercept, { capture: true });
 
-    const observer = new MutationObserver((_mutations) => {
-      // rescan logic omitted for brevity in file write if needed, keeping it minimal but functional
+    // For same-origin iframes (PayPal confirmation modal), attach listener inside the iframe too
+    const attachToIframe = (iframe: HTMLIFrameElement) => {
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc) return;
+        doc.addEventListener("click", handleIntercept, { capture: true });
+      } catch (_) { /* cross-origin — skip */ }
+    };
+
+    // Attach to any iframes already on the page
+    document.querySelectorAll('iframe').forEach(f => attachToIframe(f as HTMLIFrameElement));
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of Array.from(mutation.addedNodes)) {
+          if (node instanceof HTMLIFrameElement) {
+            // Wait for iframe to load then attach
+            node.addEventListener('load', () => attachToIframe(node), { once: true });
+            attachToIframe(node);
+          }
+        }
+      }
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
