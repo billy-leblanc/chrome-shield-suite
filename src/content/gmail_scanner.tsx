@@ -94,13 +94,19 @@ const GmailScanner = () => {
 
     const extractAndAnalyze = (bodyEl: Element, threadId: string) => {
       const bodyText = (bodyEl as HTMLElement).innerText.trim().substring(0, 3000);
-      if (bodyText.length < 20) return; // too short to analyze
+      if (bodyText.length < 20) return;
 
       const senderEl = queryWithFallback(GMAIL_SELECTORS.sender);
       const senderEmail = senderEl?.getAttribute('email') ?? '';
+      const senderDomain = senderEmail.includes('@') ? senderEmail.split('@')[1] : '';
 
       const subjectEl = queryWithFallback(GMAIL_SELECTORS.subject);
       const subject = subjectEl?.textContent?.trim() ?? '';
+
+      // Detect links and attachments in email body
+      const bodyHtml = (bodyEl as HTMLElement).innerHTML;
+      const linkCount = (bodyHtml.match(/<a\s/gi) || []).length;
+      const hasExternalLinks = /<a\s[^>]*href=["']https?:\/\//i.test(bodyHtml);
 
       const analysisText = [subject, bodyText].filter(Boolean).join('\n\n');
 
@@ -109,15 +115,25 @@ const GmailScanner = () => {
       chrome.runtime.sendMessage(
         { type: 'ANALYZE_RISK', data: { message: analysisText.substring(0, 3000), amount: 0, platform: 'Gmail' } },
         (report: RiskAnalysis | undefined) => {
+          if (chrome.runtime.lastError) return;
           if (report && typeof report === 'object' && typeof report.riskLevel === 'string') {
             if (report.riskLevel === 'high' || report.riskLevel === 'critical') {
               setAnalysis(report);
               setSender(senderEmail);
               setVisible(true);
               chrome.runtime.sendMessage({
-                type: 'LOG_EVENT', event: 'intercepted',
+                type: 'LOG_EVENT', event: 'gmail_scam_detected',
                 platform: 'Gmail',
-                score: report.score, riskLevel: report.riskLevel, flags: report.flags
+                score: report.score,
+                riskLevel: report.riskLevel,
+                flags: report.flags,
+                senderEmail,
+                senderDomain,
+                subject: subject.substring(0, 200),
+                bodyLength: bodyText.length,
+                linkCount,
+                hasExternalLinks,
+                threadId,
               });
             }
           }
@@ -128,6 +144,7 @@ const GmailScanner = () => {
     const waitForEmailBody = (threadId: string) => {
       let debounceTimer: ReturnType<typeof setTimeout>;
       let settled = false;
+      let observer: MutationObserver;
 
       const tryExtract = () => {
         // Get all email bodies in the thread — analyze the most recent (last) one
@@ -135,7 +152,7 @@ const GmailScanner = () => {
         const bodyEl = allBodies.length > 0 ? allBodies[allBodies.length - 1] : null;
         if (bodyEl && (bodyEl as HTMLElement).innerText.trim().length > 20) {
           settled = true;
-          observer.disconnect();
+          observer?.disconnect();
           analyzedRef.current.add(threadId);
           extractAndAnalyze(bodyEl, threadId);
           return true;
@@ -146,7 +163,7 @@ const GmailScanner = () => {
       // Check immediately
       if (tryExtract()) return;
 
-      const observer = new MutationObserver(() => {
+      observer = new MutationObserver(() => {
         if (settled) return;
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => tryExtract(), 500);
@@ -225,7 +242,18 @@ const GmailScanner = () => {
           {cleanFlags.map((f: string, i: number) => <span key={i} className="flag">{f}</span>)}
         </div>
       )}
-      <button className="btn-dismiss" onClick={() => setVisible(false)}>
+      <button className="btn-dismiss" onClick={() => {
+        setVisible(false);
+        if (chrome.runtime?.id) {
+          chrome.runtime.sendMessage({
+            type: 'LOG_EVENT', event: 'gmail_warning_dismissed',
+            platform: 'Gmail',
+            score: analysis.score,
+            riskLevel: analysis.riskLevel,
+            senderEmail: sender,
+          });
+        }
+      }}>
         Dismiss
       </button>
     </div>

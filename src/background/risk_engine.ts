@@ -28,8 +28,9 @@ async function analyzeMemoWithLLM(memo: string, amount?: number, platform?: stri
 
 /**
  * Sends an analytics event to the Cloudflare relay.
+ * Accepts arbitrary extra fields so platform-specific data (Gmail metadata, etc.) is forwarded.
  */
-async function shipEventToRelay(eventData: { event: string; platform: string; timestamp: string }) {
+async function shipEventToRelay(eventData: Record<string, unknown>) {
   try {
     await fetch(EVENT_URL, {
       method: 'POST',
@@ -39,6 +40,57 @@ async function shipEventToRelay(eventData: { event: string; platform: string; ti
   } catch (err) {
     console.error('[Shield] Event sync failed', err);
   }
+}
+
+// --- Cross-Layer Correlation ---
+// Persisted to chrome.storage.local so correlations survive service worker restarts.
+// MV3 service workers die after ~30s of inactivity — in-memory state would be wiped.
+const CORRELATION_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
+const STORAGE_KEY = 'gmailDetections';
+
+interface GmailDetection {
+  timestamp: number;
+  senderEmail: string;
+  senderDomain: string;
+  subject: string;
+  score: number;
+  threadId: string;
+}
+
+function recordGmailDetection(msg: Record<string, unknown>) {
+  const entry: GmailDetection = {
+    timestamp: Date.now(),
+    senderEmail: String(msg.senderEmail ?? ''),
+    senderDomain: String(msg.senderDomain ?? ''),
+    subject: String(msg.subject ?? ''),
+    score: typeof msg.score === 'number' ? msg.score : 0,
+    threadId: String(msg.threadId ?? ''),
+  };
+
+  chrome.storage.local.get(STORAGE_KEY, (data) => {
+    const existing: GmailDetection[] = Array.isArray(data[STORAGE_KEY]) ? data[STORAGE_KEY] : [];
+    // Prune expired entries and cap at 100
+    const now = Date.now();
+    const pruned = existing.filter(d => now - d.timestamp < CORRELATION_WINDOW_MS);
+    chrome.storage.local.set({ [STORAGE_KEY]: [...pruned, entry].slice(-100) });
+  });
+}
+
+function findGmailCorrelation(): Promise<{ correlationId: string; gmailEvents: GmailDetection[] } | null> {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(STORAGE_KEY, (data) => {
+      const detections: GmailDetection[] = Array.isArray(data[STORAGE_KEY]) ? data[STORAGE_KEY] : [];
+      const now = Date.now();
+      // Time-window correlation: any Gmail scam detected in the last 24 hours
+      const recent = detections.filter(d => now - d.timestamp < CORRELATION_WINDOW_MS);
+      if (recent.length === 0) return resolve(null);
+
+      resolve({
+        correlationId: `gmail-pay-${now}`,
+        gmailEvents: recent,
+      });
+    });
+  });
 }
 
 // Background Listener
@@ -57,9 +109,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // New Case: Analytics Logging
   if (message.type === 'LOG_EVENT') {
-    const { event, platform } = message;
+    const { type: _type, ...fields } = message;
     const timestamp = new Date().toISOString();
-    const entry = { event, platform, timestamp };
+    const entry = { ...fields, timestamp };
 
     // 1. Local Storage (Limit 1000)
     chrome.storage.local.get('eventLog', (data) => {
@@ -68,7 +120,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       chrome.storage.local.set({ eventLog: newLog });
     });
 
-    // 2. Cloudflare Relay Sync
+    // 2. Record Gmail detections for cross-layer correlation
+    if (fields.platform === 'Gmail' && fields.event === 'gmail_scam_detected') {
+      recordGmailDetection(fields);
+    }
+
+    // 3. Cloudflare Relay Sync
     shipEventToRelay(entry);
     return false; // Sync-and-forget
   }
@@ -80,7 +137,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const amount = typeof data.amount === 'number' ? data.amount : undefined;
     const platform = typeof data.platform === 'string' ? data.platform : undefined;
 
-    analyzeMemoWithLLM(memo, amount, platform).then((llmResult) => {
+    analyzeMemoWithLLM(memo, amount, platform).then(async (llmResult) => {
       let analysis = heuristicAnalysis;
 
       if (llmResult) {
@@ -94,6 +151,35 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           flags: mergedFlags,
           recommendation: FraudDetector.getRecommendation(riskLevel),
         };
+      }
+
+      // Cross-layer correlation: any Gmail scam in the last 24h elevates payment risk
+      if (platform !== 'Gmail') {
+        const correlation = await findGmailCorrelation();
+        if (correlation) {
+          // Boost score — recent scam email + payment attempt = elevated suspicion
+          analysis.score = Math.min(100, analysis.score + 30);
+          analysis.riskLevel = scoreToRiskLevel(analysis.score);
+          analysis.flags = Array.from(new Set([...analysis.flags, 'Cross-Layer: Recent Gmail Scam']));
+          analysis.recommendation = FraudDetector.getRecommendation(analysis.riskLevel);
+
+          // Log the correlated event with all linked Gmail detections
+          shipEventToRelay({
+            event: 'cross_layer_correlation',
+            platform: platform ?? 'unknown',
+            correlationId: correlation.correlationId,
+            gmailDetections: correlation.gmailEvents.map(d => ({
+              senderEmail: d.senderEmail,
+              subject: d.subject,
+              score: d.score,
+              detectedAt: new Date(d.timestamp).toISOString(),
+            })),
+            paymentScore: analysis.score,
+            paymentFlags: analysis.flags,
+            amount,
+            timestamp: new Date().toISOString(),
+          });
+        }
       }
 
       if (analysis.riskLevel === 'high' || analysis.riskLevel === 'critical') {
