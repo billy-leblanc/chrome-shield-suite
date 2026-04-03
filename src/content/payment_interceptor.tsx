@@ -121,6 +121,13 @@ const injectStyles = (shadow: ShadowRoot) => {
       border: 1px solid rgba(248,113,113,0.25) !important;
       color: #F87171;
     }
+    .btn-legitimate {
+      width: 100%; margin-top: 10px; padding: 8px;
+      background: none; border: none; cursor: pointer;
+      font-size: 11px; color: #334155; text-decoration: underline;
+      text-underline-offset: 2px; font-family: inherit;
+    }
+    .btn-legitimate:hover { color: #64748B; }
   `;
   shadow.appendChild(style);
 };
@@ -201,9 +208,9 @@ const Interceptor = () => {
               setRiskReport(report);
               setShowModal(true);
               chrome.runtime.sendMessage({
-                type: 'LOG_EVENT',
-                event: 'intercepted',
-                platform: config.name
+                type: 'LOG_EVENT', event: 'intercepted',
+                platform: config.name,
+                score: report.score, riskLevel: report.riskLevel, flags: report.flags
               });
             } else {
               // Safe — let the click through
@@ -302,7 +309,7 @@ const Interceptor = () => {
               if (report.riskLevel === 'high' || report.riskLevel === 'critical') {
                 setRiskReport(report);
                 setShowModal(true);
-                chrome.runtime.sendMessage({ type: 'LOG_EVENT', event: 'intercepted', platform: 'PayPal' });
+                chrome.runtime.sendMessage({ type: 'LOG_EVENT', event: 'intercepted', platform: 'PayPal', score: report.score, riskLevel: report.riskLevel, flags: report.flags });
               }
             }
           }
@@ -392,21 +399,28 @@ const Interceptor = () => {
           </>
         )}
         <div className="actions">
-          <button className="btn btn-cancel" onClick={() => setShowModal(false)}>
+          <button className="btn btn-cancel" onClick={() => {
+            if (activeRef.current) {
+              chrome.runtime.sendMessage({
+                type: 'LOG_EVENT', event: 'cancelled',
+                platform: activeRef.current.config.name,
+                score: riskReport.score, riskLevel: riskReport.riskLevel, flags: riskReport.flags
+              });
+            }
+            setShowModal(false);
+          }}>
             Cancel Payment
           </button>
           <button
             className="btn btn-proceed"
             onClick={() => {
-              // Analytics: Proceeded
               if (activeRef.current) {
                 chrome.runtime.sendMessage({
-                  type: 'LOG_EVENT',
-                  event: 'proceeded',
-                  platform: activeRef.current.config.name
+                  type: 'LOG_EVENT', event: 'proceeded',
+                  platform: activeRef.current.config.name,
+                  score: riskReport.score, riskLevel: riskReport.riskLevel, flags: riskReport.flags
                 });
               }
-
               setShowModal(false);
               const btn = interceptedButtonRef.current;
               interceptedButtonRef.current = null;
@@ -420,6 +434,25 @@ const Interceptor = () => {
             Proceed Anyway
           </button>
         </div>
+        <button className="btn-legitimate" onClick={() => {
+          if (activeRef.current) {
+            chrome.runtime.sendMessage({
+              type: 'LOG_EVENT', event: 'false_positive',
+              platform: activeRef.current.config.name,
+              score: riskReport.score, riskLevel: riskReport.riskLevel, flags: riskReport.flags
+            });
+          }
+          setShowModal(false);
+          const btn = interceptedButtonRef.current;
+          interceptedButtonRef.current = null;
+          if (btn && handleInterceptRef.current) {
+            document.removeEventListener("click", handleInterceptRef.current, true);
+            btn.click();
+            document.addEventListener("click", handleInterceptRef.current, { capture: true });
+          }
+        }}>
+          This was a legitimate payment
+        </button>
       </div>
     </div>
   );
