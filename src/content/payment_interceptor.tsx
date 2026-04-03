@@ -11,7 +11,13 @@ interface PaymentPortalConfig {
 const PORTAL_CONFIGS: Record<string, PaymentPortalConfig> = {
   'paypal.com': {
     name: 'PayPal',
-    selectors: ['button#payment-submit-btn', 'button[data-testid="submit-button"]', '#confirmButtonTop']
+    selectors: [
+      'button[data-testid="submit-button-confirm"]',
+      'button[data-testid="submit-button"]',
+      'button#payment-submit-btn',
+      '#confirmButtonTop',
+      'button.checkout-button',
+    ]
   },
   'venmo.com': {
     name: 'Venmo',
@@ -39,7 +45,7 @@ const PORTAL_CONFIGS: Record<string, PaymentPortalConfig> = {
 };
 
 const TEXT_FALLBACK_PATTERNS: Record<string, RegExp> = {
-  'paypal.com': /Complete Purchase|Send Money Now|Pay Now/i,
+  'paypal.com': /Send Now|Complete|Pay Now|Send Money Now|Complete Purchase/i,
   'venmo.com': /Pay .* \$/i,
   'wellsfargo.com': /^Send$/i,
   'chase.com': /Send Money/i,
