@@ -256,9 +256,103 @@ const Interceptor = () => {
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
+    // --- PayPal proactive interception ---
+    // PayPal renders the send/confirm button inside a cross-origin sandboxed
+    // iframe that content scripts cannot access. We work around this by:
+    //   1. Pre-analyzing the memo field on the OUTER page as the user types
+    //   2. Detecting SPA navigation to the confirmation/review step
+    //   3. Showing our overlay proactively — it covers the entire viewport
+    //      including the iframe, physically blocking the send button
+    let paypalNavPoll: ReturnType<typeof setInterval> | null = null;
+    let paypalMemoTimer: ReturnType<typeof setTimeout> | null = null;
+
+    if (domain === 'paypal.com') {
+      let cachedMemo = '';
+      let cachedRisk: RiskAnalysis | null = null;
+      let lastUrl = window.location.href;
+
+      const readPayPalMemo = (): string => {
+        const el = document.querySelector('#noteField, textarea[name="note"], [data-testid="note-input"]');
+        if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) return el.value;
+        if (el instanceof HTMLElement) return el.textContent ?? '';
+        return cachedMemo; // field may have unmounted during SPA nav
+      };
+
+      const readPayPalAmount = (): number => {
+        const el = document.querySelector('input[type="number"], .amount-input, input[name*="amount"], #amount');
+        if (el instanceof HTMLInputElement) {
+          const n = parseFloat(el.value);
+          return isFinite(n) ? n : 0;
+        }
+        return 0;
+      };
+
+      const analyzePayPal = () => {
+        const memo = readPayPalMemo();
+        const amount = readPayPalAmount();
+        cachedMemo = memo;
+        if (!memo.trim() && amount === 0) return;
+        if (!chrome.runtime?.id) return;
+
+        chrome.runtime.sendMessage(
+          { type: 'ANALYZE_RISK', data: { message: memo.substring(0, 1000), amount, platform: 'PayPal' } },
+          (report: RiskAnalysis | undefined) => {
+            if (report && typeof report.riskLevel === 'string') {
+              cachedRisk = report;
+              if (report.riskLevel === 'high' || report.riskLevel === 'critical') {
+                setRiskReport(report);
+                setShowModal(true);
+                chrome.runtime.sendMessage({ type: 'LOG_EVENT', event: 'intercepted', platform: 'PayPal' });
+              }
+            }
+          }
+        );
+      };
+
+      // Bind input listener to memo field (idempotent via marker property)
+      const bindMemoField = () => {
+        const el = document.querySelector('#noteField, textarea[name="note"], [data-testid="note-input"]');
+        if (!el || (el as any).__shieldBound) return;
+        (el as any).__shieldBound = true;
+        el.addEventListener('input', () => {
+          cachedMemo = readPayPalMemo();
+          if (paypalMemoTimer) clearTimeout(paypalMemoTimer);
+          // Pre-analyze 2s after the user stops typing
+          paypalMemoTimer = setTimeout(() => {
+            if (cachedMemo.trim()) analyzePayPal();
+          }, 2000);
+        });
+      };
+
+      bindMemoField();
+
+      // Detect PayPal SPA navigation via URL polling (pushState is in the
+      // page's JS world, not the content script's isolated world, so we poll).
+      paypalNavPoll = setInterval(() => {
+        const url = window.location.href;
+        if (url !== lastUrl) {
+          lastUrl = url;
+          cachedMemo = readPayPalMemo();
+          if (cachedMemo.trim()) {
+            // If we already have a cached high-risk result, show instantly
+            if (cachedRisk && (cachedRisk.riskLevel === 'high' || cachedRisk.riskLevel === 'critical')) {
+              setRiskReport(cachedRisk);
+              setShowModal(true);
+            } else {
+              analyzePayPal();
+            }
+          }
+          // Re-bind memo field in case SPA re-rendered it
+          bindMemoField();
+        }
+      }, 500);
+    }
+
     return () => {
       document.removeEventListener("click", handleIntercept, true);
       observer.disconnect();
+      if (paypalNavPoll) clearInterval(paypalNavPoll);
+      if (paypalMemoTimer) clearTimeout(paypalMemoTimer);
     };
   }, []);
 
