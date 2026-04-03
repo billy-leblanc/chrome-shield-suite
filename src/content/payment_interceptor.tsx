@@ -391,13 +391,24 @@ const Interceptor = () => {
 
       // Detect PayPal SPA navigation via URL polling (pushState is in the
       // page's JS world, not the content script's isolated world, so we poll).
+      const CONFIRM_URLS = ['/transfer/homepage/buy/preview', '/transfer/homepage/send/preview', '/webapps/hermes'];
+      let questionnaireShownForUrl = '';
+
       paypalNavPoll = setInterval(() => {
         const url = window.location.href;
         if (url !== lastUrl) {
           lastUrl = url;
           cachedMemo = readPayPalMemo();
-          if (cachedMemo.trim()) {
-            // If we already have a cached high-risk result, show instantly
+
+          // On confirm/preview page — always show questionnaire first (memo or not)
+          const isConfirmPage = CONFIRM_URLS.some(u => url.includes(u));
+          if (isConfirmPage && questionnaireShownForUrl !== url) {
+            questionnaireShownForUrl = url;
+            pendingDataRef.current = { message: cachedMemo.substring(0, 1000), amount: readPayPalAmount() };
+            setChecks({ contacted: false, firstTime: false, secretUrgent: false });
+            setShowQuestionnaire(true);
+          } else if (cachedMemo.trim()) {
+            // Non-confirm page with memo — pre-analyze silently
             if (cachedRisk && (cachedRisk.riskLevel === 'high' || cachedRisk.riskLevel === 'critical')) {
               setRiskReport(cachedRisk);
               setShowModal(true);

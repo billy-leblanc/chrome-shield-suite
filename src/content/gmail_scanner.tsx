@@ -166,7 +166,7 @@ const GmailScanner = () => {
       observer = new MutationObserver(() => {
         if (settled) return;
         clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => tryExtract(), 500);
+        debounceTimer = setTimeout(() => tryExtract(), 100);
       });
 
       observer.observe(document.body, { childList: true, subtree: true });
