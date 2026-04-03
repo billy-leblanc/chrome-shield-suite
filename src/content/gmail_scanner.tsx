@@ -39,28 +39,29 @@ const injectStyles = (shadow: ShadowRoot) => {
       border-bottom: 1px solid rgba(248,113,113,0.3);
     }
     .banner-high {
-      background: linear-gradient(135deg, #1a1505 0%, #2d2200 100%);
-      border-bottom: 1px solid rgba(251,191,36,0.3);
+      background: linear-gradient(135deg, #1a0808 0%, #2d1010 100%);
+      border-bottom: 1px solid rgba(248,113,113,0.2);
     }
     .icon {
       width: 20px; height: 20px; flex-shrink: 0;
     }
     .icon-critical { color: #F87171; }
-    .icon-high { color: #FBBF24; }
+    .icon-high { color: #F87171; }
     .text-group { flex: 1; min-width: 0; }
     .title {
       font-size: 13px; font-weight: 700; letter-spacing: -0.2px;
     }
     .title-critical { color: #F87171; }
-    .title-high { color: #FBBF24; }
+    .title-high { color: #FCA5A5; }
     .desc {
       font-size: 12px; color: #94A3B8; line-height: 1.4; margin-top: 2px;
     }
-    .flags { display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0; }
+    .flags { display: flex; flex-wrap: nowrap; gap: 6px; flex-shrink: 0; overflow: hidden; }
     .flag {
       font-size: 10px; font-weight: 500; color: #94A3B8;
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
       padding: 2px 8px; border-radius: 99px; white-space: nowrap;
+      max-width: 160px; overflow: hidden; text-overflow: ellipsis;
     }
     .btn-dismiss {
       flex-shrink: 0; padding: 6px 14px; border-radius: 8px;
@@ -216,13 +217,13 @@ const GmailScanner = () => {
   if (!visible || !analysis) return null;
 
   const isCritical = analysis.riskLevel === 'critical';
+  // LLM flags are full sentences — extract the first clause (before : or ,) as a short label
   const cleanFlags = Array.from(new Set(
-    (analysis.flags ?? []).map((f: string) =>
-      f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim()
-    )
-  )).filter((f, i, arr) =>
-    !arr.some((other, j) => j !== i && other.startsWith(f) && other !== f)
-  ).slice(0, 4);
+    (analysis.flags ?? []).map((f: string) => {
+      const short = f.split(/[:|,]/)[0].replace(/_/g, ' ').trim();
+      return short.replace(/\b\w/g, c => c.toUpperCase());
+    })
+  )).slice(0, 3);
 
   return (
     <div className={`banner ${isCritical ? 'banner-critical' : 'banner-high'}`}>

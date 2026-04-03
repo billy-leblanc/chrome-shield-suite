@@ -15,7 +15,7 @@ export type { RiskAnalysis } from '../core/fraud_detector';
 
 const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
 const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
-const RELAY_AUTH_TOKEN = 'shieldrelay2026abc';
+const RELAY_AUTH_TOKEN = import.meta.env.VITE_RELAY_AUTH_TOKEN as string;
 
 /**
  * Reads the relay auth token from chrome.storage then calls callRelayAPI.
@@ -141,7 +141,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       let analysis = heuristicAnalysis;
 
       if (llmResult) {
-        const blendedScore = blendScores(heuristicAnalysis.score, llmResult.riskScore);
+        // Gmail heuristics are keyword-based and miss social engineering emails.
+        // Give the LLM 80% weight for Gmail so a crafted scam email isn't diluted to "medium".
+        const heuristicWeight = platform === 'Gmail' ? 0.2 : 0.6;
+        const blendedScore = blendScores(heuristicAnalysis.score, llmResult.riskScore, heuristicWeight);
         const mergedFlags = Array.from(new Set([...heuristicAnalysis.flags, ...llmResult.flags]));
         const riskLevel = scoreToRiskLevel(blendedScore);
 
@@ -187,7 +190,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           if (chrome.runtime.lastError) return;
           const existingLog = Array.isArray(storageData.threatLog) ? storageData.threatLog as Array<{text: string; time: string; type: string; platform?: string}> : [];
           const newLog = [{
-            text: `Intercepted: ${Array.from(new Set(analysis.flags)).slice(0, 3).map(f => f.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())).join(', ')}`,
+            text: `Intercepted: ${Array.from(new Set(analysis.flags)).slice(0, 3).map(f => f.split(/[:|,]/)[0].replace(/_/g, ' ').trim().replace(/\b\w/g, c => c.toUpperCase())).join(' · ')}`,
             time: new Date().toLocaleTimeString(),
             type: analysis.riskLevel === 'critical' ? 'blocked' : 'warning',
             platform: platform ?? 'unknown',
