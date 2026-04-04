@@ -156,6 +156,13 @@ const injectStyles = (shadow: ShadowRoot) => {
     .q-item.checked .q-check-icon { display: block; }
     .q-text { font-size: 13px; color: #94A3B8; line-height: 1.5; }
     .q-item.checked .q-text { color: #F1F5F9; }
+    .correlation-callout {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.25);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;
+    }
+    .correlation-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .correlation-text { font-size: 12px; color: #FBBF24; line-height: 1.5; }
     .btn-continue {
       width: 100%; padding: 12px; border-radius: 10px; margin-top: 16px;
       background: linear-gradient(135deg, #1a3a60 0%, #0f2040 100%);
@@ -461,14 +468,35 @@ const Interceptor = () => {
     if (socialFlags.length > 0) {
       // Show risk modal immediately — no need to wait for AI
       pendingRef.current = false;
-      const report: RiskAnalysis = {
+
+      // Check for recent Gmail scam detections to build correlation note
+      const buildReport = (correlationNote?: string): RiskAnalysis => ({
         score: 90,
         riskLevel: 'critical',
         flags: socialFlags,
         recommendation: 'Stop. This payment shows signs of social engineering. Do not proceed.',
+        correlationNote,
+      });
+
+      const showWithCorrelation = () => {
+        chrome.storage.local.get('gmailDetections', (data) => {
+          const detections = Array.isArray(data.gmailDetections) ? data.gmailDetections : [];
+          const now = Date.now();
+          const recent = detections.filter((d: { timestamp: number }) => now - d.timestamp < 24 * 60 * 60 * 1000);
+          let correlationNote: string | undefined;
+          if (recent.length > 0) {
+            const latest = recent.reduce((a: { timestamp: number; senderEmail: string }, b: { timestamp: number; senderEmail: string }) => a.timestamp > b.timestamp ? a : b);
+            const minutesAgo = Math.round((now - latest.timestamp) / 60000);
+            const timeAgo = minutesAgo < 60 ? `${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`
+              : `${Math.round(minutesAgo / 60)} hour${Math.round(minutesAgo / 60) !== 1 ? 's' : ''} ago`;
+            correlationNote = `You received a scam email from ${latest.senderEmail} ${timeAgo}. Combined with this payment, fraud risk is elevated.`;
+          }
+          setRiskReport(buildReport(correlationNote));
+          setShowModal(true);
+        });
       };
-      setRiskReport(report);
-      setShowModal(true);
+
+      showWithCorrelation();
       const active = activeRef.current;
       if (active && chrome.runtime?.id) {
         chrome.runtime.sendMessage({
@@ -568,6 +596,12 @@ const Interceptor = () => {
               {cleanFlags.map((f: string, i: number) => <span key={i} className="flag">{f}</span>)}
             </div>
           </>
+        )}
+        {riskReport.correlationNote && (
+          <div className="correlation-callout">
+            <span className="correlation-icon">⚠️</span>
+            <span className="correlation-text">{riskReport.correlationNote}</span>
+          </div>
         )}
         <div className="actions">
           <button className="btn btn-cancel" onClick={() => {

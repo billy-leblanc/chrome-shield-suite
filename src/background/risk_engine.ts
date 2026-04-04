@@ -188,6 +188,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           analysis.flags = Array.from(new Set([...analysis.flags, 'Cross-Layer: Recent Gmail Scam']));
           analysis.recommendation = FraudDetector.getRecommendation(analysis.riskLevel);
 
+          // Build human-readable correlation note for the modal
+          const mostRecent = correlation.gmailEvents.reduce((a, b) => a.timestamp > b.timestamp ? a : b);
+          const minutesAgo = Math.round((Date.now() - mostRecent.timestamp) / 60000);
+          const timeAgo = minutesAgo < 60 ? `${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`
+            : `${Math.round(minutesAgo / 60)} hour${Math.round(minutesAgo / 60) !== 1 ? 's' : ''} ago`;
+          analysis.correlationNote = `You received a scam email from ${mostRecent.senderEmail} ${timeAgo}. Combined with this payment, fraud risk is elevated.`;
+
           // Log the correlated event with all linked Gmail detections
           shipEventToRelay({
             event: 'cross_layer_correlation',

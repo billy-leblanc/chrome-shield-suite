@@ -9,6 +9,7 @@ export interface RiskAnalysis {
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
   flags: string[];
   recommendation: string;
+  correlationNote?: string; // Human-readable cross-layer alert e.g. "You received a scam email from x 2 hours ago"
 }
 
 export interface LLMRiskResult {
