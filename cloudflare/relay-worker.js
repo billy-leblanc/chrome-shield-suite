@@ -68,11 +68,12 @@ export default {
 
     // --- CASE 1: Analytics Logging ---
     if (url.pathname === '/event') {
-      const { event, platform, timestamp } = body;
+      const { auth_token: _auth, ...eventFields } = body;
+      const { timestamp } = eventFields;
       try {
         if (env.SHIELD_LOGS) {
           const logKey = `event:${timestamp || Date.now()}`;
-          await env.SHIELD_LOGS.put(logKey, JSON.stringify({ event, platform, timestamp }));
+          await env.SHIELD_LOGS.put(logKey, JSON.stringify(eventFields));
         }
         return new Response(JSON.stringify({ ok: true }), {
           status: 200,
@@ -148,6 +149,40 @@ export default {
       } catch (err) {
         return new Response(JSON.stringify(FALLBACK_RESULT), {
           status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // --- CASE 3: Dashboard Data ---
+    if (url.pathname === '/dashboard') {
+      if (!env.SHIELD_LOGS) {
+        return new Response(JSON.stringify({ entries: [] }), {
+          status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
+      try {
+        // List all keys (up to 1000)
+        const list = await env.SHIELD_LOGS.list({ limit: 1000 });
+        // Fetch all values in parallel
+        const entries = await Promise.all(
+          list.keys.map(async ({ name }) => {
+            try {
+              const val = await env.SHIELD_LOGS.get(name);
+              return { key: name, data: JSON.parse(val) };
+            } catch {
+              return null;
+            }
+          })
+        );
+        return new Response(JSON.stringify({ entries: entries.filter(Boolean) }), {
+          status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: 'KV read failed', details: err.message }), {
+          status: 500,
           headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         });
       }

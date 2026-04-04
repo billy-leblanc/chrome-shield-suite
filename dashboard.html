@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safety Intercept — Threat Dashboard</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0a0d14;--card:#111827;--card-border:#1e293b;
+    --critical:#F87171;--high:#fb923c;--medium:#FBBF24;--low:#34D399;
+    --accent:#38BDF8;--text:#e2e8f0;--text-muted:#94a3b8;--text-dim:#64748b;
+    --timeline-line:#1e293b;
+  }
+  html{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5}
+  body{min-height:100vh;padding:0}
+
+  /* header */
+  .header{display:flex;align-items:center;justify-content:space-between;padding:24px 40px 16px;border-bottom:1px solid var(--card-border);background:linear-gradient(180deg,#0e1220 0%,var(--bg) 100%)}
+  .header-left{display:flex;align-items:center;gap:14px}
+  .logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#6366f1);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff}
+  .header h1{font-size:22px;font-weight:700;letter-spacing:-0.3px}
+  .header h1 span{color:var(--accent);font-weight:400;font-size:14px;margin-left:8px}
+  .btn{background:var(--card);border:1px solid var(--card-border);color:var(--text);padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn svg{width:14px;height:14px}
+
+  .container{max-width:1200px;margin:0 auto;padding:24px 40px 60px}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:36px}
+  .stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:20px 22px}
+  .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:6px}
+  .stat-value{font-size:28px;font-weight:700;letter-spacing:-0.5px}
+  .stat-value.critical{color:var(--critical)}
+  .stat-value.accent{color:var(--accent)}
+
+  /* section */
+  .section{margin-bottom:40px}
+  .section-title{font-size:16px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+  .section-title .badge{font-size:11px;background:var(--accent);color:#0a0d14;padding:2px 8px;border-radius:99px;font-weight:700}
+
+  /* case card */
+  .case-card{background:var(--card);border:1px solid var(--card-border);border-radius:14px;padding:28px 30px;margin-bottom:18px;position:relative;overflow:hidden}
+  .case-card::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--critical),var(--accent))}
+  .case-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px}
+  .case-id{font-size:12px;color:var(--text-dim);font-family:monospace;letter-spacing:.5px}
+  .case-badge{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:4px 12px;border-radius:6px;background:rgba(248,113,113,.12);color:var(--critical);border:1px solid rgba(248,113,113,.25)}
+
+  /* timeline */
+  .timeline{position:relative;padding-left:48px}
+  .timeline-line{position:absolute;left:18px;top:16px;bottom:16px;width:2px;background:linear-gradient(180deg,var(--critical) 0%,var(--accent) 50%,#34d399 100%)}
+  .timeline-step{position:relative;padding-bottom:10px}
+  .timeline-step:last-child{padding-bottom:0}
+  .step-dot{position:absolute;left:-48px;top:2px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:1}
+  .step-dot.gmail{background:rgba(248,113,113,.15);border:2px solid var(--critical)}
+  .step-dot.payment{background:rgba(56,189,248,.15);border:2px solid var(--accent)}
+  .step-dot.blocked{background:rgba(248,113,113,.2);border:2px solid var(--critical)}
+  .step-title{font-size:14px;font-weight:600;margin-bottom:4px}
+  .step-meta{font-size:13px;color:var(--text-muted);line-height:1.7}
+  .step-meta strong{color:var(--text);font-weight:500}
+  .step-score{display:inline-flex;align-items:center;gap:4px}
+  .step-score .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+
+  .elapsed-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--text-dim);background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.15);border-radius:6px;padding:4px 12px;margin:12px 0 14px -48px;position:relative;left:12px;font-weight:500}
+  .elapsed-badge svg{width:12px;height:12px;color:var(--accent)}
+
+  .outcome-badge{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--critical);background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);border-radius:8px;padding:8px 18px;margin-top:6px}
+  .outcome-badge.safe{color:#34d399;background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.2)}
+
+  /* flags */
+  .flags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .flag-pill{font-size:11px;padding:3px 10px;border-radius:5px;background:rgba(248,113,113,.1);color:var(--critical);border:1px solid rgba(248,113,113,.15);white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+  .flag-pill.high{background:rgba(251,146,60,.1);color:#fb923c;border-color:rgba(251,146,60,.15)}
+  .flag-pill.medium{background:rgba(251,191,36,.1);color:#FBBF24;border-color:rgba(251,191,36,.15)}
+
+  /* individual cards */
+  .det-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+  .det-card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:18px 20px;transition:border-color .15s}
+  .det-card:hover{border-color:var(--accent)}
+  .det-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .det-platform{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--accent)}
+  .det-time{font-size:11px;color:var(--text-dim)}
+  .det-score{font-size:22px;font-weight:700;margin-bottom:4px}
+  .det-level{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+
+  /* loading */
+  .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 0;gap:16px}
+  .spinner{width:36px;height:36px;border:3px solid var(--card-border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:13px;color:var(--text-dim)}
+
+  .empty{text-align:center;padding:60px 0;color:var(--text-dim);font-size:14px}
+
+  .risk-critical{color:var(--critical)}
+  .risk-high{color:#fb923c}
+  .risk-medium{color:#FBBF24}
+  .risk-low{color:#34d399}
+
+  @media(max-width:768px){
+    .header{padding:16px 20px 12px}
+    .container{padding:16px 20px 40px}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .det-grid{grid-template-columns:1fr}
+    .case-card{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-icon">S</div>
+    <h1>Safety Intercept <span>Threat Dashboard</span></h1>
+  </div>
+  <button class="btn" id="refreshBtn" onclick="loadDashboard()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+    Refresh
+  </button>
+</div>
+
+<div class="container">
+  <div id="statsBar" class="stats"></div>
+  <div id="content"></div>
+</div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────
+const WORKER_URL = 'https://shield-relay.bleblanc.workers.dev';
+const RELAY_AUTH_TOKEN = '1d44470b48888ac13590cc9df124ddb91ae6c61f84c2802acbd5f735d00aebfb';
+
+// ── Helpers ──────────────────────────────────────────────────────────
+function riskColor(level) {
+  if (!level) return 'var(--text-muted)';
+  const l = level.toLowerCase();
+  if (l === 'critical') return 'var(--critical)';
+  if (l === 'high') return '#fb923c';
+  if (l === 'medium') return '#FBBF24';
+  return '#34d399';
+}
+
+function riskClass(level) {
+  if (!level) return '';
+  return 'risk-' + level.toLowerCase();
+}
+
+function truncateFlag(flag) {
+  if (!flag || typeof flag !== 'string') return '';
+  const idx = flag.indexOf(':');
+  let text = idx > 0 ? flag.substring(0, idx).trim() : flag.trim();
+  // Title case
+  return text.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function fmtTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+function fmtShortTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+function elapsedText(ms) {
+  const sec = Math.floor(ms / 1000);
+  if (sec < 60) return `${sec} seconds later`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} minute${min !== 1 ? 's' : ''} later`;
+  const hr = Math.floor(min / 60);
+  const rm = min % 60;
+  return rm > 0 ? `${hr}h ${rm}m later` : `${hr} hour${hr !== 1 ? 's' : ''} later`;
+}
+
+function flagPillsHTML(flags, riskLevel, max = 3) {
+  if (!flags || !flags.length) return '';
+  const cls = (riskLevel || '').toLowerCase() === 'high' ? ' high' : (riskLevel || '').toLowerCase() === 'medium' ? ' medium' : '';
+  return '<div class="flags">' + flags.slice(0, max).map(f => `<span class="flag-pill${cls}">${truncateFlag(f)}</span>`).join('') + '</div>';
+}
+
+// ── API ──────────────────────────────────────────────────────────────
+async function fetchAllEntries() {
+  const res = await fetch(`${WORKER_URL}/dashboard`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ auth_token: RELAY_AUTH_TOKEN }),
+  });
+  if (!res.ok) throw new Error(`Worker returned ${res.status}`);
+  const data = await res.json();
+  // Normalize to { key, value } shape expected by the rest of the code
+  return (data.entries || []).map(e => ({ key: e.key, value: e.data }));
+}
+
+// ── Dashboard Logic ──────────────────────────────────────────────────
+async function loadDashboard() {
+  const statsBar = document.getElementById('statsBar');
+  const content = document.getElementById('content');
+  statsBar.innerHTML = '';
+  content.innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Fetching threat intelligence...</div></div>';
+
+  try {
+    const entries = await fetchAllEntries();
+    if (!entries.length) {
+      content.innerHTML = '<div class="empty">No data found in KV namespace.</div>';
+      return;
+    }
+
+    // Categorize
+    const logs = [];       // log:* entries
+    const events = [];     // event:* entries
+    const correlations = [];
+    const gmailEvents = [];
+    const otherEvents = [];
+
+    for (const e of entries) {
+      if (!e.value) continue;
+      if (e.key.startsWith('log:')) {
+        logs.push({ ...e.value, _key: e.key });
+      } else if (e.key.startsWith('event:')) {
+        const ev = { ...e.value, _key: e.key };
+        events.push(ev);
+        if (ev.event === 'cross_layer_correlation') correlations.push(ev);
+        else if (ev.event === 'gmail_scam_detected') gmailEvents.push(ev);
+        else otherEvents.push(ev);
+      }
+    }
+
+    // Build cases
+    const matchedKeys = new Set();
+    const cases = [];
+
+    for (const corr of correlations) {
+      matchedKeys.add(corr._key);
+      const gmailMatches = [];
+      if (corr.gmailDetections && corr.gmailDetections.length) {
+        for (const gd of corr.gmailDetections) {
+          // Find matching gmail_scam_detected event
+          const match = gmailEvents.find(ge =>
+            ge.senderEmail === gd.senderEmail &&
+            Math.abs(new Date(ge.timestamp).getTime() - new Date(gd.detectedAt).getTime()) < 60000
+          );
+          if (match) {
+            matchedKeys.add(match._key);
+            gmailMatches.push(match);
+          } else {
+            // Use data from the correlation's gmailDetections array
+            gmailMatches.push({
+              senderEmail: gd.senderEmail,
+              subject: gd.subject,
+              score: gd.score,
+              riskLevel: gd.score >= 80 ? 'critical' : gd.score >= 60 ? 'high' : 'medium',
+              timestamp: gd.detectedAt
+            });
+          }
+        }
+      }
+      cases.push({ correlation: corr, gmailMatches });
+    }
+
+    // Individual (unmatched)
+    const individuals = [];
+    for (const e of [...logs, ...events]) {
+      if (!matchedKeys.has(e._key) && e.event !== 'cross_layer_correlation') {
+        individuals.push(e);
+      }
+    }
+    individuals.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    cases.sort((a, b) => new Date(b.correlation.timestamp || 0) - new Date(a.correlation.timestamp || 0));
+
+    // Stats
+    const allDetections = [...logs, ...events];
+    const totalDetections = allDetections.length;
+    const criticalCount = allDetections.filter(e => (e.riskLevel || '').toLowerCase() === 'critical').length;
+    const highCount = allDetections.filter(e => (e.riskLevel || '').toLowerCase() === 'high').length;
+    const platforms = new Set(allDetections.map(e => e.platform).filter(Boolean));
+    let totalProtected = 0;
+    for (const e of allDetections) {
+      if (e.amount && typeof e.amount === 'number') totalProtected += e.amount;
+      else if (e.amount && typeof e.amount === 'string') {
+        const n = parseFloat(e.amount.replace(/[^0-9.]/g, ''));
+        if (!isNaN(n)) totalProtected += n;
+      }
+    }
+
+    statsBar.innerHTML = `
+      <div class="stat-card"><div class="stat-label">Total Detections</div><div class="stat-value accent">${totalDetections}</div></div>
+      <div class="stat-card"><div class="stat-label">Critical</div><div class="stat-value critical">${criticalCount}</div></div>
+      <div class="stat-card"><div class="stat-label">High</div><div class="stat-value" style="color:#fb923c">${highCount}</div></div>
+      <div class="stat-card"><div class="stat-label">Platforms</div><div class="stat-value accent">${platforms.size}</div></div>
+      <div class="stat-card"><div class="stat-label">Amount Protected</div><div class="stat-value" style="color:#34d399">${totalProtected > 0 ? '$' + totalProtected.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '--'}</div></div>
+    `;
+
+    // Render
+    let html = '';
+
+    // Attack Chain Cases
+    if (cases.length) {
+      html += `<div class="section">
+        <div class="section-title">Attack Chain Cases <span class="badge">${cases.length}</span></div>`;
+      for (const c of cases) {
+        const corr = c.correlation;
+        const corrId = corr.correlationId || corr._key || 'unknown';
+        html += `<div class="case-card">
+          <div class="case-header">
+            <div class="case-id">CASE ${corrId.substring(0, 16).toUpperCase()}</div>
+            <div class="case-badge">Attack Chain</div>
+          </div>
+          <div class="timeline">
+            <div class="timeline-line"></div>`;
+
+        // Gmail steps
+        for (let i = 0; i < c.gmailMatches.length; i++) {
+          const gm = c.gmailMatches[i];
+          const gmScore = gm.score || 0;
+          const gmLevel = gm.riskLevel || (gmScore >= 80 ? 'critical' : gmScore >= 60 ? 'high' : 'medium');
+          html += `<div class="timeline-step">
+            <div class="step-dot gmail">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${riskColor(gmLevel)}" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </div>
+            <div class="step-title" style="color:${riskColor(gmLevel)}">Scam Email Detected</div>
+            <div class="step-meta">
+              ${gm.senderEmail ? `From: <strong>${gm.senderEmail}</strong><br>` : ''}
+              ${gm.subject ? `Subject: <strong>${gm.subject}</strong><br>` : ''}
+              <span class="step-score"><span class="dot" style="background:${riskColor(gmLevel)}"></span> Score: ${gmScore} &middot; ${gmLevel}</span><br>
+              ${fmtTime(gm.timestamp)}
+            </div>
+            ${gm.flags ? flagPillsHTML(gm.flags, gmLevel) : ''}
+          </div>`;
+
+          // Elapsed badge between gmail and payment
+          if (i === c.gmailMatches.length - 1 && corr.timestamp && gm.timestamp) {
+            const diff = new Date(corr.timestamp).getTime() - new Date(gm.timestamp).getTime();
+            if (diff > 0) {
+              html += `<div class="elapsed-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                ${elapsedText(diff)}
+              </div>`;
+            }
+          }
+        }
+
+        // Payment step
+        const payScore = corr.paymentScore || corr.score || 0;
+        const payLevel = corr.riskLevel || (payScore >= 80 ? 'critical' : 'high');
+        const payPlatform = corr.platform || 'Payment';
+        const payAmount = corr.amount;
+        html += `<div class="timeline-step">
+          <div class="step-dot payment">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <div class="step-title" style="color:var(--accent)">Payment Intercepted</div>
+          <div class="step-meta">
+            Platform: <strong>${payPlatform}</strong><br>
+            ${payAmount ? `Amount: <strong>$${typeof payAmount === 'number' ? payAmount.toFixed(2) : payAmount}</strong><br>` : ''}
+            <span class="step-score"><span class="dot" style="background:${riskColor(payLevel)}"></span> Score: ${payScore} &middot; ${payLevel} (boosted by correlation)</span><br>
+            ${fmtTime(corr.timestamp)}
+          </div>
+          ${corr.paymentFlags ? flagPillsHTML(corr.paymentFlags, payLevel) : ''}
+        </div>`;
+
+        // Elapsed to outcome
+        html += `<div class="elapsed-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          OUTCOME
+        </div>`;
+
+        // Blocked outcome
+        html += `<div class="timeline-step">
+          <div class="step-dot blocked">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--critical)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></svg>
+          </div>
+          <div class="outcome-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            BLOCKED
+          </div>
+        </div>`;
+
+        html += `</div></div>`; // close timeline, case-card
+      }
+      html += '</div>'; // close section
+    }
+
+    // Individual detections
+    html += `<div class="section">
+      <div class="section-title">Individual Detections <span class="badge">${individuals.length}</span></div>`;
+    if (individuals.length === 0) {
+      html += '<div class="empty">All detections are part of attack chain cases.</div>';
+    } else {
+      html += '<div class="det-grid">';
+      for (const d of individuals) {
+        const level = (d.riskLevel || 'unknown').toLowerCase();
+        const score = d.riskScore || d.score || 0;
+        const platform = d.platform || d.event || 'Unknown';
+        const eventLabel = d.event ? d.event.replace(/_/g, ' ') : '';
+        html += `<div class="det-card">
+          <div class="det-top">
+            <span class="det-platform">${platform}</span>
+            <span class="det-time">${fmtShortTime(d.timestamp)}</span>
+          </div>
+          <div class="det-score ${riskClass(level)}">${score}</div>
+          <div class="det-level ${riskClass(level)}">${level}${eventLabel ? ' &middot; ' + eventLabel : ''}</div>
+          ${flagPillsHTML(d.flags, level, 3)}
+          ${d.senderEmail ? `<div style="margin-top:6px;font-size:12px;color:var(--text-dim)">${d.senderEmail}</div>` : ''}
+          ${d.subject ? `<div style="margin-top:2px;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.subject}</div>` : ''}
+        </div>`;
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    content.innerHTML = html;
+
+  } catch (err) {
+    content.innerHTML = `<div class="empty" style="color:var(--critical)">Error loading data: ${err.message}<br><br><span style="font-size:12px;color:var(--text-dim)">Check console for details.</span></div>`;
+    console.error('Dashboard error:', err);
+  }
+}
+
+// Auto-load on page open
+loadDashboard();
+</script>
+</body>
+</html>

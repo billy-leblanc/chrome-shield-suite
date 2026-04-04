@@ -229,7 +229,12 @@ const Interceptor = () => {
       }
 
       const amountEl = document.querySelector('input[type="number"], .amount-input, input[name*="amount"]');
-      const rawAmount = amountEl instanceof HTMLInputElement ? amountEl.value : '';
+      let rawAmount = amountEl instanceof HTMLInputElement ? amountEl.value : '';
+      if (!rawAmount) {
+        // On confirmation pages the amount is displayed as text — scan the DOM for a dollar value
+        const match = document.body.innerText.match(/\$\s*([\d,]+(?:\.\d{1,2})?)/);
+        if (match) rawAmount = match[1].replace(/,/g, '');
+      }
       const amount = parseFloat(rawAmount);
       const safeAmount = isFinite(amount) ? amount : 0;
 

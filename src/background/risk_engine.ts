@@ -125,7 +125,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       recordGmailDetection(fields);
     }
 
-    // 3. Cloudflare Relay Sync
+    // 3. Cross-layer correlation for intercepted payment events (questionnaire path bypasses ANALYZE_RISK)
+    if (fields.event === 'intercepted' && fields.platform !== 'Gmail') {
+      findGmailCorrelation().then(correlation => {
+        if (correlation) {
+          shipEventToRelay({
+            event: 'cross_layer_correlation',
+            platform: fields.platform,
+            correlationId: correlation.correlationId,
+            gmailDetections: correlation.gmailEvents.map(d => ({
+              senderEmail: d.senderEmail,
+              subject: d.subject,
+              score: d.score,
+              detectedAt: new Date(d.timestamp).toISOString(),
+            })),
+            paymentScore: typeof fields.score === 'number' ? fields.score : 0,
+            paymentFlags: Array.isArray(fields.flags) ? fields.flags : [],
+            timestamp: new Date().toISOString(),
+          });
+        }
+      });
+    }
+
+    // 4. Cloudflare Relay Sync
     shipEventToRelay(entry);
     return false; // Sync-and-forget
   }
