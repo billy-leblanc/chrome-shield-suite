@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Is This a Scam? — Safety Intercept</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0f;
+      color: #f0f0f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    .logo {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: #888;
+      text-align: center;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: #13131a;
+      border: 1px solid #222;
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      background: #0d0d14;
+      border: 1px solid #2a2a3a;
+      border-radius: 10px;
+      color: #f0f0f0;
+      font-size: 16px;
+      line-height: 1.5;
+      padding: 14px;
+      resize: none;
+      outline: none;
+      min-height: 120px;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: #4a4aff; }
+    textarea::placeholder { color: #444; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .btn-check {
+      flex: 1;
+      background: #e63946;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+
+    .btn-check:hover { background: #c1121f; }
+    .btn-check:disabled { opacity: 0.5; cursor: default; }
+
+    .btn-voice {
+      background: #1e1e2e;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 14px 16px;
+      cursor: pointer;
+      font-size: 20px;
+      transition: background 0.2s, border-color 0.2s;
+      color: #f0f0f0;
+    }
+
+    .btn-voice:hover { background: #252535; border-color: #4a4aff; }
+    .btn-voice.listening { background: #2a0a0a; border-color: #e63946; animation: pulse 1s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { border-color: #e63946; }
+      50% { border-color: #ff6b6b; }
+    }
+
+    .result {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .result.visible { display: block; }
+
+    .verdict-banner {
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .verdict-banner.scam {
+      background: linear-gradient(135deg, #2d0a0a, #1a0505);
+      border: 1px solid #8b1a1a;
+    }
+
+    .verdict-banner.likely_scam {
+      background: linear-gradient(135deg, #2d1a00, #1a0f00);
+      border: 1px solid #8b5a00;
+    }
+
+    .verdict-banner.safe {
+      background: linear-gradient(135deg, #0a2d0a, #051a05);
+      border: 1px solid #1a6b1a;
+    }
+
+    .verdict-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .verdict-banner.scam .verdict-label { color: #ff6b6b; }
+    .verdict-banner.likely_scam .verdict-label { color: #ffaa44; }
+    .verdict-banner.safe .verdict-label { color: #4ade80; }
+
+    .verdict-headline {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .verdict-banner.scam .verdict-headline { color: #fca5a5; }
+    .verdict-banner.likely_scam .verdict-headline { color: #fcd34d; }
+    .verdict-banner.safe .verdict-headline { color: #86efac; }
+
+    .confidence {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .tactics-section {
+      margin-bottom: 14px;
+    }
+
+    .tactics-section h3 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .tactics-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tactic-pill {
+      background: #1e1e2e;
+      border: 1px solid #333;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      color: #ccc;
+    }
+
+    .action-box {
+      background: #0d0d14;
+      border: 1px solid #2a2a3a;
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .action-box h3 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .action-box p {
+      font-size: 14px;
+      color: #ccc;
+      line-height: 1.5;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 24px 0;
+      color: #666;
+      font-size: 14px;
+      display: none;
+    }
+
+    .loading.visible { display: block; }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #222;
+      border-top-color: #e63946;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .examples {
+      width: 100%;
+      max-width: 480px;
+      margin-top: 24px;
+    }
+
+    .examples h3 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .example-chips {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .example-chip {
+      background: #13131a;
+      border: 1px solid #1e1e2e;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #888;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .example-chip:hover { border-color: #333; color: #ccc; }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 12px;
+      color: #444;
+      text-align: center;
+    }
+
+    .btn-reset {
+      background: none;
+      border: 1px solid #333;
+      border-radius: 8px;
+      color: #666;
+      font-size: 13px;
+      padding: 8px 16px;
+      cursor: pointer;
+      margin-top: 14px;
+      width: 100%;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .btn-reset:hover { border-color: #555; color: #aaa; }
+  </style>
+</head>
+<body>
+
+  <div class="logo">Safety Intercept</div>
+
+  <h1>Is this a scam?</h1>
+  <p class="subtitle">Describe the call, text, or situation.<br>We'll tell you in seconds.</p>
+
+  <div class="card">
+    <label for="input">What happened?</label>
+    <textarea
+      id="input"
+      placeholder="Example: Someone called saying my grandson was in a car accident and needs $800 for bail tonight. They said not to tell anyone and to use Zelle..."
+      rows="5"
+    ></textarea>
+    <div class="actions">
+      <button class="btn-voice" id="voiceBtn" title="Speak your description">🎤</button>
+      <button class="btn-check" id="checkBtn">Check Now</button>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      Analyzing...
+    </div>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="examples" id="examplesSection">
+    <h3>Try an example</h3>
+    <div class="example-chips">
+      <button class="example-chip" onclick="fillExample(this)">Someone called from the IRS saying I owe back taxes and will be arrested if I don't pay with gift cards today.</button>
+      <button class="example-chip" onclick="fillExample(this)">A lawyer called saying my granddaughter was in a car accident and needs $500 for bail. She can't call me herself because her phone broke.</button>
+      <button class="example-chip" onclick="fillExample(this)">I got a text saying my Amazon package couldn't be delivered and I need to pay a $3 redelivery fee by clicking a link.</button>
+      <button class="example-chip" onclick="fillExample(this)">Microsoft called saying my computer has a virus and they need remote access to fix it. They want me to buy $200 in Google Play cards.</button>
+    </div>
+  </div>
+
+  <div class="footer">Free. No account needed. No data stored.<br>Built by Safety Intercept.</div>
+
+  <script>
+    const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/check';
+
+    const input = document.getElementById('input');
+    const checkBtn = document.getElementById('checkBtn');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+    const examplesSection = document.getElementById('examplesSection');
+
+    // --- Check ---
+    checkBtn.addEventListener('click', runCheck);
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) runCheck();
+    });
+
+    async function runCheck() {
+      const description = input.value.trim();
+      if (!description) {
+        input.focus();
+        return;
+      }
+
+      checkBtn.disabled = true;
+      loading.classList.add('visible');
+      result.classList.remove('visible');
+      result.innerHTML = '';
+      examplesSection.style.display = 'none';
+
+      try {
+        const res = await fetch(RELAY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description }),
+        });
+
+        const data = await res.json();
+        renderResult(data);
+      } catch {
+        renderResult({
+          verdict: 'likely_scam',
+          confidence: 50,
+          tactics: [],
+          headline: 'Could not analyze — treat with caution.',
+          what_to_do: 'Do not send any money. Hang up and call a trusted family member to verify.',
+        });
+      } finally {
+        checkBtn.disabled = false;
+        loading.classList.remove('visible');
+      }
+    }
+
+    function renderResult(data) {
+      const verdictLabels = {
+        scam: '🚨 This is a scam',
+        likely_scam: '⚠️ This looks like a scam',
+        safe: '✓ This appears safe',
+      };
+
+      const tacticsHtml = data.tactics?.length
+        ? `<div class="tactics-section">
+            <h3>Tactics detected</h3>
+            <div class="tactics-list">
+              ${data.tactics.map(t => `<span class="tactic-pill">${t}</span>`).join('')}
+            </div>
+          </div>`
+        : '';
+
+      result.innerHTML = `
+        <div class="verdict-banner ${data.verdict}">
+          <div class="verdict-label">${verdictLabels[data.verdict] || verdictLabels.likely_scam}</div>
+          <div class="verdict-headline">${data.headline}</div>
+          <div class="confidence">${data.confidence}% confidence</div>
+        </div>
+        ${tacticsHtml}
+        <div class="action-box">
+          <h3>What to do</h3>
+          <p>${data.what_to_do}</p>
+        </div>
+        <button class="btn-reset" onclick="reset()">Check something else</button>
+      `;
+
+      result.classList.add('visible');
+      result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function reset() {
+      input.value = '';
+      result.classList.remove('visible');
+      result.innerHTML = '';
+      examplesSection.style.display = 'block';
+      input.focus();
+    }
+
+    function fillExample(btn) {
+      input.value = btn.textContent.trim();
+      input.focus();
+    }
+
+    // --- Voice Input ---
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      voiceBtn.style.display = 'none';
+    } else {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      let listening = false;
+
+      voiceBtn.addEventListener('click', () => {
+        if (listening) {
+          recognition.stop();
+        } else {
+          recognition.start();
+        }
+      });
+
+      recognition.onstart = () => {
+        listening = true;
+        voiceBtn.classList.add('listening');
+        voiceBtn.textContent = '🔴';
+      };
+
+      recognition.onend = () => {
+        listening = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.textContent = '🎤';
+      };
+
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        input.value = (input.value ? input.value + ' ' : '') + transcript;
+      };
+
+      recognition.onerror = () => {
+        listening = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.textContent = '🎤';
+      };
+    }
+  </script>
+</body>
+</html>

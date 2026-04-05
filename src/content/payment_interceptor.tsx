@@ -278,7 +278,8 @@ const Interceptor = () => {
               chrome.runtime.sendMessage({
                 type: 'LOG_EVENT', event: 'intercepted',
                 platform: config.name,
-                score: mergedReport.score, riskLevel: mergedReport.riskLevel, flags: mergedReport.flags
+                score: mergedReport.score, riskLevel: mergedReport.riskLevel, flags: mergedReport.flags,
+                amount: pendingDataRef.current?.amount ?? 0,
               });
             } else {
               const btn = interceptedButtonRef.current;
@@ -343,6 +344,7 @@ const Interceptor = () => {
 
     if (domain === 'paypal.com') {
       let cachedMemo = '';
+      let cachedAmount = 0;
       let cachedRisk: RiskAnalysis | null = null;
       let lastUrl = window.location.href;
 
@@ -354,12 +356,28 @@ const Interceptor = () => {
       };
 
       const readPayPalAmount = (): number => {
+        // Try input fields first
         const el = document.querySelector('input[type="number"], .amount-input, input[name*="amount"], #amount');
-        if (el instanceof HTMLInputElement) {
-          const n = parseFloat(el.value);
-          return isFinite(n) ? n : 0;
+        let raw = el instanceof HTMLInputElement ? el.value : '';
+        if (!raw) {
+          // Try PayPal review page specific selectors
+          const amountEl = document.querySelector('[data-testid*="amount"], [class*="amount"], [class*="Amount"]');
+          if (amountEl) raw = (amountEl as HTMLElement).innerText.replace(/[^0-9.]/g, '');
         }
-        return 0;
+        if (!raw) {
+          // Scan visible text for dollar amounts or plain numbers like "5.00"
+          const text = document.body.innerText;
+          const dollarMatch = text.match(/\$\s*([\d,]+(?:\.\d{1,2})?)/);
+          if (dollarMatch) {
+            raw = dollarMatch[1].replace(/,/g, '');
+          } else {
+            // Last resort: find a standalone number that looks like an amount
+            const numMatch = text.match(/\b(\d+\.\d{2})\b/);
+            if (numMatch) raw = numMatch[1];
+          }
+        }
+        const n = parseFloat(raw);
+        return isFinite(n) && n > 0 ? n : 0;
       };
 
       const analyzePayPal = () => {
@@ -377,7 +395,7 @@ const Interceptor = () => {
               if (report.riskLevel === 'high' || report.riskLevel === 'critical') {
                 setRiskReport(report);
                 setShowModal(true);
-                chrome.runtime.sendMessage({ type: 'LOG_EVENT', event: 'intercepted', platform: 'PayPal', score: report.score, riskLevel: report.riskLevel, flags: report.flags });
+                chrome.runtime.sendMessage({ type: 'LOG_EVENT', event: 'intercepted', platform: 'PayPal', score: report.score, riskLevel: report.riskLevel, flags: report.flags, amount: cachedMemo ? parseFloat(cachedMemo) || 0 : 0 });
               }
             }
           }
@@ -392,14 +410,25 @@ const Interceptor = () => {
         el.addEventListener('input', () => {
           cachedMemo = readPayPalMemo();
           if (paypalMemoTimer) clearTimeout(paypalMemoTimer);
-          // Pre-analyze 800ms after the user stops typing
           paypalMemoTimer = setTimeout(() => {
             if (cachedMemo.trim()) analyzePayPal();
           }, 800);
         });
       };
 
+      // Bind to amount field — cache value as user types so it survives SPA nav to preview page
+      const bindAmountField = () => {
+        const el = document.querySelector('input[type="number"], input[name*="amount"], #amount, [data-testid*="amount"] input');
+        if (!el || (el as any).__shieldAmountBound) return;
+        (el as any).__shieldAmountBound = true;
+        el.addEventListener('input', () => {
+          const n = parseFloat((el as HTMLInputElement).value);
+          if (isFinite(n) && n > 0) cachedAmount = n;
+        });
+      };
+
       bindMemoField();
+      bindAmountField();
 
       // Detect PayPal SPA navigation via URL polling (pushState is in the
       // page's JS world, not the content script's isolated world, so we poll).
@@ -408,6 +437,10 @@ const Interceptor = () => {
 
       paypalNavPoll = setInterval(() => {
         const url = window.location.href;
+        // Always refresh cached amount on each tick — catches pre-filled links and user edits
+        const latestAmount = readPayPalAmount();
+        if (latestAmount > 0) cachedAmount = latestAmount;
+
         if (url !== lastUrl) {
           lastUrl = url;
           cachedMemo = readPayPalMemo();
@@ -416,7 +449,8 @@ const Interceptor = () => {
           const isConfirmPage = CONFIRM_URLS.some(u => url.includes(u));
           if (isConfirmPage && questionnaireShownForUrl !== url) {
             questionnaireShownForUrl = url;
-            pendingDataRef.current = { message: cachedMemo.substring(0, 1000), amount: readPayPalAmount() };
+            // Use cachedAmount (captured when user typed it) — preview page doesn't show the amount as text
+            pendingDataRef.current = { message: cachedMemo.substring(0, 1000), amount: cachedAmount || readPayPalAmount() };
             setChecks({ contacted: false, firstTime: false, secretUrgent: false });
             setShowQuestionnaire(true);
           } else if (cachedMemo.trim()) {
@@ -428,8 +462,9 @@ const Interceptor = () => {
               analyzePayPal();
             }
           }
-          // Re-bind memo field in case SPA re-rendered it
+          // Re-bind fields in case SPA re-rendered them
           bindMemoField();
+          bindAmountField();
         }
       }, 500);
     }
@@ -502,7 +537,8 @@ const Interceptor = () => {
         chrome.runtime.sendMessage({
           type: 'LOG_EVENT', event: 'intercepted',
           platform: active.config.name,
-          score: report.score, riskLevel: report.riskLevel, flags: report.flags
+          score: 90, riskLevel: 'critical', flags: socialFlags,
+          amount: pendingDataRef.current?.amount ?? 0,
         });
       }
     } else {
