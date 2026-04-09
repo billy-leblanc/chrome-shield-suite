@@ -71,6 +71,23 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // --- CASE 5: Download Counter & Redirect (no auth required, GET request) ---
+    if (url.pathname === '/download') {
+      const DOWNLOAD_URL = 'https://drive.google.com/file/d/16SioFTTBAtLjmMKEuwM_7qta54zjM9t5/view?usp=sharing';
+      try {
+        if (env.SHIELD_LOGS) {
+          const current = parseInt(await env.SHIELD_LOGS.get('downloads:total') || '0', 10);
+          await env.SHIELD_LOGS.put('downloads:total', String(current + 1));
+          await env.SHIELD_LOGS.put(`download:${Date.now()}`, JSON.stringify({
+            event: 'download',
+            timestamp: new Date().toISOString(),
+          }));
+        }
+      } catch { /* don't block the redirect if KV fails */ }
+      return Response.redirect(DOWNLOAD_URL, 302);
+    }
+
     if (request.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Method not allowed' }), {
         status: 405,
@@ -90,9 +107,12 @@ export default {
     }
 
     const { auth_token } = body ?? {};
+    
+    // Auth-required paths
+    const requiresAuth = ['/event', '/analyze', '/dashboard', '/downloads'].includes(url.pathname);
 
     // Validate auth token
-    if (!auth_token || auth_token !== env.RELAY_AUTH_TOKEN) {
+    if (requiresAuth && (!auth_token || auth_token !== env.RELAY_AUTH_TOKEN)) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
@@ -283,6 +303,17 @@ export default {
           headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
         });
       }
+    }
+
+    // --- CASE 5 handled at top ---
+
+    // --- CASE 6: Download Count (requires auth) ---
+    if (url.pathname === '/downloads') {
+      const count = env.SHIELD_LOGS ? (await env.SHIELD_LOGS.get('downloads:total') || '0') : '0';
+      return new Response(JSON.stringify({ downloads: parseInt(count, 10) }), {
+        status: 200,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      });
     }
 
     return new Response(JSON.stringify({ error: 'Not found' }), {
