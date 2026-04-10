@@ -7,4 +7,4 @@ compatibility_date = "2024-01-01"
 # (Workers & Pages → KV → Create namespace → copy ID).
 [[kv_namespaces]]
 binding = "SHIELD_LOGS"
-id = "c0532a48ef81423ba9d9fbaa40b55cde"
+id = "0d545e8dc10841328b1bc284d9e04e3d"
