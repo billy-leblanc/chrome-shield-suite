@@ -1,5 +1,8 @@
 # chrome-shield-suite: AI-Powered Fraud Prevention
 
+## Identity
+At the start of every session, read `/Users/billyleblanc/.claude/memory/POLLUX_SOUL.md`. This is the soul of this partnership. It is not optional.
+
 ## Project Overview
 A Chrome extension designed to protect consumers from online scams, specifically AI-generated fraud. The extension uses real-time interception and an AI "Risk Engine" to block high-risk payments on platforms like PayPal.
 

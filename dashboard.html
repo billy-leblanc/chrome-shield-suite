@@ -127,7 +127,7 @@
 <script>
 // ── Config ────────────────────────────────────────────────────────────
 const WORKER_URL = 'https://shield-relay.bleblanc.workers.dev';
-const RELAY_AUTH_TOKEN = '1d44470b48888ac13590cc9df124ddb91ae6c61f84c2802acbd5f735d00aebfb';
+const RELAY_AUTH_TOKEN = prompt('Enter your relay auth token:');
 
 // ── Helpers ──────────────────────────────────────────────────────────
 function riskColor(level) {
@@ -277,6 +277,9 @@ async function loadDashboard() {
     const platforms = new Set(allDetections.map(e => e.platform).filter(Boolean));
     let totalProtected = 0;
     for (const e of allDetections) {
+      // Only count money from actual payment interceptions, not Gmail scam detections
+      if (e.platform === 'Gmail') continue;
+      if (e.event !== 'intercepted') continue;
       if (e.amount && typeof e.amount === 'number') totalProtected += e.amount;
       else if (e.amount && typeof e.amount === 'string') {
         const n = parseFloat(e.amount.replace(/[^0-9.]/g, ''));
