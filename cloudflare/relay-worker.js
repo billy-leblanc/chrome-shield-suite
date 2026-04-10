@@ -109,7 +109,7 @@ export default {
     const { auth_token } = body ?? {};
     
     // Auth-required paths
-    const requiresAuth = ['/event', '/analyze', '/dashboard', '/downloads'].includes(url.pathname);
+    const requiresAuth = ['/event', '/analyze', '/dashboard', '/downloads', '/telemetry'].includes(url.pathname);
 
     // Validate auth token
     if (requiresAuth && (!auth_token || auth_token !== env.RELAY_AUTH_TOKEN)) {
@@ -306,6 +306,42 @@ export default {
     }
 
     // --- CASE 5 handled at top ---
+
+    // --- CASE 7: Training Telemetry ---
+    if (url.pathname === '/telemetry') {
+      const { auth_token: _auth, platform, riskScore, riskLevel, flags, memo, confirmed, version, timestamp } = body;
+
+      // Gracefully accept even if namespace isn't provisioned yet
+      if (!env.TELEMETRY_LOGS) {
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
+
+      try {
+        const key = `telemetry:${timestamp || Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+        await env.TELEMETRY_LOGS.put(key, JSON.stringify({
+          platform: typeof platform === 'string' ? platform : 'unknown',
+          riskScore: typeof riskScore === 'number' ? riskScore : null,
+          riskLevel: typeof riskLevel === 'string' ? riskLevel : null,
+          flags: Array.isArray(flags) ? flags : [],
+          memo: typeof memo === 'string' ? memo.substring(0, 800) : '',
+          confirmed: confirmed === true ? true : confirmed === false ? false : null,
+          version: typeof version === 'string' ? version : null,
+          storedAt: new Date().toISOString(),
+        }));
+        return new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      } catch (kvErr) {
+        return new Response(JSON.stringify({ error: 'KV write failed', details: kvErr.message }), {
+          status: 500,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
     // --- CASE 6: Download Count (requires auth) ---
     if (url.pathname === '/downloads') {

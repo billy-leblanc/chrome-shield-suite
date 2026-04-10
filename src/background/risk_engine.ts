@@ -15,7 +15,52 @@ export type { RiskAnalysis } from '../core/fraud_detector';
 
 const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
 const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
+const TELEMETRY_URL = 'https://shield-relay.bleblanc.workers.dev/telemetry';
 const RELAY_AUTH_TOKEN = import.meta.env.VITE_RELAY_AUTH_TOKEN as string;
+
+/**
+ * Strips common PII patterns from memo text before sending to telemetry.
+ * Phone numbers, emails, and URLs are replaced with tokens.
+ * Names are intentionally kept — they are part of the scam script and
+ * valuable training signal (e.g. "Professor Chen", "nurse Margaret").
+ */
+function stripPII(text: string): string {
+  return text
+    .replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '[PHONE]')
+    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/gi, '[EMAIL]')
+    .replace(/https?:\/\/[^\s<>"]+/gi, '[URL]')
+    .substring(0, 800);
+}
+
+/**
+ * Sends an anonymized detection event to the telemetry endpoint.
+ * Only fires if the user has explicitly opted in (telemetryEnabled = true in storage).
+ * Fire-and-forget — never blocks the analysis result returned to the content script.
+ */
+function sendTelemetry(
+  memo: string,
+  platform: string | undefined,
+  analysis: { score: number; riskLevel: string; flags: string[] }
+): void {
+  chrome.storage.local.get('telemetryEnabled', ({ telemetryEnabled }) => {
+    if (!telemetryEnabled) return;
+    fetch(TELEMETRY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        auth_token: RELAY_AUTH_TOKEN,
+        platform: platform ?? 'unknown',
+        riskScore: analysis.score,
+        riskLevel: analysis.riskLevel,
+        flags: analysis.flags,
+        memo: stripPII(memo),
+        confirmed: null,
+        version: '1.0.0-beta',
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {}); // intentionally silent — never surface telemetry errors to the user
+  });
+}
 
 /**
  * Reads the relay auth token from chrome.storage then calls callRelayAPI.
@@ -278,8 +323,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
       }
 
+      sendTelemetry(memo, platform, analysis);
       sendResponse(analysis);
     }).catch(() => {
+      sendTelemetry(memo, platform, heuristicAnalysis);
       sendResponse(heuristicAnalysis);
     });
 

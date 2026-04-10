@@ -8,3 +8,9 @@ compatibility_date = "2024-01-01"
 [[kv_namespaces]]
 binding = "SHIELD_LOGS"
 id = "0d545e8dc10841328b1bc284d9e04e3d"
+
+# Telemetry namespace — stores anonymized detection data for training.
+# Create in Cloudflare dashboard: Workers & Pages → KV → Create namespace → paste ID below.
+[[kv_namespaces]]
+binding = "TELEMETRY_LOGS"
+id = "PLACEHOLDER_CREATE_IN_CLOUDFLARE_DASHBOARD"

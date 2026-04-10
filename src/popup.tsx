@@ -36,12 +36,13 @@ const ShieldIcon = (p: any) => (
 
 function PopupApp() {
   const [interceptOn, setInterceptOn] = useState(true);
+  const [telemetryEnabled, setTelemetryEnabled] = useState(false);
   const [stats, setStats] = useState({ blocked: 0, warnings: 0, safe: 0 });
   const [activities, setActivities] = useState<Array<{ text: string; time: string; type: string; platform?: string }>>([]);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
-    chrome.storage.local.get(['stats', 'threatLog', 'interceptEnabled'], (result) => {
+    chrome.storage.local.get(['stats', 'threatLog', 'interceptEnabled', 'telemetryEnabled'], (result) => {
       if (chrome.runtime.lastError) return;
       if (result.stats) setStats({
         blocked: result.stats.blocked ?? 0,
@@ -50,6 +51,7 @@ function PopupApp() {
       });
       if (Array.isArray(result.threatLog)) setActivities(result.threatLog.slice(0, 4));
       if (typeof result.interceptEnabled === 'boolean') setInterceptOn(result.interceptEnabled);
+      if (typeof result.telemetryEnabled === 'boolean') setTelemetryEnabled(result.telemetryEnabled);
     });
   }, []);
 
@@ -58,6 +60,12 @@ function PopupApp() {
     setInterceptOn(next);
     chrome.storage.local.set({ interceptEnabled: next });
   }, [interceptOn]);
+
+  const toggleTelemetry = useCallback(() => {
+    const next = !telemetryEnabled;
+    setTelemetryEnabled(next);
+    chrome.storage.local.set({ telemetryEnabled: next });
+  }, [telemetryEnabled]);
 
   const handleReset = useCallback(() => {
     chrome.storage.local.remove(['stats', 'threatLog'], () => {
@@ -291,6 +299,38 @@ function PopupApp() {
         <svg viewBox="0 0 16 16" fill="none" style={{ width: 14, height: 14, color: '#475569', marginLeft: 'auto', flexShrink: 0 }}>
           <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
+      </div>
+
+      {/* Telemetry Opt-In */}
+      <div style={{
+        margin: '10px 22px 0',
+        padding: '11px 14px',
+        borderRadius: 10,
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: '#64748B' }}>Help improve detection</div>
+          <div style={{ fontSize: 10, color: '#334155', marginTop: 2, lineHeight: 1.4 }}>
+            Share anonymized detection data to train better scam detection. Phone numbers, emails & URLs are removed before sending.
+          </div>
+        </div>
+        <button
+          onClick={toggleTelemetry}
+          title={telemetryEnabled ? 'Disable telemetry' : 'Enable telemetry'}
+          style={{
+            width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: telemetryEnabled ? 'rgba(56,189,248,0.7)' : 'rgba(255,255,255,0.08)',
+            position: 'relative', flexShrink: 0, transition: 'background 0.2s ease', padding: 0,
+          }}
+        >
+          <span style={{
+            position: 'absolute', top: 3, width: 14, height: 14, borderRadius: '50%',
+            background: '#fff', transition: 'left 0.2s ease',
+            left: telemetryEnabled ? 19 : 3,
+          }} />
+        </button>
       </div>
 
       {/* Footer */}
