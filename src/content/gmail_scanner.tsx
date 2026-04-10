@@ -82,6 +82,8 @@ const GmailScanner = () => {
   const [visible, setVisible] = React.useState(false);
   const [sender, setSender] = React.useState('');
   const analyzedRef = React.useRef<Set<string>>(new Set());
+  const inFlightRef = React.useRef<Set<string>>(new Set());
+  const flaggedRef = React.useRef<Map<string, { report: RiskAnalysis; senderEmail: string }>>(new Map());
 
   React.useEffect(() => {
     if (!window.location.hostname.endsWith('mail.google.com')) return;
@@ -109,16 +111,27 @@ const GmailScanner = () => {
       const linkCount = (bodyHtml.match(/<a\s/gi) || []).length;
       const hasExternalLinks = /<a\s[^>]*href=["']https?:\/\//i.test(bodyHtml);
 
-      const analysisText = [subject, bodyText].filter(Boolean).join('\n\n');
+      // Extract payment links from the email body — prepend as signal for the risk engine
+      const paymentLinkMatch = bodyHtml.match(/https?:\/\/(paypal\.me|cash\.app|venmo\.com|link\.cash)[^\s"'<>]*/i);
+      const paymentLinkSignal = paymentLinkMatch ? `[PAYMENT LINK DETECTED: ${paymentLinkMatch[0]}]\n\n` : '';
+      const analysisText = [paymentLinkSignal + subject, bodyText].filter(Boolean).join('\n\n');
 
       if (!chrome.runtime?.id) return;
 
-      chrome.runtime.sendMessage(
-        { type: 'ANALYZE_RISK', data: { message: analysisText.substring(0, 3000), amount: 0, platform: 'Gmail' } },
-        (report: RiskAnalysis | undefined) => {
-          if (chrome.runtime.lastError) return;
+      const sendAnalysis = (retriesLeft: number) => {
+        chrome.runtime.sendMessage(
+          { type: 'ANALYZE_RISK', data: { message: analysisText.substring(0, 3000), amount: 0, platform: 'Gmail' } },
+          (report: RiskAnalysis | undefined) => {
+            if (chrome.runtime.lastError) {
+              // Service worker was dead — retry after a short delay to let it wake
+              if (retriesLeft > 0) setTimeout(() => sendAnalysis(retriesLeft - 1), 1000);
+              return;
+            }
+          analyzedRef.current.add(threadId);
+          inFlightRef.current.delete(threadId);
           if (report && typeof report === 'object' && typeof report.riskLevel === 'string') {
             if (report.riskLevel === 'high' || report.riskLevel === 'critical') {
+              flaggedRef.current.set(threadId, { report, senderEmail });
               setAnalysis(report);
               setSender(senderEmail);
               setVisible(true);
@@ -139,7 +152,9 @@ const GmailScanner = () => {
             }
           }
         }
-      );
+        );
+      };
+      sendAnalysis(2);
     };
 
     const waitForEmailBody = (threadId: string) => {
@@ -148,13 +163,12 @@ const GmailScanner = () => {
       let observer: MutationObserver;
 
       const tryExtract = () => {
-        // Get all email bodies in the thread — analyze the most recent (last) one
         const allBodies = document.querySelectorAll(GMAIL_SELECTORS.emailBody.join(', '));
         const bodyEl = allBodies.length > 0 ? allBodies[allBodies.length - 1] : null;
         if (bodyEl && (bodyEl as HTMLElement).innerText.trim().length > 20) {
           settled = true;
           observer?.disconnect();
-          analyzedRef.current.add(threadId);
+          inFlightRef.current.add(threadId);
           extractAndAnalyze(bodyEl, threadId);
           return true;
         }
@@ -164,19 +178,35 @@ const GmailScanner = () => {
       // Check immediately
       if (tryExtract()) return;
 
+      // Gmail SPA adds the email body element first (div.a3s), then adds the
+      // `aiL` class via an attribute mutation once content is loaded. The original
+      // observer only watched childList, so it missed the class addition entirely
+      // and only succeeded on the safety timeout. Watch attributes too.
       observer = new MutationObserver(() => {
         if (settled) return;
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => tryExtract(), 100);
       });
 
-      observer.observe(document.body, { childList: true, subtree: true });
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class'],
+      });
+
+      // Polling fallback — catches edge cases where mutations don't fire
+      const pollInterval = setInterval(() => {
+        if (settled) { clearInterval(pollInterval); return; }
+        if (tryExtract()) { clearInterval(pollInterval); observer.disconnect(); }
+      }, 500);
 
       // Safety timeout
       setTimeout(() => {
+        clearInterval(pollInterval);
         if (!settled) {
           observer.disconnect();
-          tryExtract(); // one last attempt
+          tryExtract();
         }
       }, 10000);
     };
@@ -188,14 +218,36 @@ const GmailScanner = () => {
         setVisible(false);
         return;
       }
-      if (analyzedRef.current.has(threadId)) return;
+      if (inFlightRef.current.has(threadId)) return; // Still waiting on relay
+      if (analyzedRef.current.has(threadId)) {
+        // Already analyzed — re-show banner if it was flagged
+        const cached = flaggedRef.current.get(threadId);
+        if (cached) {
+          setAnalysis(cached.report);
+          setSender(cached.senderEmail);
+          setVisible(true);
+        }
+        return;
+      }
       waitForEmailBody(threadId);
     };
 
-    // Two-pronged detection: hashchange event + polling fallback
+    // Three-pronged detection: hashchange + polling + tab visibility
     window.addEventListener('hashchange', () => {
       lastHash = location.hash;
       checkForEmailView();
+    });
+
+    // Re-check when user switches back to this tab
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        const currentHash = location.hash;
+        const threadId = extractThreadId(currentHash);
+        if (threadId && !analyzedRef.current.has(threadId) && !inFlightRef.current.has(threadId)) {
+          lastHash = currentHash;
+          checkForEmailView();
+        }
+      }
     });
 
     const poll = setInterval(() => {

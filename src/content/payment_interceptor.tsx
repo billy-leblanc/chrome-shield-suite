@@ -122,6 +122,9 @@ const injectStyles = (shadow: ShadowRoot) => {
       border: 1px solid rgba(248,113,113,0.25) !important;
       color: #F87171;
     }
+    .btn-proceed:disabled {
+      opacity: 0.35; cursor: not-allowed;
+    }
     .btn-legitimate {
       width: 100%; margin-top: 10px; padding: 8px;
       background: none; border: none; cursor: pointer;
@@ -156,6 +159,10 @@ const injectStyles = (shadow: ShadowRoot) => {
     .q-item.checked .q-check-icon { display: block; }
     .q-text { font-size: 13px; color: #94A3B8; line-height: 1.5; }
     .q-item.checked .q-text { color: #F1F5F9; }
+    .q-context {
+      font-size: 11px; color: #FBBF24; line-height: 1.5;
+      margin-top: 4px; padding-left: 0;
+    }
     .correlation-callout {
       display: flex; align-items: flex-start; gap: 10px;
       background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.25);
@@ -187,6 +194,7 @@ const Interceptor = () => {
   const [riskReport, setRiskReport] = React.useState<RiskAnalysis | null>(null);
   const [showQuestionnaire, setShowQuestionnaire] = React.useState(false);
   const [checks, setChecks] = React.useState({ contacted: false, firstTime: false, secretUrgent: false });
+  const [cooldown, setCooldown] = React.useState(0);
 
   const activeRef = React.useRef(getActiveConfig());
   const pendingRef = React.useRef(false);
@@ -205,11 +213,24 @@ const Interceptor = () => {
       const normalizedText = (btn?.textContent ?? '').trim().replace(/\s+/g, ' ');
 
       if (config.selectors.some(sel => { try { return target.matches(sel) || !!target.closest(sel); } catch { return false; } })) {
-        if (domain === 'wellsfargo.com') return /Send/i.test(normalizedText);
+        // Wells Fargo Zelle is a multi-step SPA:
+        //   landing → ENTER_DETAILS (amount/memo/send) → VERIFY_DETAILS (final send)
+        // Only intercept on ENTER_DETAILS (questionnaire) and VERIFY_DETAILS (final block)
+        if (domain === 'wellsfargo.com') {
+          const hash = window.location.hash;
+          const isSendPage = /SENDMONEY_ENTER_DETAILS|SENDMONEY_VERIFY_DETAILS/.test(hash);
+          return /^Send$/i.test(normalizedText) && isSendPage;
+        }
         return true;
       }
       const textPattern = TEXT_FALLBACK_PATTERNS[domain];
-      if (textPattern && btn && textPattern.test(normalizedText)) return true;
+      if (textPattern && btn && textPattern.test(normalizedText)) {
+        if (domain === 'wellsfargo.com') {
+          const hash = window.location.hash;
+          return /SENDMONEY_ENTER_DETAILS|SENDMONEY_VERIFY_DETAILS/.test(hash);
+        }
+        return true;
+      }
       return false;
     };
 
@@ -227,12 +248,24 @@ const Interceptor = () => {
       const resolvedBtn = target instanceof HTMLElement ? (target.closest('button') ?? target) : target;
       interceptedButtonRef.current = resolvedBtn instanceof HTMLButtonElement ? resolvedBtn : (resolvedBtn.closest('button') as HTMLButtonElement | null) ?? null;
 
-      const memoEl = document.querySelector('textarea, [contenteditable="true"], input[name*="note"], input[name*="memo"]');
+      const memoEl = document.querySelector('textarea#memo, textarea[name="memo"], textarea, [contenteditable="true"], input[name*="note"], input[name*="memo"]');
       let message = '';
       if (memoEl instanceof HTMLTextAreaElement || memoEl instanceof HTMLInputElement) {
         message = memoEl.value ?? '';
       } else if (memoEl instanceof HTMLElement) {
         message = memoEl.textContent ?? '';
+      }
+      // Wells Fargo VERIFY_DETAILS page: memo is a static .pmask span, textarea is gone
+      if (!message && domain === 'wellsfargo.com') {
+        const pmaskEls = document.querySelectorAll('span.pmask');
+        // The memo is typically the last .pmask span (after recipient name, amount, etc.)
+        for (const el of Array.from(pmaskEls)) {
+          const text = (el.textContent ?? '').trim();
+          // Skip amounts, phone numbers, dates — keep text that looks like a memo
+          if (text && !/^\$|^\(?\d{3}\)?[\s-]?\d{3}|^\d{1,2}\/\d{1,2}\/\d{2,4}/.test(text)) {
+            message = text;
+          }
+        }
       }
 
       const amountEl = document.querySelector('input[type="number"], .amount-input, input[name*="amount"]');
@@ -245,7 +278,7 @@ const Interceptor = () => {
       const amount = parseFloat(rawAmount);
       const safeAmount = isFinite(amount) ? amount : 0;
 
-      // Store data and show questionnaire first
+      // Always show questionnaire first — it's the trance-breaker
       pendingDataRef.current = { message: message.substring(0, 1000), amount: safeAmount };
       setChecks({ contacted: false, firstTime: false, secretUrgent: false });
       setShowQuestionnaire(true);
@@ -449,8 +482,10 @@ const Interceptor = () => {
           const isConfirmPage = CONFIRM_URLS.some(u => url.includes(u));
           if (isConfirmPage && questionnaireShownForUrl !== url) {
             questionnaireShownForUrl = url;
-            // Use cachedAmount (captured when user typed it) — preview page doesn't show the amount as text
-            pendingDataRef.current = { message: cachedMemo.substring(0, 1000), amount: cachedAmount || readPayPalAmount() };
+            const paypalAmount = cachedAmount || readPayPalAmount();
+            pendingDataRef.current = { message: cachedMemo.substring(0, 1000), amount: paypalAmount };
+
+            // Always show questionnaire first — trance-breaker before any warning
             setChecks({ contacted: false, firstTime: false, secretUrgent: false });
             setShowQuestionnaire(true);
           } else if (cachedMemo.trim()) {
@@ -469,6 +504,7 @@ const Interceptor = () => {
       }, 500);
     }
 
+
     return () => {
       document.removeEventListener("click", handleIntercept, true);
       observer.disconnect();
@@ -483,22 +519,66 @@ const Interceptor = () => {
     if (!data) { pendingRef.current = false; return; }
 
     if (skipToPayment) {
-      // User clicked "No, send it" — let through without AI analysis
-      pendingRef.current = false;
-      const btn = interceptedButtonRef.current;
-      interceptedButtonRef.current = null;
-      if (btn && handleInterceptRef.current) {
-        document.removeEventListener("click", handleInterceptRef.current, true);
-        btn.click();
-        document.addEventListener("click", handleInterceptRef.current, { capture: true });
+      // User clicked "Skip and send now" — but still check memo against scam email keywords
+      const memo = (data.message ?? '').toLowerCase();
+      if (memo.length > 0) {
+        chrome.storage.local.get('gmailDetections', (storageData) => {
+          const detections = Array.isArray(storageData.gmailDetections) ? storageData.gmailDetections : [];
+          const now = Date.now();
+          const recent = detections.filter((d: { timestamp: number }) => now - d.timestamp < 24 * 60 * 60 * 1000);
+
+          // Check if memo contains keywords from any recent scam email
+          const matchedDetection = recent.find((d: { keywords?: string[] }) => {
+            const keywords: string[] = Array.isArray(d.keywords) ? d.keywords : [];
+            return keywords.some(kw => memo.includes(kw.toLowerCase()));
+          });
+
+          if (matchedDetection) {
+            const det = matchedDetection as { timestamp: number; senderEmail: string; subject: string; keywords?: string[] };
+            const matchedWords = (det.keywords ?? []).filter((kw: string) => memo.includes(kw.toLowerCase()));
+            const minutesAgo = Math.round((now - det.timestamp) / 60000);
+            const timeAgo = minutesAgo < 60 ? `${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`
+              : `${Math.round(minutesAgo / 60)} hour${Math.round(minutesAgo / 60) !== 1 ? 's' : ''} ago`;
+
+            pendingRef.current = false;
+            setRiskReport({
+              score: 98,
+              riskLevel: 'critical',
+              flags: ['Memo Matches Scam Email', 'Cross-Layer: Keyword Correlation'],
+              recommendation: 'STOP. Your payment memo contains keywords from a scam email you received. This is almost certainly fraud.',
+              correlationNote: `Your memo matches a scam email from ${det.senderEmail} ${timeAgo}. Matched keywords: "${matchedWords.join('", "')}". Do NOT send this payment.`,
+            });
+            setShowModal(true);
+            return;
+          }
+
+          // No keyword match — let through
+          pendingRef.current = false;
+          const btn = interceptedButtonRef.current;
+          interceptedButtonRef.current = null;
+          if (btn && handleInterceptRef.current) {
+            document.removeEventListener("click", handleInterceptRef.current, true);
+            btn.click();
+            document.addEventListener("click", handleInterceptRef.current, { capture: true });
+          }
+        });
+      } else {
+        pendingRef.current = false;
+        const btn = interceptedButtonRef.current;
+        interceptedButtonRef.current = null;
+        if (btn && handleInterceptRef.current) {
+          document.removeEventListener("click", handleInterceptRef.current, true);
+          btn.click();
+          document.addEventListener("click", handleInterceptRef.current, { capture: true });
+        }
       }
       return;
     }
 
     const socialFlags: string[] = [];
-    if (checks.contacted) socialFlags.push('External Contact Initiated Payment');
-    if (checks.firstTime) socialFlags.push('First Time Recipient');
-    if (checks.secretUrgent) socialFlags.push('Urgency or Secrecy Requested');
+    if (checks.contacted) socialFlags.push('Unsolicited contact requested payment');
+    if (checks.firstTime) socialFlags.push('First-time recipient');
+    if (checks.secretUrgent) socialFlags.push('Urgency or secrecy pressure');
 
     if (socialFlags.length > 0) {
       // Show risk modal immediately — no need to wait for AI
@@ -509,7 +589,7 @@ const Interceptor = () => {
         score: 90,
         riskLevel: 'critical',
         flags: socialFlags,
-        recommendation: 'Stop. This payment shows signs of social engineering. Do not proceed.',
+        recommendation: 'This payment has the hallmarks of a sophisticated scam. There is no shame in pausing — that instinct could save you thousands.',
         correlationNote,
       });
 
@@ -542,11 +622,69 @@ const Interceptor = () => {
         });
       }
     } else {
-      // All clear on questionnaire — run AI analysis normally
-      runAIAnalysisRef.current?.(data.message, data.amount, []);
+      // All clear on questionnaire — check Gmail keyword correlation before AI analysis
+      const memo = (data.message ?? '').toLowerCase();
+      if (memo.length > 0) {
+        chrome.storage.local.get('gmailDetections', (storageData) => {
+          const detections = Array.isArray(storageData.gmailDetections) ? storageData.gmailDetections : [];
+          const now = Date.now();
+          const recent = detections.filter((d: { timestamp: number }) => now - d.timestamp < 24 * 60 * 60 * 1000);
+
+          const matchedDetection = recent.find((d: { keywords?: string[] }) => {
+            const keywords: string[] = Array.isArray(d.keywords) ? d.keywords : [];
+            return keywords.some(kw => memo.includes(kw.toLowerCase()));
+          });
+
+          if (matchedDetection) {
+            const det = matchedDetection as { timestamp: number; senderEmail: string; subject: string; keywords?: string[] };
+            const matchedWords = (det.keywords ?? []).filter((kw: string) => memo.includes(kw.toLowerCase()));
+            const minutesAgo = Math.round((now - det.timestamp) / 60000);
+            const timeAgo = minutesAgo < 60 ? `${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`
+              : `${Math.round(minutesAgo / 60)} hour${Math.round(minutesAgo / 60) !== 1 ? 's' : ''} ago`;
+
+            pendingRef.current = false;
+            setRiskReport({
+              score: 98,
+              riskLevel: 'critical',
+              flags: ['Memo Matches Scam Email', 'Cross-Layer: Keyword Correlation'],
+              recommendation: 'Your payment memo contains keywords from a scam email you received. This is almost certainly fraud.',
+              correlationNote: `Your memo matches a scam email from ${det.senderEmail} ${timeAgo}. Matched keywords: "${matchedWords.join('", "')}". Do NOT send this payment.`,
+            });
+            setShowModal(true);
+
+            const active = activeRef.current;
+            if (active && chrome.runtime?.id) {
+              chrome.runtime.sendMessage({
+                type: 'LOG_EVENT', event: 'intercepted',
+                platform: active.config.name,
+                score: 98, riskLevel: 'critical',
+                flags: ['Memo Matches Scam Email', 'Cross-Layer: Keyword Correlation'],
+                amount: data.amount,
+              });
+            }
+            return;
+          }
+
+          // No keyword match — fall through to AI analysis
+          runAIAnalysisRef.current?.(data.message, data.amount, []);
+        });
+      } else {
+        runAIAnalysisRef.current?.(data.message, data.amount, []);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checks]);
+
+  // Friction timer: force a 12-second cooldown on critical risk
+  React.useEffect(() => {
+    if (!showModal || !riskReport || riskReport.riskLevel !== 'critical') return;
+    setCooldown(12);
+    const iv = setInterval(() => setCooldown(prev => {
+      if (prev <= 1) { clearInterval(iv); return 0; }
+      return prev - 1;
+    }), 1000);
+    return () => clearInterval(iv);
+  }, [showModal, riskReport]);
 
   if (!showModal && !showQuestionnaire) return null;
   if (showQuestionnaire) {
@@ -554,10 +692,10 @@ const Interceptor = () => {
     const toggle = (key: keyof typeof checks) =>
       setChecks(prev => ({ ...prev, [key]: !prev[key] }));
 
-    const questions: { key: keyof typeof checks; text: string }[] = [
-      { key: 'contacted', text: 'Someone contacted me (call, text, or DM) and asked me to send this payment' },
-      { key: 'firstTime', text: "I'm sending to someone I've never paid before" },
-      { key: 'secretUrgent', text: 'I was told to act quickly or keep this payment private' },
+    const questions: { key: keyof typeof checks; text: string; context: string }[] = [
+      { key: 'contacted', text: 'Someone contacted me and asked me to send this', context: 'Real companies and agencies never cold-call you to request a payment.' },
+      { key: 'firstTime', text: "I've never paid this person or account before", context: 'First-time recipients are involved in 80% of payment scams.' },
+      { key: 'secretUrgent', text: 'I was told to act fast or keep this private', context: "Urgency and secrecy are the #1 tools scammers use — legitimate requests don't need either." },
     ];
 
     return (
@@ -567,8 +705,8 @@ const Interceptor = () => {
             <span className="badge-dot" />
             Quick Check
           </div>
-          <div className="title">Before you send</div>
-          <div className="desc">Check anything that applies. Takes 5 seconds.</div>
+          <div className="title">Quick safety check</div>
+          <div className="desc">Scammers are incredibly convincing — this isn't about being careful enough. Check anything that applies.</div>
           <div className="divider" />
           {questions.map(q => (
             <div
@@ -581,7 +719,10 @@ const Interceptor = () => {
                   <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <span className="q-text">{q.text}</span>
+              <div>
+                <span className="q-text">{q.text}</span>
+                {checks[q.key] && <div className="q-context">{q.context}</div>}
+              </div>
             </div>
           ))}
           <button
@@ -616,13 +757,15 @@ const Interceptor = () => {
       <div className="card">
         <div className={`badge ${isCritical ? 'badge-critical' : 'badge-high'}`}>
           <span className="badge-dot" />
-          {isCritical ? 'High Risk Detected' : 'Suspicious Activity'}
+          {isCritical ? 'Protection Active' : 'Heads Up'}
         </div>
         <div className="title">
-          {isCritical ? 'This payment looks like a scam' : `Unusual pattern on ${config?.name ?? 'this payment'}`}
+          {isCritical ? 'This matches how sophisticated scams work' : `Something looks off with this payment`}
         </div>
         <div className="desc">
-          Our AI flagged this transaction before it was sent. Review the details below before proceeding.
+          {isCritical
+            ? 'Even experts fall for these. Our AI caught patterns that are nearly impossible to spot in the moment — take a second to review.'
+            : 'We flagged some unusual signals. Most people who lose money to scams say they had a gut feeling something was wrong — trust yours.'}
         </div>
         <div className="divider" />
         {cleanFlags.length > 0 && (
@@ -650,10 +793,11 @@ const Interceptor = () => {
             }
             setShowModal(false);
           }}>
-            Cancel Payment
+            Go back — stay safe
           </button>
           <button
             className="btn btn-proceed"
+            disabled={cooldown > 0}
             onClick={() => {
               if (activeRef.current) {
                 chrome.runtime.sendMessage({
@@ -672,7 +816,7 @@ const Interceptor = () => {
               }
             }}
           >
-            Proceed Anyway
+            {cooldown > 0 ? `Take a breath (${cooldown}s)` : 'I understand the risk — proceed'}
           </button>
         </div>
         <button className="btn-legitimate" onClick={() => {
@@ -692,7 +836,7 @@ const Interceptor = () => {
             document.addEventListener("click", handleInterceptRef.current, { capture: true });
           }
         }}>
-          This was a legitimate payment
+          I know this person — this is legitimate
         </button>
       </div>
     </div>

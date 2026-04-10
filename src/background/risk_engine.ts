@@ -55,16 +55,41 @@ interface GmailDetection {
   subject: string;
   score: number;
   threadId: string;
+  keywords: string[]; // Key phrases from email body for memo correlation
+}
+
+/**
+ * Extracts key phrases from email subject + flags for memo correlation.
+ * E.g. "mom's fall", "hospital", "$200", "Margaret" — so if the payment memo
+ * mentions any of these, we can flag it.
+ */
+function extractKeywords(subject: string, flags: string[]): string[] {
+  const text = [subject, ...flags].join(' ').toLowerCase();
+  // Pull out meaningful noun phrases and amounts
+  const keywords: string[] = [];
+  // Named entities and key nouns from subject
+  const subjectWords = subject.toLowerCase()
+    .replace(/[^a-z0-9\s$]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !['from', 'about', 'your', 'this', 'that', 'with', 'have', 'been', 'were', 'they', 'them', 'will', 'would', 'could', 'should', 'here', 'there', 'their', 'email', 'just', 'some', 'more', 'very', 'also', 'than', 'then'].includes(w));
+  keywords.push(...subjectWords);
+  // Scam-relevant terms from the full text
+  const scamTerms = text.match(/\b(hospital|fall|accident|emergency|insurance|bail|surgery|medical|mom|dad|mother|father|grandm\w*|grandp\w*|church|friend|neighbor|margaret|payment|send|money|\$\d+)\b/g);
+  if (scamTerms) keywords.push(...scamTerms);
+  return Array.from(new Set(keywords)).slice(0, 20);
 }
 
 function recordGmailDetection(msg: Record<string, unknown>) {
+  const subject = String(msg.subject ?? '');
+  const flags = Array.isArray(msg.flags) ? msg.flags.map(String) : [];
   const entry: GmailDetection = {
     timestamp: Date.now(),
     senderEmail: String(msg.senderEmail ?? ''),
     senderDomain: String(msg.senderDomain ?? ''),
-    subject: String(msg.subject ?? ''),
+    subject,
     score: typeof msg.score === 'number' ? msg.score : 0,
     threadId: String(msg.threadId ?? ''),
+    keywords: extractKeywords(subject, flags),
   };
 
   chrome.storage.local.get(STORAGE_KEY, (data) => {
@@ -94,6 +119,16 @@ function findGmailCorrelation(): Promise<{ correlationId: string; gmailEvents: G
 }
 
 // Background Listener
+// Keep service worker alive — MV3 kills it after ~30s of inactivity.
+// An active alarm prevents the worker from sleeping as long as we have tabs on supported sites.
+chrome.alarms.create('keepalive', { periodInMinutes: 0.33 }); // fires every ~20 seconds
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'keepalive') {
+    // Lightweight ping — just enough to reset the 30s inactivity timer
+    chrome.storage.local.get('interceptEnabled', () => {});
+  }
+});
+
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({
     interceptEnabled: true,
@@ -166,7 +201,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // Gmail heuristics are keyword-based and miss social engineering emails.
         // Give the LLM 80% weight for Gmail so a crafted scam email isn't diluted to "medium".
         const heuristicWeight = platform === 'Gmail' ? 0.2 : 0.6;
-        const blendedScore = blendScores(heuristicAnalysis.score, llmResult.riskScore, heuristicWeight);
+        let blendedScore = blendScores(heuristicAnalysis.score, llmResult.riskScore, heuristicWeight);
+        // Never let the LLM drag a strong heuristic signal below its level
+        blendedScore = Math.max(blendedScore, heuristicAnalysis.score);
         const mergedFlags = Array.from(new Set([...heuristicAnalysis.flags, ...llmResult.flags]));
         const riskLevel = scoreToRiskLevel(blendedScore);
 

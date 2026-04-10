@@ -52,6 +52,13 @@ export const SCAN_PATTERNS = [
   { pattern: /wire transfer|bitcoin|cryptocurrency|gift card/i, category: 'Suspicious Payment Method', weight: 30 },
   { pattern: /password (reset|expired|compromised)|unusual (sign-in|activity|login)/i, category: 'Credential Phishing', weight: 35 },
   { pattern: /package.*delivery.*failed|shipping.*label|tracking.*number.*confirm/i, category: 'Fake Shipping', weight: 30 },
+  // Family emergency / impersonation scam patterns
+  { pattern: /paypal\.me\/|cash\.app\/\$|venmo\.com\/|zelle.*link|send.*paypal|paypal.*send/i, category: 'Payment Link in Email', weight: 55 },
+  { pattern: /phone.*(died|dead|off|no charge|out of battery)|battery.*(dead|died)|couldn'?t.*call|phone.*not working/i, category: 'Excuse Pattern', weight: 30 },
+  { pattern: /pay (you|me|her|him|them|us) back|she'?ll? pay|he'?ll? pay|reimburse|pay.*back.*tomorrow|pay.*back.*home/i, category: 'Advance Payment Framing', weight: 35 },
+  { pattern: /insurance.*(clear|cover|approv|slow|process|delay)|medical.*(bill|cost|fee|payment|test)|hospital.*(bill|fee|cost|payment)/i, category: 'Medical Payment Urgency', weight: 30 },
+  { pattern: /friend (of|from)|your (mom|dad|mother|father|sister|brother|grandm|grandp).*(friend|church|work|neighbor)|on behalf of/i, category: 'Third-Party Impersonation', weight: 40 },
+  { pattern: /just for now|for now|just this once|temporarily|cover.*until|until.*insurance|until.*home/i, category: 'Temporary Payment Hook', weight: 20 },
 ];
 
 /**

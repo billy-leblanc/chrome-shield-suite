@@ -264,14 +264,43 @@ function PopupApp() {
         </div>
       </div>
 
+      {/* Feedback Banner */}
+      <div style={{
+        margin: '16px 22px 0',
+        padding: '12px 16px',
+        borderRadius: 12,
+        background: 'linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(129,140,248,0.08) 100%)',
+        border: '1px solid rgba(56,189,248,0.2)',
+        display: 'flex', alignItems: 'center', gap: 10,
+        cursor: 'pointer',
+        transition: 'border-color 0.2s ease',
+      }}
+        onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSed8ont66Fs8Mid9Ys09rl4-wYxhtzy0-nW7_-O2hBkhm4wfA/viewform', '_blank')}
+        onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(56,189,248,0.5)')}
+        onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(56,189,248,0.2)')}
+      >
+        <span style={{ fontSize: 16, lineHeight: 1 }}>💬</span>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#38BDF8', letterSpacing: '-0.1px' }}>
+            Beta — Give Feedback
+          </div>
+          <div style={{ fontSize: 10, color: '#64748B', marginTop: 1 }}>
+            Tell us what's broken, what's missing, what's working
+          </div>
+        </div>
+        <svg viewBox="0 0 16 16" fill="none" style={{ width: 14, height: 14, color: '#475569', marginLeft: 'auto', flexShrink: 0 }}>
+          <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+
       {/* Footer */}
       <div style={{
         padding: '16px 22px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         borderTop: '1px solid rgba(255,255,255,0.05)',
-        marginTop: 20,
+        marginTop: 16,
       }}>
-        <span style={{ fontSize: 10, color: '#1E293B', fontWeight: 500 }}>v1.0.0</span>
+        <span style={{ fontSize: 10, color: '#1E293B', fontWeight: 500 }}>v1.0.0-beta</span>
         <button onClick={() => setShowResetConfirm(true)} style={{
           fontSize: 10, color: '#475569', background: 'none', border: 'none',
           cursor: 'pointer', letterSpacing: '0.02em',
