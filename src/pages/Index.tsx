@@ -12,8 +12,8 @@ const FEATURES = [
         <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    title: "Gmail Scam Detection",
-    desc: "Reads your inbox in real time. Flags social engineering emails — family emergencies, fake nurses, romance setups — before you ever open PayPal.",
+    title: "Pre-Transaction Threat Detection",
+    desc: "Monitors your inbox for the social engineering scripts that precede payment fraud — fake emergencies, impersonation, isolation tactics. Flags them before you open your wallet.",
   },
   {
     icon: (
@@ -22,7 +22,7 @@ const FEATURES = [
       </svg>
     ),
     title: "Payment Interception",
-    desc: "Watches the send button on PayPal, Venmo, Zelle, and Wells Fargo. If the memo looks like manipulation, it stops the payment and asks you three questions first.",
+    desc: "Sits inside PayPal and Wells Fargo Zelle at the transaction layer. When you hit Send, it intercepts the payment, scores the memo with an AI fraud model, and blocks if risk is critical.",
   },
   {
     icon: (
@@ -31,7 +31,7 @@ const FEATURES = [
       </svg>
     ),
     title: "Cross-Layer Correlation",
-    desc: "If you received a scam email and then go to make a payment within 24 hours, risk score is automatically elevated. It connects the dots you might not.",
+    desc: "Tracks the window between a suspicious email and a payment attempt. If you received a social engineering email in the last 24 hours and are now sending money, fraud risk is automatically elevated.",
   },
 ];
 
@@ -180,29 +180,43 @@ export default function Index() {
       </section>
 
       {/* Enterprise section */}
-      <section style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.015)" }}>
-        <div style={{ maxWidth: 620, margin: "0 auto", padding: "80px 24px", textAlign: "center" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#334155", textTransform: "uppercase", marginBottom: 20 }}>For platforms & fintechs</div>
-          <h2 style={{ fontSize: 26, fontWeight: 700, color: "#94A3B8", letterSpacing: "-0.5px", marginBottom: 16 }}>Protecting a product, not just yourself?</h2>
-          <p style={{ fontSize: 15, color: "#475569", lineHeight: 1.7, marginBottom: 36 }}>
-            We're building a fraud detection API backed by real consumer interception data. If you're a neobank, credit union, or platform looking to protect your users at the transaction layer, reach out.
+      <section style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(56,189,248,0.12)", background: "rgba(56,189,248,0.03)" }}>
+        <div style={{ maxWidth: 720, margin: "0 auto", padding: "96px 24px", textAlign: "center" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: "#38BDF8", textTransform: "uppercase", marginBottom: 20 }}>For Fintechs & Neobanks</div>
+          <h2 style={{ fontSize: 32, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.8px", marginBottom: 16, lineHeight: 1.15 }}>
+            The payment fraud API built from<br />real transaction interceptions.
+          </h2>
+          <p style={{ fontSize: 16, color: "#64748B", lineHeight: 1.75, marginBottom: 28, maxWidth: 560, margin: "0 auto 28px" }}>
+            Every interception through the consumer extension generates labeled fraud signal. We're packaging that into an API — memo scoring, social engineering detection, and cross-channel correlation — for platforms that want to protect users at the transaction layer.
           </p>
+          <div style={{ display: "flex", justifyContent: "center", gap: 32, marginBottom: 44, flexWrap: "wrap" }}>
+            {[
+              "Transaction memo scoring",
+              "Social engineering classification",
+              "Cross-channel fraud correlation",
+            ].map(item => (
+              <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#475569" }}>
+                <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#38BDF8", flexShrink: 0 }} />
+                {item}
+              </div>
+            ))}
+          </div>
           {enterpriseSubmitted ? (
             <div style={{ padding: "16px 24px", borderRadius: 12, background: "rgba(56,189,248,0.06)", border: "1px solid rgba(56,189,248,0.15)", color: "#38BDF8", fontSize: 14, fontWeight: 600 }}>
               We'll be in touch. Thank you.
             </div>
           ) : (
-            <form onSubmit={handleEnterpriseSubmit} style={{ display: "flex", gap: 10, maxWidth: 420, margin: "0 auto" }}>
+            <form onSubmit={handleEnterpriseSubmit} style={{ display: "flex", gap: 10, maxWidth: 440, margin: "0 auto" }}>
               <input
                 type="email"
                 required
                 value={enterpriseEmail}
                 onChange={e => setEnterpriseEmail(e.target.value)}
                 placeholder="your@company.com"
-                style={{ flex: 1, padding: "12px 16px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#E2E8F0", fontSize: 14, outline: "none" }}
+                style={{ flex: 1, padding: "13px 16px", borderRadius: 10, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#E2E8F0", fontSize: 14, outline: "none" }}
               />
-              <button type="submit" style={{ padding: "12px 20px", borderRadius: 10, background: "rgba(56,189,248,0.1)", border: "1px solid rgba(56,189,248,0.2)", color: "#38BDF8", fontWeight: 700, fontSize: 14, cursor: "pointer", whiteSpace: "nowrap" }}>
-                Get in touch
+              <button type="submit" style={{ padding: "13px 22px", borderRadius: 10, background: "#38BDF8", border: "none", color: "#0D1526", fontWeight: 700, fontSize: 14, cursor: "pointer", whiteSpace: "nowrap" }}>
+                Get early access
               </button>
             </form>
           )}
