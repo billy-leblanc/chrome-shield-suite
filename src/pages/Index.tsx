@@ -225,7 +225,7 @@ export default function Index() {
 
       {/* Footer */}
       <footer style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", padding: "24px", textAlign: "center" }}>
-        <span style={{ fontSize: 12, color: "#334155" }}>© 2026 Safety Intercept · Built at UC Berkeley · safetyintercept@gmail.com</span>
+        <span style={{ fontSize: 12, color: "#334155" }}>© 2026 Safety Intercept · Built at UC Berkeley · safetyintercept@gmail.com · <a href="/privacy" style={{ color: "#334155", textDecoration: "underline" }}>Privacy Policy</a></span>
       </footer>
 
       {/* Demo modal */}
