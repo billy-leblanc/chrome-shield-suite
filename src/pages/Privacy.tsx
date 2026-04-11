@@ -44,7 +44,13 @@ export default function Privacy() {
 
             <h3 style={h3}>Anonymized telemetry (opt-in only)</h3>
             <p style={p}>
-              If you choose to enable telemetry in the extension popup, we additionally store the memo text with personal information removed. Before any memo text is stored, we automatically strip: phone numbers, email addresses, and URLs. Names are retained because they are part of the fraud script (e.g. "nurse Margaret") and help us improve detection. Telemetry is off by default and requires your explicit opt-in.
+              We are deliberately building a labeled fraud signal dataset. This dataset is the foundation of a fraud detection API we are developing for financial platforms and fintechs. If you opt in to telemetry, your anonymized interception data contributes to that dataset — and directly to making the detection model better for everyone.
+            </p>
+            <p style={{ ...p, marginTop: 12 }}>
+              We're being explicit about this because you deserve to know. You are not just improving your own protection — you are contributing to a commercial product. We think that's a fair trade only if you actively choose it, which is why telemetry is off by default and requires you to turn it on.
+            </p>
+            <p style={{ ...p, marginTop: 12 }}>
+              What is stored when you opt in: platform, risk score, risk level, detected fraud flags, and the memo text with personal information removed. Before storage, we automatically strip phone numbers, email addresses, and URLs. Names are retained because they are part of the fraud script (e.g. "nurse Margaret") and are meaningful training signal.
             </p>
           </section>
 
