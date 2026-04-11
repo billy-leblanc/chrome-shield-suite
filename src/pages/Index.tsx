@@ -3,7 +3,7 @@ import SafetyInterceptModal from "@/components/SafetyInterceptModal";
 
 const DOWNLOAD_URL = "https://shield-relay.bleblanc.workers.dev/download";
 
-const PLATFORMS = ["PayPal", "Venmo", "Zelle", "Wells Fargo", "Gmail"];
+const PLATFORMS = ["PayPal", "Zelle", "Wells Fargo", "Gmail"];
 
 const FEATURES = [
   {
@@ -56,7 +56,7 @@ export default function Index() {
   const handleEnterpriseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (enterpriseEmail.trim()) {
-      window.location.href = `mailto:hello@safetyintercept.com?subject=Enterprise%20Inquiry&body=Email%3A%20${encodeURIComponent(enterpriseEmail)}`;
+      window.location.href = `mailto:safetyintercept@gmail.com?subject=Enterprise%20Inquiry&body=Email%3A%20${encodeURIComponent(enterpriseEmail)}`;
       setEnterpriseSubmitted(true);
     }
   };
@@ -212,9 +212,7 @@ export default function Index() {
 
       {/* Footer */}
       <footer style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", padding: "24px", textAlign: "center" }}>
-        <span style={{ fontSize: 12, color: "#1E293B" }}>© 2026 Safety Intercept · Built at UC Berkeley ·{" "}
-          <a href="https://github.com/billyleblanc" style={{ color: "#334155", textDecoration: "none" }}>Open Source</a>
-        </span>
+        <span style={{ fontSize: 12, color: "#334155" }}>© 2026 Safety Intercept · Built at UC Berkeley · safetyintercept@gmail.com</span>
       </footer>
 
       {/* Demo modal */}
