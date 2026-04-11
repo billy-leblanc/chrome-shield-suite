@@ -45,7 +45,7 @@ const PROOF = [
   { value: "29/29", label: "Crypto scam scenarios blocked" },
   { value: "7", label: "Scam categories detected" },
   { value: "3", label: "Surfaces protected" },
-  { value: "<200ms", label: "Analysis latency" },
+  { value: "Free", label: "Always, no subscription" },
 ];
 
 export default function Index() {
