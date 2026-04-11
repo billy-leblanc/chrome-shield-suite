@@ -88,31 +88,29 @@ export default function Index() {
 
       {/* Hero */}
       <section style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "100px 24px 80px", textAlign: "center" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 999, background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)", fontSize: 12, fontWeight: 600, color: "#FBBF24", marginBottom: 36, letterSpacing: "0.04em" }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#FBBF24", display: "inline-block" }} />
-          Chrome Web Store review in progress
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 999, background: "rgba(56,189,248,0.07)", border: "1px solid rgba(56,189,248,0.18)", fontSize: 11, fontWeight: 700, color: "#38BDF8", marginBottom: 36, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+          Free Chrome Extension
         </div>
 
-        <h1 style={{ fontSize: "clamp(38px, 6vw, 64px)", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-1.5px", color: "#F8FAFC", marginBottom: 24 }}>
-          Stop scams<br />
-          <span style={{ color: "#38BDF8" }}>before they cost you.</span>
+        <h1 style={{ fontSize: "clamp(40px, 6vw, 68px)", fontWeight: 800, lineHeight: 1.08, letterSpacing: "-2px", color: "#F8FAFC", marginBottom: 28 }}>
+          Someone should be<br />on your side.
         </h1>
 
-        <p style={{ fontSize: 18, color: "#94A3B8", lineHeight: 1.7, maxWidth: 560, margin: "0 auto 44px", fontWeight: 400 }}>
-          Safety Intercept watches your Gmail inbox and payment apps in real time. When it detects social engineering, it stops the payment and explains why.
+        <p style={{ fontSize: 18, color: "#94A3B8", lineHeight: 1.75, maxWidth: 540, margin: "0 auto 44px", fontWeight: 400 }}>
+          A free Chrome extension that watches your email, intercepts suspicious payments, and tells you the truth before you hit Send. Built by a student who got tired of watching good people lose money to scams.
         </p>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 52 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
           <a
             href={DOWNLOAD_URL}
             target="_blank"
             rel="noreferrer"
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 12, background: "#38BDF8", color: "#0D1526", fontWeight: 700, fontSize: 15, textDecoration: "none", boxShadow: "0 0 24px rgba(56,189,248,0.25)", transition: "all 0.15s" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 32px", borderRadius: 12, background: "#38BDF8", color: "#0D1526", fontWeight: 700, fontSize: 16, textDecoration: "none", boxShadow: "0 0 24px rgba(56,189,248,0.25)", transition: "all 0.15s" }}
             onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 0 36px rgba(56,189,248,0.4)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
             onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 0 24px rgba(56,189,248,0.25)"; e.currentTarget.style.transform = "translateY(0)"; }}
           >
             <svg viewBox="0 0 24 24" fill="none" style={{ width: 18, height: 18 }}><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            Get Early Access
+            Download
           </a>
           <button
             onClick={() => setModalOpen(true)}
@@ -123,6 +121,7 @@ export default function Index() {
             See it in action →
           </button>
         </div>
+        <p style={{ fontSize: 12, color: "#334155", marginBottom: 36 }}>Chrome Web Store review in progress — download the beta to try it now</p>
 
         {/* Platform badges */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
