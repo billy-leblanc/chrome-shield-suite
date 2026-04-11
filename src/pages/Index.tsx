@@ -45,7 +45,6 @@ const PROOF = [
   { value: "7", label: "Scam types detected" },
   { value: "3", label: "Surfaces protected" },
   { value: "Free", label: "Always, no subscription" },
-  { value: "Open", label: "Source code on GitHub" },
 ];
 
 export default function Index() {
