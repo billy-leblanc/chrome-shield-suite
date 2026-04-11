@@ -42,10 +42,10 @@ const STEPS = [
 ];
 
 const PROOF = [
-  { value: "29/29", label: "Crypto scam scenarios blocked" },
-  { value: "7", label: "Scam categories detected" },
+  { value: "7", label: "Scam types detected" },
   { value: "3", label: "Surfaces protected" },
   { value: "Free", label: "Always, no subscription" },
+  { value: "Open", label: "Source code on GitHub" },
 ];
 
 export default function Index() {
