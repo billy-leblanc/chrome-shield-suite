@@ -3,7 +3,7 @@ import SafetyInterceptModal from "@/components/SafetyInterceptModal";
 
 const DOWNLOAD_URL = "https://shield-relay.bleblanc.workers.dev/download";
 
-const PLATFORMS = ["PayPal", "Zelle", "Wells Fargo", "Gmail"];
+const PLATFORMS = ["PayPal", "Wells Fargo + Zelle", "Gmail"];
 
 const FEATURES = [
   {
@@ -42,9 +42,9 @@ const STEPS = [
 ];
 
 const PROOF = [
-  { value: "29/29", label: "Crypto threats detected" },
-  { value: "23/24", label: "SMS phishing detected" },
-  { value: "5", label: "Platforms protected" },
+  { value: "29/29", label: "Crypto scam scenarios blocked" },
+  { value: "7", label: "Scam categories detected" },
+  { value: "3", label: "Surfaces protected" },
   { value: "<200ms", label: "Analysis latency" },
 ];
 
