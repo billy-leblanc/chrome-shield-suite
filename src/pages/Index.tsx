@@ -44,6 +44,7 @@ const STEPS = [
 const PROOF = [
   { value: "7", label: "Scam types detected" },
   { value: "3", label: "Surfaces protected" },
+  { value: "~500ms", label: "Analysis latency" },
   { value: "Free", label: "Always, no subscription" },
 ];
 
