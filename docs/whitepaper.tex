@@ -1,0 +1,249 @@
+\documentclass[12pt, letterpaper]{article}
+
+\usepackage[margin=1.2in]{geometry}
+\usepackage{fontenc}
+\usepackage{inputenc}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+
+% Colors
+\definecolor{accent}{RGB}{56, 189, 248}
+\definecolor{muted}{RGB}{100, 116, 139}
+\definecolor{dark}{RGB}{15, 23, 42}
+
+% Hyperlink styling
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  urlcolor=accent,
+  pdftitle={Safety Intercept — Strategic White Paper},
+  pdfauthor={Pollux},
+}
+
+% Section styling
+\titleformat{\section}
+  {\large\bfseries\color{dark}}
+  {}
+  {0em}
+  {}
+  [\vspace{-0.4em}\textcolor{accent}{\rule{\linewidth}{0.6pt}}\vspace{0.2em}]
+
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{muted}}
+  {}
+  {0em}
+  {}
+
+% Header / Footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textcolor{muted}{\small Safety Intercept — Strategic White Paper}}
+\lhead{\textcolor{muted}{\small Confidential}}
+\rfoot{\textcolor{muted}{\small \thepage}}
+\renewcommand{\headrulewidth}{0pt}
+
+% List styling
+\setlist[itemize]{leftmargin=1.5em, itemsep=0.3em}
+
+\begin{document}
+
+% Title block
+\begin{center}
+  {\LARGE\bfseries Safety Intercept}\\[0.4em]
+  {\large\color{muted} Strategic White Paper}\\[0.6em]
+  {\small\color{muted} April 2026 $\cdot$ Compiled by Pollux $\cdot$ Confidential}
+\end{center}
+
+\vspace{1.2em}
+\textcolor{accent}{\rule{\linewidth}{1pt}}
+\vspace{1.2em}
+
+% ─────────────────────────────────────────
+\section{The Core Thesis}
+
+Every fraud company in the market answers the same question: \textit{was this transaction fraudulent?} They evaluate after the fact --- after the money moved, after the damage is done.
+
+Safety Intercept answers a different question: \textit{should this transaction ever happen?}
+
+That is not a feature improvement. It is a different position in the stack entirely. Traditional fraud systems operate at step 3. Safety Intercept operates at step 0 --- before the user hits Send, with context from their inbox. The timing advantage is the moat.
+
+% ─────────────────────────────────────────
+\section{The Category}
+
+\textbf{Safety Intercept is the first real-time scam interception layer.}
+
+This is not marketing language. It is a category claim. The word \textit{interception} is precise --- it means we are physically inside the transaction, not watching from outside. The word \textit{layer} signals infrastructure to every fintech and neobank that reads it.
+
+Nobody has planted this flag. We planted it.
+
+\subsection{Consumer Definition}
+
+\begin{quote}
+\textit{Safety Intercept is the first real-time scam interception layer. It reads the email that caused the payment, scores the memo before you hit Send, and blocks transactions that look like fraud --- on PayPal and Zelle, in your browser, in under a second.}
+\end{quote}
+
+\subsection{B2B / Fintech Definition}
+
+\begin{quote}
+\textit{Safety Intercept is the first browser-native interception layer for Authorized Push Payment fraud. By correlating social engineering email signals with payment memo intent in a 24-hour window, it stops scams before they become transactions --- at the surface no fraud platform currently touches.}
+\end{quote}
+
+% ─────────────────────────────────────────
+\section{The Brand}
+
+Two things coexist in the brand and the tension between them is intentional.
+
+\textbf{``Someone should be on your side.''} --- The emotional hook. The reason a 68-year-old downloads it. The reason a journalist leads with it. Consumer warmth over enterprise-grade technology. This line does not change.
+
+\textbf{``Real-Time Scam Interception Layer.''} --- The category claim. The reason a fintech CTO takes a meeting. The reason an investor understands the moat. This language surrounds the emotional headline --- it does not replace it.
+
+The brand is the space between those two things. Neither alone works. Together they open both doors.
+
+% ─────────────────────────────────────────
+\section{The Business Model}
+
+\textbf{Two-door, one flywheel.}
+
+\subsection{Door 1 --- Consumer}
+
+Free Chrome extension. No subscription. Installs on PayPal, Wells Fargo Zelle, and Gmail. Every install generates labeled fraud signal. Every blocked payment is a labeled positive. Every completed safe payment is a labeled negative. This is the best training data for payment-authorization fraud that exists --- if you scale it.
+
+\subsection{Door 2 --- B2B API}
+
+The dataset becomes the product. \texttt{POST /score\_memo} takes a payment memo and returns a scam probability score. Stripe does not offer this as a standalone service. Sardine built their dataset from customer-reported fraud --- lagging and noisy. Safety Intercept's dataset is labeled at the moment of interception --- real-time and precise.
+
+The B2B pitch at scale: \textit{``Our model has seen 500,000 scam memos. Plaid's has only seen payment volumes.''}
+
+Target buyers: Chime, Varo, Current, SoFi, local credit unions. Entry point: Strawberry Creek Ventures (Berkeley alumni fund) for warm introductions.
+
+\subsection{The Flywheel}
+
+Free consumer tool $\rightarrow$ labeled interceptions $\rightarrow$ proprietary dataset $\rightarrow$ B2B API $\rightarrow$ revenue funds better model $\rightarrow$ better model improves consumer tool $\rightarrow$ more installs. It compounds.
+
+% ─────────────────────────────────────────
+\section{The Competitive Position}
+
+\textbf{Nobody is doing exactly what we are doing.} The combination --- browser extension + Gmail cross-layer correlation + Send button interception on PayPal and Zelle --- is ours alone.
+
+\subsection{Whitespace We Own}
+
+\begin{itemize}
+  \item \textbf{The 24-hour cross-layer correlation window.} Scam email $\rightarrow$ payment attempt, same device, tight causal window. No competitor has this signal.
+  \item \textbf{The Send button surface on P2P platforms.} Scamnetic verifies recipients inside the FI. Norton scans the inbox. Google blocks phishing sites. Nobody intercepts at the actual Send button inside PayPal or Zelle.
+  \item \textbf{Payment memo scoring as a standalone API.} Stripe does not offer it. Nobody does.
+\end{itemize}
+
+\subsection{Threat Levels}
+
+\begin{itemize}
+  \item \textcolor{red}{\textbf{RED --- Scamnetic.}} \$16M raised, same consumer$\rightarrow$B2B playbook, 12 months ahead. Their constraint: mobile app, not browser. No Gmail cross-layer correlation. Our wedge is real.
+  \item \textcolor{red}{\textbf{RED --- Google Chrome Gemini Nano.}} On-device LLM scam detection, roadmap expanding. Defense: the dataset and the correlation signal. Not the extension itself.
+\end{itemize}
+
+\subsection{Structural Advantages Incumbents Cannot Replicate}
+
+\begin{itemize}
+  \item Plaid cannot build a consumer Chrome extension --- it destroys their B2B neutrality
+  \item Aura cannot build technical interception --- they are a marketing company
+  \item Stripe Radar is locked inside the Stripe ecosystem
+\end{itemize}
+
+% ─────────────────────────────────────────
+\section{What We Have Built (April 2026)}
+
+\subsection{Three Live Surfaces}
+
+\begin{itemize}
+  \item \textbf{PayPal} --- Send button interception, proactive memo pre-analysis, SPA-aware
+  \item \textbf{Wells Fargo Zelle} --- Hash-route-aware interception on SENDMONEY\_ENTER\_DETAILS and SENDMONEY\_VERIFY\_DETAILS
+  \item \textbf{Gmail} --- Scam email detection, real-time banner, feeds 24-hour correlation window
+\end{itemize}
+
+\subsection{The Intelligence Stack}
+
+\begin{itemize}
+  \item Heuristic fraud detector --- 7 scam type patterns
+  \item Claude Haiku LLM analysis --- $\sim$500ms, 80\% weight on Gmail, 40\% on payment
+  \item Cross-layer correlation --- Gmail scam event + payment attempt within 24h = +30 risk score
+  \item Keyword correlation --- memo text matched against scam email keywords
+  \item Questionnaire trance-breaker --- shown before AI analysis on every interception
+\end{itemize}
+
+\subsection{Infrastructure}
+
+\begin{itemize}
+  \item Cloudflare Workers relay: auth, LLM proxy, events, telemetry
+  \item Cloudflare KV: SHIELD\_LOGS (operational) + TELEMETRY\_LOGS (training data, opt-in)
+  \item MV3 service worker with keepalive via \texttt{chrome.alarms} every 20 seconds
+  \item Shadow DOM isolation on all injected UI
+\end{itemize}
+
+\subsection{Viral Loop}
+
+Post-intercept share screen triggers after ``Go back --- stay safe.'' Shows blocked amount. Three share channels: WhatsApp, SMS, copy link. Share text is pre-written and includes the download link. People who just got saved from a scam are the most motivated sharers.
+
+% ─────────────────────────────────────────
+\section{Strategic Decisions}
+
+\begin{tabularx}{\linewidth}{>{\bfseries}lX}
+\toprule
+Decision & Rationale \\
+\midrule
+Keep emotional headline & Consumer hook converts downloads; category language surrounds it \\
+Free forever & Dataset flywheel requires scale; friction kills installs \\
+Opt-in telemetry only & Legal compliance + trust; explicit consent is the stronger B2B story \\
+Disclose B2B data intent & GDPR/CCPA alignment; transparency is competitive advantage with fintechs \\
+No new platforms yet & Engineering without users is waste; three surfaces are the wedge \\
+Consumer first, B2B second & Flywheel requires consumer scale before API has value \\
+Provisional patent & Blocks Stripe/Sardine from simply adding the feature; not optional \\
+\bottomrule
+\end{tabularx}
+
+% ─────────────────────────────────────────
+\section{Immediate Execution Priority}
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=0.4em]
+  \item \textbf{Chrome Web Store approval} --- Pending since April 2. Everything else unlocks here.
+  \item \textbf{Custom domain} --- GitHub Student Pack approved, delivery in $\sim$3 days. Point to Vercel.
+  \item \textbf{Hacker News Show HN} --- Post the morning CWS approves. Weekday 9--11am EST.
+  \item \textbf{Reddit} --- r/Scams, r/personalfinance, r/PayPal, r/wellsfargo. Value-first. Find ``I almost fell for this'' posts and help first.
+  \item \textbf{Berkeley campus blitz} --- Flyers, professor outreach, Discord/GroupMe. Highest-density sympathetic audience for this product.
+  \item \textbf{Provisional patent} --- File before pitching anyone. One conversation with a well-funded competitor and the window closes.
+\end{enumerate}
+
+% ─────────────────────────────────────────
+\section{The Bottom Line}
+
+\begin{tabularx}{\linewidth}{lX}
+\toprule
+\textbf{Layer} & \textbf{Owned by} \\
+\midrule
+Enterprise fraud & Sift \\
+Identity & Socure \\
+Post-scam recovery & Aura \\
+\textbf{Real-time scam interception} & \textbf{Safety Intercept} \\
+\bottomrule
+\end{tabularx}
+
+\vspace{1.2em}
+
+The category is unclaimed. The flag is planted. The flywheel is built. The only missing variable is users.
+
+Everything else is execution.
+
+\vspace{2em}
+\textcolor{accent}{\rule{\linewidth}{0.6pt}}
+\begin{center}
+  \textcolor{muted}{\small End of white paper $\cdot$ Next move: Chrome Web Store approval $\cdot$ April 2026}
+\end{center}
+
+\end{document}
