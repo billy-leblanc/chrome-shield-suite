@@ -184,6 +184,36 @@ const injectStyles = (shadow: ShadowRoot) => {
       font-size: 11px; color: #334155; font-family: inherit;
     }
     .btn-skip:hover { color: #64748B; }
+    .share-screen {
+      text-align: center; padding: 8px 0 4px;
+    }
+    .share-saved {
+      font-size: 28px; font-weight: 800; color: #34D399;
+      letter-spacing: -1px; margin-bottom: 6px; line-height: 1.1;
+    }
+    .share-sub {
+      font-size: 13px; color: #64748B; line-height: 1.6; margin-bottom: 24px;
+    }
+    .share-label {
+      font-size: 10px; font-weight: 700; color: #334155;
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;
+    }
+    .share-btns { display: flex; gap: 8px; margin-bottom: 16px; }
+    .share-btn {
+      flex: 1; padding: 10px 8px; border-radius: 10px; border: none;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .share-btn:hover { opacity: 0.85; }
+    .share-btn-wa { background: rgba(37,211,102,0.12); border: 1px solid rgba(37,211,102,0.3) !important; color: #25D366; }
+    .share-btn-sms { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25) !important; color: #38BDF8; }
+    .share-btn-copy { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1) !important; color: #94A3B8; }
+    .share-dismiss {
+      width: 100%; background: none; border: none; cursor: pointer;
+      font-size: 11px; color: #334155; font-family: inherit; padding: 6px;
+    }
+    .share-dismiss:hover { color: #64748B; }
   `;
   shadow.appendChild(style);
 };
@@ -195,6 +225,15 @@ const Interceptor = () => {
   const [showQuestionnaire, setShowQuestionnaire] = React.useState(false);
   const [checks, setChecks] = React.useState({ contacted: false, firstTime: false, secretUrgent: false });
   const [cooldown, setCooldown] = React.useState(0);
+  const [showShareScreen, setShowShareScreen] = React.useState(false);
+  const [copiedLink, setCopiedLink] = React.useState(false);
+
+  const SHARE_URL = 'https://shield-relay.bleblanc.workers.dev/download';
+
+  const getShareText = (amount: number, platform: string) => {
+    const amountStr = amount > 0 ? `$${amount.toLocaleString()}` : 'a payment';
+    return `Safety Intercept just blocked ${amountStr} in potential fraud on ${platform}. Free Chrome extension that stops scams before you send:`;
+  };
 
   const activeRef = React.useRef(getActiveConfig());
   const pendingRef = React.useRef(false);
@@ -686,7 +725,59 @@ const Interceptor = () => {
     return () => clearInterval(iv);
   }, [showModal, riskReport]);
 
-  if (!showModal && !showQuestionnaire) return null;
+  if (!showModal && !showQuestionnaire && !showShareScreen) return null;
+
+  if (showShareScreen) {
+    const amount = pendingDataRef.current?.amount ?? 0;
+    const platform = activeRef.current?.config.name ?? 'PayPal';
+    const shareText = getShareText(amount, platform);
+    const fullShareText = `${shareText} ${SHARE_URL}`;
+
+    return (
+      <div className="overlay">
+        <div className="card">
+          <div className="share-screen">
+            <div className="share-saved">
+              {amount > 0 ? `$${amount.toLocaleString()} protected` : 'Payment blocked'}
+            </div>
+            <div className="share-sub">
+              Safety Intercept stopped this before it cleared.<br />
+              Know someone who uses Zelle or PayPal?
+            </div>
+            <div className="share-label">Share with someone who needs this</div>
+            <div className="share-btns">
+              <button
+                className="share-btn share-btn-wa"
+                onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(fullShareText)}`, '_blank')}
+              >
+                WhatsApp
+              </button>
+              <button
+                className="share-btn share-btn-sms"
+                onClick={() => window.open(`sms:?body=${encodeURIComponent(fullShareText)}`, '_blank')}
+              >
+                SMS
+              </button>
+              <button
+                className="share-btn share-btn-copy"
+                onClick={() => {
+                  navigator.clipboard.writeText(fullShareText).then(() => {
+                    setCopiedLink(true);
+                    setTimeout(() => setCopiedLink(false), 2000);
+                  });
+                }}
+              >
+                {copiedLink ? '✓ Copied' : 'Copy link'}
+              </button>
+            </div>
+            <button className="share-dismiss" onClick={() => setShowShareScreen(false)}>
+              Dismiss
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (showQuestionnaire) {
     const anyChecked = checks.contacted || checks.firstTime || checks.secretUrgent;
     const toggle = (key: keyof typeof checks) =>
@@ -792,6 +883,7 @@ const Interceptor = () => {
               });
             }
             setShowModal(false);
+            setShowShareScreen(true);
           }}>
             Go back — stay safe
           </button>

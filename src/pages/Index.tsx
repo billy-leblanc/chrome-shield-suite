@@ -96,8 +96,12 @@ export default function Index() {
           Someone should be<br />on your side.
         </h1>
 
-        <p style={{ fontSize: 18, color: "#94A3B8", lineHeight: 1.75, maxWidth: 540, margin: "0 auto 44px", fontWeight: 400 }}>
+        <p style={{ fontSize: 18, color: "#94A3B8", lineHeight: 1.75, maxWidth: 540, margin: "0 auto 16px", fontWeight: 400 }}>
           A free Chrome extension that watches your email, intercepts suspicious payments, and tells you the truth before you hit Send. Built by a student who got tired of watching good people lose money to scams.
+        </p>
+
+        <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.75, maxWidth: 560, margin: "0 auto 44px" }}>
+          Safety Intercept is the first real-time scam interception layer. It reads the email that caused the payment, scores the memo before you hit Send, and blocks transactions that look like fraud — on PayPal and Zelle, in your browser, in under a second.
         </p>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
