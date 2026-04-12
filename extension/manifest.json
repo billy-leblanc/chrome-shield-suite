@@ -2,19 +2,11 @@
   "manifest_version": 3,
   "name": "Safety Intercept",
   "version": "1.0.0",
-  "description": "AI-powered payment fraud detection. Protects you from scams on PayPal, Venmo, Zelle, and major banks in real time.",
+  "description": "AI-powered payment fraud detection. Protects you from scams on PayPal and Zelle, and detects scam emails in Gmail.",
   "permissions": ["activeTab", "storage", "tabs", "alarms"],
   "host_permissions": [
     "*://*.paypal.com/*",
-    "*://*.venmo.com/*",
-    "*://*.zellepay.com/*",
-    "*://*.hsbc.co.uk/*",
-    "*://*.barclays.co.uk/*",
-    "*://*.revolut.com/*",
     "*://*.wellsfargo.com/*",
-    "*://*.chase.com/*",
-    "*://*.bankofamerica.com/*",
-    "*://*.citi.com/*",
     "*://mail.google.com/*",
     "https://*.workers.dev/*"
   ],
@@ -36,15 +28,7 @@
     {
       "matches": [
         "*://*.paypal.com/*",
-        "*://*.venmo.com/*",
-        "*://*.zellepay.com/*",
-        "*://*.hsbc.co.uk/*",
-        "*://*.barclays.co.uk/*",
-        "*://*.revolut.com/*",
-        "*://*.wellsfargo.com/*",
-        "*://*.chase.com/*",
-        "*://*.bankofamerica.com/*",
-        "*://*.citi.com/*"
+        "*://*.wellsfargo.com/*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle",

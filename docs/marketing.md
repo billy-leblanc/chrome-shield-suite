@@ -209,3 +209,52 @@ Tell me what breaks. Tell me what's missing. That's how this gets better.
 **[3:51]** That's how you download it. Thank you very much for watching. I hope you find this product useful, and please leave feedback down below in the comments.
 
 **[4:02]** And also, if you need help installing it, please send me a message, and I'll be more than happy to have a one-on-one with you and help you download it. Thank you!
+
+---
+
+## Phase 2: B2B & Media Pitches (The Semantic Intent Angle)
+
+*Based on deep-dive research into Stripe and Enterprise Payment Fraud.*
+
+### The Core Narrative (The "Why We Exist")
+Existing fraud engines (like Stripe Radar, Sardine) calculate the *math* of fraud based on velocity, IP addresses, and behavioral biometrics on the merchant backend. **Safety Intercept calculates the *semantics* of fraud.** We sit at the DOM layer to read the actual psychological intent of the user right when the payment is initiated.
+
+### B2B Pitch: Neobanks & Credit Unions
+**Subject:** Bridging the gap between email security and ACH fraud
+
+**Body:**
+Hi [Name],
+I'm a security researcher at UC Berkeley building the next generation of Authorized Push Payment (APP) fraud prevention.
+
+I noticed a massive gap in how processors like Stripe and legacy banks handle ACH fraud. They rely on post-transaction network signals or human employees recognizing Business Email Compromise (BEC) and phishing attempts. But they have a critical blind spot: **they cannot read the semantic intent of the user at the moment of the transaction.**
+
+I built Safety Intercept—an "Agentic AI Fraud Analyst." It operates at the client/DOM layer, correlating the context of a user's inbox with the exact moment they try to initiate a Zelle or ACH transfer. Instead of relying on a user to spot an "urgent request," our circuit breaker evaluates the psychological pressure using LLMs and halts the payload dynamically.
+
+I’m currently rolling out our consumer extension to build the proprietary dataset of how these scams structurally look right before funds execute. I'd love to share some of the fascinating correlation data we're capturing with your risk team. Are you open to a brief chat next week?
+
+Best,
+Billy LeBlanc
+
+### Social Media & LinkedIn Pitch
+**Angle: "Why Stripe can't save your grandparents"**
+
+"Stripe just released a great article on how to prevent ACH Fraud and Business Email Compromise. Their main advice? 'Watch out for urgent emails pressuring you to send money.' 
+
+Here is the problem with that: It relies entirely on human error. And human error is exactly what scammers exploit.
+
+Processors like Stripe and banks like Wells Fargo only see the math of a transaction—velocity, IP address, device fingerprints. They cannot see the *psychology* of the transaction. They don't know the user just read a terrified email about bail money or an urgent, spoofed invoice update from a vendor.
+
+I built Safety Intercept because I realized we need protection at the cognitive layer, not just the network layer. We sit on the DOM, read the semantic intent of the payment, and act as an agentic AI circuit breaker before the funds ever hit the bank's backend.
+
+We're replacing human panic with AI reasoning. Try the beta below."
+
+### News Outlet Pitch (Tech Press / Cybersecurity Beats)
+**Angle:** The Berkeley Student Fixing the $3B Authorized Push Payment Void
+
+**Pitch:**
+"Hi [Journalist],
+When an authorized user logs into their bank with a valid IP and intentionally hits 'Send', traditional fraud networks let it pass. That blind spot costs billions every year in 'Authorized Push Payment' (APP) fraud and BEC.
+
+I'm a UC Berkeley student, and I just built the first semantic-intent fraud engine that actually stops this. It’s an Agentic AI that lives in the browser DOM, correlating Gmail inbox manipulation directly with the exact moment a user attempts a Zelle or PayPal transfer. 
+
+It’s currently live as a free consumer Chrome extension, acting like a psychological circuit breaker to protect vulnerable people. I’m happy to show you how a 500ms LLM call can shut down a romance scam before the money moves."
