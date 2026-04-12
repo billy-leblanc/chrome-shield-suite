@@ -89,7 +89,7 @@ export default function Index() {
       {/* Hero */}
       <section style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "100px 24px 80px", textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px", borderRadius: 999, background: "rgba(56,189,248,0.07)", border: "1px solid rgba(56,189,248,0.18)", fontSize: 11, fontWeight: 700, color: "#38BDF8", marginBottom: 36, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          Free Chrome Extension
+          Real-Time Scam Interception Layer
         </div>
 
         <h1 style={{ fontSize: "clamp(40px, 6vw, 68px)", fontWeight: 800, lineHeight: 1.08, letterSpacing: "-2px", color: "#F8FAFC", marginBottom: 28 }}>
@@ -137,6 +137,7 @@ export default function Index() {
 
       {/* Features */}
       <section style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto", padding: "0 24px 96px" }}>
+        <p style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "#1E3A5F", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 40 }}>How the interception layer works</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
           {FEATURES.map(f => (
             <div key={f.title} style={{ padding: "28px 28px 32px", borderRadius: 16, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", transition: "border-color 0.2s" }}
@@ -155,7 +156,7 @@ export default function Index() {
       {/* How it works */}
       <section style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.01)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 24px" }}>
-          <h2 style={{ fontSize: 28, fontWeight: 700, color: "#F1F5F9", textAlign: "center", marginBottom: 56, letterSpacing: "-0.5px" }}>How a grandparent scam gets stopped</h2>
+          <h2 style={{ fontSize: 28, fontWeight: 700, color: "#F1F5F9", textAlign: "center", marginBottom: 56, letterSpacing: "-0.5px" }}>How the layer stops a scam before it becomes fraud</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 32 }}>
             {STEPS.map(s => (
               <div key={s.n} style={{ display: "flex", gap: 18 }}>
@@ -180,6 +181,7 @@ export default function Index() {
             </div>
           ))}
         </div>
+        <p style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#1E3A5F", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 32 }}>The layer in numbers</p>
         <p style={{ textAlign: "center", fontSize: 12, color: "#334155", marginTop: 8 }}>Evaluated against real r/Scams corpus. Built at UC Berkeley.</p>
       </section>
 
