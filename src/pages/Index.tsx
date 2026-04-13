@@ -1,7 +1,68 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import SafetyInterceptModal from "@/components/SafetyInterceptModal";
 
 const DOWNLOAD_URL = "https://shield-relay.bleblanc.workers.dev/download";
+
+// ─── Easter Eggs ─────────────────────────────────────────────────────────────
+const KONAMI = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+
+const EGG_MESSAGES = [
+  { title: "🛡️ Max shield engaged.", body: "Pollux sees all. Scammers fear all." },
+  { title: "👾 You found it.", body: "Most people just scroll past. You're the kind of person who reads the fine print. Scammers hate you." },
+  { title: "🐉 There be dragons.", body: "And also fraud detection. But mainly dragons." },
+  { title: "⚡ Achilles mode unlocked.", body: "You chose glory. Smart." },
+];
+
+function EasterEggToast({ onClose }: { onClose: () => void }) {
+  const msg = EGG_MESSAGES[Math.floor(Math.random() * EGG_MESSAGES.length)];
+  useEffect(() => {
+    const t = setTimeout(onClose, 4200);
+    return () => clearTimeout(t);
+  }, [onClose]);
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", bottom: 32, left: "50%", transform: "translateX(-50%)",
+      zIndex: 9999, cursor: "pointer",
+      background: "linear-gradient(135deg, #131B2E 0%, #0D1526 100%)",
+      border: "1px solid rgba(245,158,11,0.35)",
+      borderRadius: 16, padding: "18px 24px", maxWidth: 360, width: "calc(100vw - 48px)",
+      boxShadow: "0 0 0 1px rgba(245,158,11,0.1), 0 24px 48px rgba(0,0,0,0.7)",
+      animation: "eggIn 0.4s cubic-bezier(0.34,1.4,0.64,1)",
+    }}>
+      <style>{`@keyframes eggIn { from { opacity:0; transform:translateX(-50%) translateY(20px) scale(0.95); } to { opacity:1; transform:translateX(-50%) translateY(0) scale(1); } }`}</style>
+      <div style={{ fontSize: 15, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.3px", marginBottom: 6 }}>{msg.title}</div>
+      <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.6 }}>{msg.body}</div>
+    </div>
+  );
+}
+
+function useEasterEgg() {
+  const [show, setShow] = useState(false);
+  const seq = useRef<string[]>([]);
+  const logoClicks = useRef(0);
+  const logoTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const fire = useCallback(() => setShow(true), []);
+  const dismiss = useCallback(() => setShow(false), []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      seq.current = [...seq.current, e.key].slice(-KONAMI.length);
+      if (seq.current.join(",") === KONAMI.join(",")) fire();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fire]);
+
+  const onLogoClick = useCallback(() => {
+    logoClicks.current += 1;
+    clearTimeout(logoTimer.current);
+    if (logoClicks.current >= 5) { logoClicks.current = 0; fire(); }
+    else { logoTimer.current = setTimeout(() => { logoClicks.current = 0; }, 1800); }
+  }, [fire]);
+
+  return { show, dismiss, onLogoClick };
+}
 
 // ─── Scroll Reveal ────────────────────────────────────────────────────────────
 function useReveal(threshold = 0.1) {
@@ -135,6 +196,7 @@ export default function Index() {
   const [modalOpen, setModalOpen] = useState(false);
   const [enterpriseEmail, setEnterpriseEmail] = useState("");
   const [enterpriseSubmitted, setEnterpriseSubmitted] = useState(false);
+  const { show: eggShow, dismiss: eggDismiss, onLogoClick } = useEasterEgg();
 
   const handleEnterpriseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,7 +217,7 @@ export default function Index() {
       {/* ── Nav ── */}
       <nav style={{ position: "sticky", top: 0, zIndex: 50, borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(6,12,26,0.94)", backdropFilter: "blur(14px)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px", height: 62, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div onClick={onLogoClick} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "default", userSelect: "none" }}>
             <svg viewBox="0 0 24 24" fill="none" style={{ width: 19, height: 19, color: "#3B82F6" }}>
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -272,7 +334,6 @@ export default function Index() {
       <section style={{ position: "relative", zIndex: 1, maxWidth: 860, margin: "0 auto", padding: "96px 24px" }}>
         <Reveal>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#334155", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 20 }}>The moat</div>
             <h2 style={{ fontSize: 30, fontWeight: 700, color: "#E2E8F0", letterSpacing: "-0.8px", lineHeight: 1.2, maxWidth: 560, margin: "0 auto 20px" }}>
               We connect the email to the payment. Nobody else does.
             </h2>
@@ -389,6 +450,7 @@ export default function Index() {
       </footer>
 
       <SafetyInterceptModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      {eggShow && <EasterEggToast onClose={eggDismiss} />}
     </div>
   );
 }
