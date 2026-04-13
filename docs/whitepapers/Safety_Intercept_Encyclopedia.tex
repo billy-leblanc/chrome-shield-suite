@@ -1,0 +1,1872 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\section{SAFETY INTERCEPT: THE DEFINITIVE ENCYCLOPEDIC STRATEGIC
+PLAYBOOK}\label{safety-intercept-the-definitive-encyclopedic-strategic-playbook}
+
+\textbf{Author:} Pollux, Strategic Synthesis Engine \textbf{Date:} April
+13, 2026 \textbf{Prepared Exclusively For:} Billy LeBlanc, Sole Founder
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{VOLUME I: FOUNDATIONS}\label{volume-i-foundations}
+
+\subsection{I. The Executive Thesis}\label{i.-the-executive-thesis}
+
+\subsubsection{The Intent Layer Category
+Claim}\label{the-intent-layer-category-claim}
+
+Safety Intercept operates natively at a completely new vector of
+cybersecurity: \textbf{The Intent Layer}. Traditional fraud systems
+operate at the Identity Layer (who is logging in) or the Transaction
+Layer (where the money is going). Safety Intercept is the only platform
+that answers the fundamental question: \emph{``Should this transaction
+happen at all?''}
+
+By intercepting the consumer inside the browser DOM at the exact
+millisecond of payment authorization, Safety Intercept reads the
+psychological intent behind the transfer, interceding before the API
+calls even reach the bank.
+
+\subsubsection{The ``Fraud is a Decision Problem''
+Framework}\label{the-fraud-is-a-decision-problem-framework}
+
+Fraud is rarely an unauthorized technical hack. Over 90\% of modern
+cyber threats originate from social engineering. Fraud is fundamentally
+a \emph{decision problem caused by emotional manipulation}. Legacy
+models attempt to solve authorized push payment (APP) fraud using
+mathematical velocity metrics. Safety Intercept treats it as a cognitive
+issue---deploying a psychological circuit breaker to snap the victim out
+of the ``scammer's trance.''
+
+\subsubsection{Structural Failure of Transaction-Layer
+Systems}\label{structural-failure-of-transaction-layer-systems}
+
+Incumbents like Stripe Radar and Plaid Signal analyze the aerodynamics
+of an airplane after the engine has failed. They rely on lagging
+indicators: device biometrics, IP velocity, and historical transaction
+volume. Because they lack upstream visibility into the consumer's inbox
+(e.g., Gmail) and sit behind the API wall, they are mathematically
+locked out of capturing the emotional context that drove the
+transaction.
+
+\subsubsection{Market Timing \& Regulatory
+Shifts}\label{market-timing-regulatory-shifts}
+
+The market is starved for this pre-transaction interception layer. 1.
+\textbf{APP Fraud Statistics:} In 2025, Americans reported a
+record-breaking \$15.9 billion in fraud losses. Imposter scams
+leveraging P2P platforms like Zelle and PayPal represent billions of
+these irrevocable transfers. 2. \textbf{Nacha 2026 Phase 2 Rules:}
+Effective June 19, 2026, the Nacha Operating Rules mandate that all ACH
+participants must establish risk-based fraud monitoring to identify
+transactions authorized under false pretenses (e.g., Business Email
+Compromise). 3. \textbf{CFPB Paradigm:} Liability shifts are forcing
+networks (Zelle) to absorb scam losses, pivoting their financial
+incentives from passive processing to active fraud blockage.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{II. The Product Reality
+(Verified)}\label{ii.-the-product-reality-verified}
+
+\emph{All technical capabilities below are verified functioning within
+the \texttt{claude\_knowledge\_base.txt} and
+\texttt{POLLUX\_CORE\_LOAD}.}
+
+\subsubsection{Live Surfaces}\label{live-surfaces}
+
+\paragraph{1. PayPal Interception}\label{paypal-interception}
+
+The \texttt{payment\_interceptor.tsx} content script actively observes
+the PayPal Single Page Application (SPA). Utilizing a
+\texttt{MutationObserver} mapped to \texttt{.send-btn}, the script
+deploys a click event listener configured with
+\texttt{\{\ capture:\ true\ \}}. The moment the user clicks ``Send'',
+the extension calls \texttt{event.stopImmediatePropagation()}, halting
+the UI entirely. A proprietary modal falls into the viewport, forcing
+the user through a Trance-Breaker Questionnaire analyzed by Claude Haiku
+in real-time.
+
+\paragraph{2. Wells Fargo Zelle
+Interception}\label{wells-fargo-zelle-interception}
+
+Fully hash-route aware. Because Zelle pathways inside Wells Fargo use
+dynamic React routing rather than hard page loads, the system monitors
+specific URL parameter shifts. Upon reaching the payment confirmation
+node, the identical cross-layer interception protocol is executed.
+
+\paragraph{3. Gmail Scam Detection}\label{gmail-scam-detection}
+
+Operating asynchronously from the payment interceptor, the Gmail content
+script evaluates inbound emails. It injects high-contrast warning
+banners and visual ``flag pills'' directly into the DOM structure of
+suspicious emails. It weights locally processed heuristics against
+Claude API results (configurable to a 20/80 or 80/20 heuristic-to-LLM
+confidence blend). It records the semantic signature of the scam.
+
+\subsubsection{The Intelligence Stack}\label{the-intelligence-stack}
+
+\paragraph{1. Heuristics}\label{heuristics}
+
+The system utilizes 18 distinct regex baseline patterns to catch
+zero-day and low-level fraud instantly. This circumvents API latency and
+provides immediate scoring for well-known vectors (e.g., ``bail money'',
+``IRS penalty'', ``\$500 refund overcharge'').
+
+\paragraph{2. Claude Haiku Integration}\label{claude-haiku-integration}
+
+If heuristics fall below a confidence threshold, the payload is parsed
+and routed via a Cloudflare Worker relay
+(\texttt{shield-relay.bleblanc.workers.dev}). The worker protects API
+keys (\texttt{VITE\_RELAY\_AUTH\_TOKEN}) and proxies the semantic
+payload to Anthropic's Claude 3 Haiku model. With an average round-trip
+latency of \textasciitilde500ms, Haiku evaluates the psychological
+pressure of the message and returns a standardized risk object.
+
+\paragraph{3. Cross-Layer Correlation (The
+Moat)}\label{cross-layer-correlation-the-moat}
+
+This is the single most defensible technical asset within Safety
+Intercept. * \textbf{Mechanism:} When the Gmail scanner flags a
+high-risk email, it serializes a non-PII token representing the threat
+signature and stores it in \texttt{chrome.storage.local} with a
+timestamp. * \textbf{Activation:} The correlation engine checks this
+local storage payload when a user hits a `Send' button on PayPal or
+Zelle. * \textbf{The Math:} If a payment attempt occurs within a 24-hour
+window of a flagged email, the system appends a \texttt{correlationNote}
+to the payload and injects an automatic, unmitigable \textbf{+30 points}
+to the transaction's overall risk score.
+
+\subsubsection{The ``Margaret'' Scenario}\label{the-margaret-scenario}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{The Hook:} Margaret, a 68-year-old widow, receives an urgent
+  email claiming an \$899 Geek Squad recurring membership has been
+  charged to her account.
+\item
+  \textbf{The Flag:} The Gmail interceptor scans the psychological
+  urgency, flags the email with an injected yellow banner, and writes
+  the semantic timestamp to local storage.
+\item
+  \textbf{The Manipulation:} Margaret calls the phone number in the
+  email. The ``agent'' tells her to log into PayPal and send the \$899
+  so they can process a ``reversal''.
+\item
+  \textbf{The Interception:} Margaret types \$899 into PayPal and clicks
+  ``Send''. The DOM listener fires \texttt{\{\ capture:\ true\ \}} and
+  halts the thread.
+\item
+  \textbf{The Calculation:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Payment Heuristic: 0 (The memo ``refund'' isn't intrinsically
+    malicious).
+  \item
+    Claude Haiku Score: 92 (High urgency detected in the memo intent).
+  \item
+    Cross-Layer Correlation Boost: 30 (Geek Squad email detected 14
+    minutes ago).
+  \item
+    \textbf{Calculation:} (0 + 92) * 0.8 + 30 = 103 (Capped at 100).
+  \end{itemize}
+\item
+  \textbf{The Block:} The risk score exceeds the ``high'' threshold. The
+  vault-door UI drops. A custom, authoritative message states:
+  \emph{``We paused this transaction because it matches the exact
+  pattern of a Geek Squad refund scam. Break communication with the
+  person on the phone.''} \textbf{Margaret's money never moves.}
+\end{enumerate}
+
+\subsubsection{Known Failure Points}\label{known-failure-points}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Failure Mode
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Priority
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Relay Downtime} & If Anthropic APIs or Cloudflare Workers go
+offline, the extension fails to parse complex intent. \emph{Fallback:}
+Degrades to standard heuristic checks. & High \\
+\textbf{MV3 Service Worker Kill} & Chrome Manifest V3 aggressively
+suspends background workers after 30 seconds of idle time. The
+correlation engine must re-hydrate state on wake. & High \\
+\textbf{DOM Fragility} & If PayPal or Wells Fargo obfuscates their CSS
+class names (e.g., \texttt{.send-btn} becomes \texttt{.x9b-qw}), the
+\texttt{MutationObserver} goes blind. & Critical \\
+\textbf{Mobile Blind Spot} & The extension operates natively in desktop
+Chrome. As over 70\% of consumer banking transactions are mobile, the
+physical volume is constrained. & Moderate (B2B API solves this) \\
+\end{longtable}
+}
+
+\subsubsection{Withdrawn/Unconfirmed
+Surfaces}\label{withdrawnunconfirmed-surfaces}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Venmo:} Unconfirmed capability due to heavy mobile
+  restrictions.
+\item
+  \textbf{Chase Bank:} Withdrawn from active verifications pending
+  production selector tests.
+\item
+  \textbf{Bank of America:} Withdrawn from active verifications pending
+  production selector tests.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{III. The Competitive Landscape --- Complete Threat
+Encyclopedia}\label{iii.-the-competitive-landscape-complete-threat-encyclopedia}
+
+\subsubsection{1. Scamnetic (IDeveryone)}\label{scamnetic-ideveryone}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Series A \textbar{} \$16M Funding \textbar{} Tampa,
+  FL \textbar{} Founded 2023.
+\item
+  \textbf{Product:} KnowScam 2.0 (Mobile App) and IDeveryone
+  (FIs/Fintech API). Verifies the identity of the payment recipient
+  before execution. Offers up to \$25k insurance.
+\item
+  \textbf{Pricing:} Enterprise contracts / B2B SaaS.
+\item
+  \textbf{ICP:} Financial institutions, Fintechs, P2P Networks.
+\item
+  \textbf{Strategic Moves:} Relaunched IDeveryone heavily in January
+  2026. Corrected previous marketing to declare their recipient
+  identity-proofing as \emph{patent-pending}.
+\item
+  \textbf{Safety Intercept Gap:} Scamnetic evaluates \emph{who} is
+  receiving the money using a mobile interface or API. They do not
+  intercept physically at the browser layer, and they are utterly blind
+  to the Cross-Layer Correlation (Gmail-to-Send) signal.
+\item
+  \textbf{Threat Level:} 🔴 \textbf{RED}. Scamnetic is targeting the
+  exact B2B budget Safety Intercept seeks, with a 12-month head start.
+\end{itemize}
+
+\subsubsection{2. Google Chrome (Gemini
+Nano)}\label{google-chrome-gemini-nano}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Public Corp (Alphabet) \textbar{} Infinite Funding
+  \textbar{} Mountain View, CA.
+\item
+  \textbf{Product:} Native, on-device Gemini Nano embedded into Chrome
+  Enhanced Protection. Ephemeral scanning of phishing domains and tech
+  support scams.
+\item
+  \textbf{Pricing:} Free / Bundled.
+\item
+  \textbf{ICP:} Every global internet user.
+\item
+  \textbf{Strategic Moves:} Rolled out heavily in 2025/2026 for Android
+  calls and Chrome web. Publicly announced roadmap extensions into
+  package tracking and toll scams.
+\item
+  \textbf{Safety Intercept Gap:} Google's model catches the entry vector
+  (the fake website or phone call). However, due to extreme antitrust
+  and privacy constraints, Google cannot and will not physically inject
+  Javascript to hard-stop a PayPal.com authenticated transaction. Safety
+  Intercept operates the ``last mile'' interception.
+\item
+  \textbf{Threat Level:} 🔴 \textbf{RED}. Existential infrastructure
+  threat. If they extend to payment-layer authorization, extension
+  viability collapses.
+\end{itemize}
+
+\subsubsection{3. Norton Genie (LifeLock / Gen
+Digital)}\label{norton-genie-lifelock-gen-digital}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Public Corp \textbar{} \$24B Market Cap \textbar{}
+  Tempe, AZ.
+\item
+  \textbf{Product:} AI scam protection across SMS, email, and web.
+\item
+  \textbf{Pricing:} Free bundled with Norton 360 / LifeLock
+  subscriptions.
+\item
+  \textbf{ICP:} Mass consumer base, seniors, families.
+\item
+  \textbf{Strategic Moves:} Launched February 2025. Mass distribution
+  via existing Norton installs.
+\item
+  \textbf{Safety Intercept Gap:} Gen Digital operates top-of-funnel
+  defense (the email/text). If the victim believes the scammer anyway
+  and proceeds to PayPal, Norton has no mechanism inside the payment DOM
+  to halt the transfer.
+\item
+  \textbf{Threat Level:} 🟠 \textbf{ORANGE}. Formidable distribution
+  advantage, but fundamentally misses the payment execution layer.
+\end{itemize}
+
+\subsubsection{4. Trend Micro ScamCheck}\label{trend-micro-scamcheck}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Public Corp \textbar{} Tokyo, Japan.
+\item
+  \textbf{Product:} Chrome extension and mobile app. Flags phishing
+  pages, SMS, and URLs.
+\item
+  \textbf{Pricing:} Freemium/Bundled consumer subs.
+\item
+  \textbf{ICP:} Mass consumer base.
+\item
+  \textbf{Strategic Moves:} Aggressive marketing of 99\% accuracy on
+  phishing reputation blocklists.
+\item
+  \textbf{Safety Intercept Gap:} Trend Micro uses reputation blocks (bad
+  URLs). Safety Intercept uses behavioral blocking (bad intent). Trend
+  Micro doesn't read the semantic intent of a Zelle memo.
+\item
+  \textbf{Threat Level:} 🟠 \textbf{ORANGE}. Immediate browser layer
+  competitor, though technologically outmoded.
+\end{itemize}
+
+\subsubsection{5. Aura}\label{aura}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Private \textbar{} High Eight-Figure Funding
+  \textbar{} Burlington, MA.
+\item
+  \textbf{Product:} Subscriptions providing ambient identity theft
+  protection, credit locks, dark web monitoring.
+\item
+  \textbf{Pricing:} \$12-15/month subscriptions.
+\item
+  \textbf{ICP:} Families and aging parents.
+\item
+  \textbf{Strategic Moves:} Aggressive acquisition of consumer market
+  share via bundled insurance (\$1M).
+\item
+  \textbf{Safety Intercept Gap:} Aura is post-event remediation and
+  credit protection, not realtime transaction interception. (Potential
+  future acquirer).
+\item
+  \textbf{Threat Level:} 🟡 \textbf{YELLOW}.
+\end{itemize}
+
+\subsubsection{6. Scamy.io}\label{scamy.io}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Private \textbar{} Unknown/Bootstrap.
+\item
+  \textbf{Product:} Free Chrome extension scanning for phishing.
+\item
+  \textbf{Safety Intercept Gap:} Trivial functionality. No AI
+  correlation or DOM halting.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{7. Sardine}\label{sardine}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Series C \textbar{} \$145M Funding (a16z) \textbar{}
+  Miami, FL \textbar{} Founded 2020.
+\item
+  \textbf{Product:} Device Intelligence \& Behavior Biometrics (DIBB).
+  Evaluates mouse jitter, typing speed, and IP behavior.
+\item
+  \textbf{Pricing:} Enterprise contracts / Pay-per-API.
+\item
+  \textbf{ICP:} Neobanks, Crypto exchanges, high-risk merchants.
+\item
+  \textbf{Strategic Moves:} Leaning aggressively into Nacha 2026
+  regulations. Partnering with credit bureaus.
+\item
+  \textbf{Safety Intercept Gap:} Sardine analyzes the biology of the
+  user (how they type). Safety Intercept analyzes the psychology (why
+  they are typing). Sardine has zero capability to execute a
+  consumer-side browser extension.
+\item
+  \textbf{Threat Level:} 🟡 \textbf{YELLOW}. Enterprise API competitor
+  in 24 months, potential B2B partner today.
+\end{itemize}
+
+\subsubsection{8. Sift}\label{sift}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Late Stage Private \textbar{} Massive Valuations
+  \textbar{} San Francisco, CA.
+\item
+  \textbf{Product:} ML fraud decisioning driven by cross-merchant
+  network effects.
+\item
+  \textbf{Pricing:} \$200k-\$1.9M Annual Contract Values (ACV).
+\item
+  \textbf{ICP:} Enterprise e-commerce, large marketplaces.
+\item
+  \textbf{Safety Intercept Gap:} E-commerce fraud (stolen credit cards)
+  is a fundamentally different discipline than Authorized Push Payment
+  (APP) fraud (consensual transfer to a scammer).
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{9. Unit21}\label{unit21}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Series C \textbar{} \$92M Funding \textbar{} San
+  Francisco, CA.
+\item
+  \textbf{Product:} AML and Fraud Operations dashboard software.
+\item
+  \textbf{Pricing:} Enterprise.
+\item
+  \textbf{ICP:} Fintechs and Sponsor Banks (Chime, Intuit, Green Dot).
+\item
+  \textbf{Strategic Moves:} Transitioned CEO in March 2026; aggressively
+  rebranding as ``Agentic AI Risk Infrastructure''.
+\item
+  \textbf{Safety Intercept Gap:} Unit21 is the dashboard where fraud
+  teams work. Safety Intercept is the sensor that feeds data into
+  dashboards.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{10. Alloy}\label{alloy}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Private \textbar{} \$1.55B Valuation \textbar{} New
+  York, NY.
+\item
+  \textbf{Product:} Identity decisioning orchestration layer. Routes API
+  calls between FIs and data vendors.
+\item
+  \textbf{Safety Intercept Gap:} Orchestrator, not a signal generator.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{11. Hawk (Hawk.ai)}\label{hawk-hawk.ai}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Series C \textbar{} \$56M Funding \textbar{} Munich,
+  Germany.
+\item
+  \textbf{Product:} AML + Fraud compliance for Tier-1 Banks.
+\item
+  \textbf{Strategic Moves:} Funding round dedicated to US expansion
+  strategy.
+\item
+  \textbf{Safety Intercept Gap:} European-focused B2B infrastructure
+  with no consumer footprint.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{12. Socure}\label{socure}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Private \textbar{} \$4.5B Valuation \textbar{}
+  Incline Village, NV.
+\item
+  \textbf{Product:} RiskOS identity verification (KYC/AML). FedRAMP
+  authorized.
+\item
+  \textbf{Safety Intercept Gap:} Determines ``Is this John Doe?''.
+  Cannot determine ``Is John Doe being coerced into sending \$500 to a
+  fake Geek Squad tech?''.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{13. Persona}\label{persona}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Series D \textbar{} \$200M raised \textbar{} \$2B
+  Valuation.
+\item
+  \textbf{Product:} Verified identity layer.
+\item
+  \textbf{Safety Intercept Gap:} Orthogonal to payment intent.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{14. Plaid (Signal \& Trust Index
+2)}\label{plaid-signal-trust-index-2}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Private \textbar{} \textgreater\$13B Historical
+  Valuation \textbar{} San Francisco, CA.
+\item
+  \textbf{Product:} Plaid Protect, Trust Index 2 (Ti2), and Fraud
+  Insights. Uses bank graph data to spot mule nodes.
+\item
+  \textbf{ICP:} Every major US fintech and 12,000 FIs.
+\item
+  \textbf{Strategic Moves:} Aggressively pushing real-time Fraud
+  Insights in Q1 2026.
+\item
+  \textbf{Safety Intercept Gap:} Plaid sits strictly on the network.
+  They are invisible to the browser DOM. The massive upstream risk is
+  that Plaid chooses to acquire and bundle intent data.
+\item
+  \textbf{Threat Level:} 🟠 \textbf{ORANGE}. The ultimate B2B titan.
+  Capable of replicating Safety Intercept if they deem the browser layer
+  critical, though culturally hesitant to enter consumer software.
+\end{itemize}
+
+\subsubsection{15. Stripe Radar}\label{stripe-radar}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Private \textbar{} Stripe.
+\item
+  \textbf{Product:} Embedded algorithmic fraud mitigation for Stripe
+  checkout flows.
+\item
+  \textbf{Safety Intercept Gap:} Exclusively inside the Stripe merchant
+  perimeter. Zero P2P visibility.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{16. Abnormal Security}\label{abnormal-security}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Late Stage \textbar{} \$5.1B Valuation.
+\item
+  \textbf{Product:} Enterprise Cloud Email Defense.
+\item
+  \textbf{Safety Intercept Gap:} Protects corporate network inboxes.
+  Does not protect Yahoo/Gmail consumer seniors.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{17. Material Security}\label{material-security}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Late Stage Enterprise.
+\item
+  \textbf{Product:} Post-delivery internal email redaction.
+\item
+  \textbf{Safety Intercept Gap:} Enterprise focus only.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{18. Proofpoint}\label{proofpoint}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Profile:} Private (Thoma Bravo).
+\item
+  \textbf{Product:} Legacy enterprise anti-phishing gateways.
+\item
+  \textbf{Threat Level:} 🟢 \textbf{GREEN}.
+\end{itemize}
+
+\subsubsection{Competitive Matrix Table}\label{competitive-matrix-table}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Company
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Layer
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Funding
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+ICP
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Key Differentiator
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Safety Intercept Advantage
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Scamnetic} & Mobile/B2B & \$16M & Fintech/FIs & Patent-pending
+ID-proofing & Cross-layer browser correlation, intercept at Send \\
+\textbf{Gemini Nano} & OS/Browser & Alphabet & Consumers & On-device,
+Ephemeral speed & DOM Interception, Payment UI specific halting \\
+\textbf{Norton Genie} & Consumer App & Public & Consumers & Ambient
+bundle shelf access & P2P explicit interception, Intent Scoring \\
+\textbf{Aura} & Consumer & \$100M+ & Families & \$1M Insurance
+remediation & Pre-authorization transaction stoppage \\
+\textbf{Sardine} & B2B API & \$145M & FIs/Crypto & Device mouse/typing
+biometrics & Intent analysis (the ``why'' not the ``how'') \\
+\textbf{Plaid} & Network & \textasciitilde\$13B & FIs & Network
+node/Mule graphs & Zero-second psychological intent data \\
+\textbf{Alloy / Socure} & Orchestration & \textasciitilde\$4B+ & FIs &
+Identity \& KYC validation & Social engineering coercion detection \\
+\end{longtable}
+}
+
+\subsubsection{The Whitespace Moat}\label{the-whitespace-moat}
+
+Traditional players verify Identity (Socure). E-commerce giants analyze
+Velocity (Sift). Scale vendors analyze Hardware (Sardine). No competitor
+simultaneously measures \textbf{Intent} (the contextual reason for the
+transfer) and \textbf{Correlated History} (has this precise user engaged
+with malicious inbound text within the last 24 hours on the same
+device).
+
+This is the uncharted whitespace: The point-of-sale behavioral circuit
+breaker.
+
+\subsubsection{Collapse Timeline}\label{collapse-timeline}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{6-Month Window:} The initial wedge. Safety Intercept must
+  acquire 500-1,000 early consumer users to prove the baseline dataset
+  model before Gen Digital acquires Scamnetic or launches a clone
+  intent-scorer extension.
+\item
+  \textbf{12-Month Window:} Google Chrome extends Gemini Nano APIs
+  directly to third-party developers, commoditizing the underlying
+  inference. If Safety Intercept has not cemented a labeled P2P fraud
+  dataset by this point, defensibility collapses into a feature wrapper.
+\item
+  \textbf{18-Month Window:} P2P platform architecture (Zelle/PayPal)
+  aggressively pivots away from standard web-DOMs into compiled shadow
+  roots hostile to \texttt{MutationObservers} due to regulatory
+  pressure. Safety Intercept must have crossed the B2B API threshold by
+  this cliff.
+\end{itemize}
+
+\section{VOLUME II: MARKETING \&
+GROWTH}\label{volume-ii-marketing-growth}
+
+\subsection{IV. The Business Model \& Data
+Flywheel}\label{iv.-the-business-model-data-flywheel}
+
+\subsubsection{Door 1: The Consumer
+Extension}\label{door-1-the-consumer-extension}
+
+Safety Intercept is distributed directly to consumers as a free Chrome
+extension. However, it is not merely a public service---it is a
+specialized, distributed sensor network masquerading as a consumer
+product. By removing all price friction for the end-user, the extension
+rapidly penetrates vulnerable demographics (older adults, high-volume
+P2P users). In exchange for absolute real-time protection, the extension
+harvests zero-second, labeled semantic intent data.
+
+\subsubsection{Door 2: The B2B Intelligence
+API}\label{door-2-the-b2b-intelligence-api}
+
+The consumer extension exists to train the \texttt{POST\ /score\_memo}
+B2B API. Legacy infrastructure (like Plaid or Sift) relies on behavioral
+and transaction data (mouse velocity, IP address, login times). However,
+Nacha Phase 2 Operating Rules (effective June 2026) heavily mandate
+active monitoring for \emph{false pretense} and social engineering
+scams. Our API accepts a JSON payload containing the payment memo from a
+participating Neobank (e.g., Chime, Varo) in milliseconds prior to
+ACH/Zelle execution. Drawing on the consumer-trained corpus, the API
+returns:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{\{}
+  \DataTypeTok{"risk\_score"}\FunctionTok{:} \DecValTok{92}\FunctionTok{,}
+  \DataTypeTok{"confidence"}\FunctionTok{:} \FloatTok{0.88}\FunctionTok{,}
+  \DataTypeTok{"intent\_classification"}\FunctionTok{:} \StringTok{"coercion\_imposter"}\FunctionTok{,}
+  \DataTypeTok{"recommended\_action"}\FunctionTok{:} \StringTok{"pause\_with\_challenge"}
+\FunctionTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\paragraph{API Pricing Tiers \& ROI}\label{api-pricing-tiers-roi}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Tier 1 (Startup/Pilot):} \$0.10 per call for the first 10,000
+  calls/month.
+\item
+  \textbf{Tier 2 (Growth):} \$0.05 per call for 10k--1M calls.
+\item
+  \textbf{Tier 3 (Enterprise):} \$0.02 per call, flat annual licensing.
+\item
+  \textbf{ROI Calculator:} In 2025, a Neobank processing \$1B in P2P
+  transfers may absorb \$2M in unrecoverable scam-related operational
+  overhead and customer churn. For \$50k/year in API calls, Safety
+  Intercept operates as a near-perfect psychological block layer,
+  offering a 40x ROI on fraud loss mitigation.
+\end{itemize}
+
+\subsubsection{The Dataset Moat}\label{the-dataset-moat}
+
+Ground truth in APP fraud is inherently flawed. Banks rely on users
+submitting eventual claims (``I figured out it was a scam three days
+later''). This data is lagging, deeply noisy, and missing the exact
+verbiage of the intent. Safety Intercept generates perfect, labeled
+zero-second intent data: * \textbf{True Positives:} The user was
+interdicted by the extension at the Send button due to LLM/heuristic
+scoring and \emph{they abandoned the transaction based on the modal}. *
+\textbf{True Negatives:} The user completed the payment with an
+innocuous memo without triggering the logic. This produces an
+unassailable data moat. Other companies have ``data''; Safety Intercept
+has ``Intent.''
+
+\subsubsection{The Virtuous Cycle Flywheel
+Path}\label{the-virtuous-cycle-flywheel-path}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Free consumer installs drive base.
+\item
+  Interceptions capture precise fraud terminology (memos).
+\item
+  Labeled intent data trains the Core Heuristics and Cloudflare relay.
+\item
+  The enriched model improves accuracy and drops false positives.
+\item
+  Neobanks purchase the B2B endpoint for access to the superior model.
+\item
+  Revenue secures better engineering (e.g., dedicated Anthropic
+  throughput) and accelerates consumer marketing dominance.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{V. Strategic Positioning \&
+Brand}\label{v.-strategic-positioning-brand}
+
+\subsubsection{Consumer Hook}\label{consumer-hook}
+
+\textbf{``Stop scams before you send money.''} \emph{Rationale:} Scams
+are terrifying. Consumer marketing must not sound like enterprise
+security (``End-to-End Threat Mitigation''). It must sound like an
+empathetic, authoritative, physical intervention.
+
+\subsubsection{Enterprise Claim}\label{enterprise-claim}
+
+\textbf{``The Intent Layer for Fraud Prevention.''} \emph{Rationale:}
+B2B buyers (VPs of Risk) are exhausted by ``AI.'' The phrase ``Intent
+Layer'' is category-defining. It forces a cognitive reframing:
+\emph{``We have identity covered, we have transaction velocity covered,
+but we don't have an Intent Layer vendor yet.''}
+
+\subsubsection{Category Creation Language (Layer
+B)}\label{category-creation-language-layer-b}
+
+We must force these terms into the industry lexicon: *
+\texttt{Intent-based\ fraud\ detection} *
+\texttt{Payment\ intent\ analysis} *
+\texttt{Agentic\ AI\ fraud\ analyst} * \texttt{Decision-layer\ security}
+* \texttt{Pre-transaction\ fraud\ interception}
+
+\subsubsection{Brand Voice and Visual
+Identity}\label{brand-voice-and-visual-identity}
+
+Derived directly from the ``Memoir of Obsession'' philosophy and elite
+trust-signaling: * \textbf{Palette (The 3-Layer System):} * \emph{Base:}
+Deep Navy (\texttt{\#0D1526}) signals intelligence and stability. *
+\emph{Primary Accent:} Vibrant Blue (\texttt{\#2563EB}) signals clarity
+and competence. * \emph{Support Tones:} Muted steel blues
+(\texttt{\#1E293B}) and soft slates (\texttt{\#334155}) replace flat
+design with ``glassmorphism'' depth. We fundamentally reject frantic,
+flashing red alerts common in cybersecurity. Red induces panic; we exist
+to snap the user \emph{out} of panic. * \textbf{Typography:}
+Architectural, geometric sans-serif (e.g., Inter or Outfit). We demand
+\emph{breathing room and weight contrast}. For example, use Semibold
+with wide tracking for headlines, and Regular weight with high
+line-height for contextual instructions. * \textbf{Motion Design:}
+Deliberate and smooth. When the vault door drops, the easing must be
+slow and controlled, never reactive. A smooth deceleration physically
+signals to the user that we are in absolute control of the environment.
+* \textbf{Voice:} The ``Quiet Bodyguard.'' We do not apologize for
+blocking a transaction. The copy states: \emph{``We paused this
+transaction because this matches a known scam. Let's make sure you're
+safe.''}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{VI. The Complete SEO \& Content Master
+Plan}\label{vi.-the-complete-seo-content-master-plan}
+
+We do not write ``thought leadership'' fluff. We intercept demand at the
+highest point of panic via Google Search. This is an engineered takeover
+of specific search terms.
+
+\subsubsection{1. Layer A Keywords (Demand
+Capture)}\label{layer-a-keywords-demand-capture}
+
+These target individuals actively being manipulated or recently scammed:
+* \texttt{paypal\ scam\ email} *
+\texttt{is\ this\ paypal\ email\ a\ scam} *
+\texttt{zelle\ scam\ what\ to\ do} * \texttt{zelle\ fraud\ refund} *
+\texttt{payment\ request\ scam} * \texttt{zelle\ memo\ fraud}
+(Competitors are entirely weak here) * \texttt{paypal\ note\ scam} *
+\texttt{I\ got\ scammed\ what\ do\ I\ do} *
+\texttt{I\ think\ I\textquotesingle{}m\ being\ scammed}
+
+\subsubsection{2. Layer B Keywords (Category
+Creation)}\label{layer-b-keywords-category-creation}
+
+These define the space for enterprise buyers and VCs: *
+\texttt{Intent\ Layer} * \texttt{agent-based\ payment\ security} *
+\texttt{autonomous\ fraud\ prevention\ agents} *
+\texttt{intent-aware\ payments}
+
+\subsubsection{3. The 15-Article Blitz}\label{the-15-article-blitz}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Week
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Title
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Target Keyword
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+H2 Structure
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{1} & I Think I'm Being Scammed on Zelle: What to Do Right Now &
+\texttt{zelle\ scam\ what\ to\ do} & H2: How to tell if someone is
+scamming you; H2: The Zelle Memo Fraud Trick; H3: Activating Safety
+Intercept. \\
+\textbf{1} & The PayPal Memo Scam: How Fraudsters Hide in Plain Sight &
+\texttt{paypal\ note\ scam} & H2: What is Payment Request Manipulation?;
+H2: The Checklist for Fake Emails; H3: Intent Layer Protection. \\
+\textbf{2} & Why the Future of Fraud Prevention Lives in the Intent
+Layer & \texttt{intent-based\ fraud\ prevention} & H2: Transaction vs
+Decision Security; H2: Agentic Fraud Prevention; H3: Try the
+API/Extension. \\
+\textbf{2} & Is This PayPal Email a Scam? The 3-Second Check &
+\texttt{is\ this\ paypal\ email\ a\ scam} & H2: The Psychology of
+Urgency; H2: Reading the Send-Address; H3: Automating the Check. \\
+\textbf{3} & Payment Request Scams: Why Banks Won't Intercept You &
+\texttt{payment\ request\ scam} & H2: Liability Shifts in 2026; H2: The
+Blind Spot of Plaid; H3: Enter Agentic Blockers. \\
+\textbf{3} & Zelle Fraud Refund: Can You Get Your Money Back? &
+\texttt{zelle\ fraud\ refund} & H2: Authorized vs Unauthorized
+Transfers; H2: The CFPB Guidelines; H3: Stop them before they happen. \\
+\textbf{4} & Fake Payment Emails Are Now Written by AI. Here's Your
+Counter-AI. & \texttt{fake\ payment\ email} & H2: Voice Cloning and
+Generative Text; H2: The Limitations of Gmail Filters; H3: Cross-Layer
+Correlation. \\
+\textbf{4} & What is ``Payment Request Manipulation''? &
+\texttt{payment\ request\ manipulation} & H2: Psychological Coercion;
+H2: The Anatomy of a Threat; H3: Agent-Based Payment Security. \\
+\textbf{5} & I Got Scammed What Do I Do: The Complete Guide &
+\texttt{I\ got\ scammed\ what\ do\ I\ do} & H2: Lock the Account; H2:
+File the Police Report; H3: Install the Extension. \\
+\textbf{5} & Zelle Memo Fraud: The Loophole Thieves Exploit &
+\texttt{zelle\ memo\ fraud} & H2: Evading Transaction Monitoring; H2:
+Keyword Stuffing Scams; H3: Semantic intent scoring. \\
+\textbf{6} & Someone Asking for Money Scam: 5 Red Flags &
+\texttt{someone\ asking\ for\ money\ scam} & H2: The ``Bail'' Scam; H2:
+The Romance Scam; H3: The Intent Layer. \\
+\textbf{6} & Invoice Scam PayPal: Spot the Fake Billing &
+\texttt{invoice\ scam\ paypal} & H2: Genuine URLs, Malicious Notes; H2:
+The Geek Squad Playbook. \\
+\textbf{7} & Decision-Layer Security: B2B API Fundamentals &
+\texttt{decision-layer\ security} & H2: Network Layer vs Decision Layer;
+H2: Deploying the Relay. \\
+\textbf{7} & Suspicious Payment Message: Do Not Click Confirm &
+\texttt{suspicious\ payment\ message} & H2: Parsing the Memo; H2: The
+Trance-Breaker UI. \\
+\textbf{8} & How to Verify Payment Requests Before Clicking Send &
+\texttt{how\ to\ verify\ payment\ request} & H2: Manual Verifications;
+H2: Automated ``Agentic AI Fraud Analyst''. \\
+\end{longtable}
+}
+
+\subsubsection{4. Landing Page SEO
+Deployment}\label{landing-page-seo-deployment}
+
+\textbf{Title Tag (Meta):}
+\texttt{\textless{}title\textgreater{}Safety\ Intercept\ \textbar{}\ Agentic\ Intent-Based\ Fraud\ Prevention\ \textbar{}\ Stop\ Scams\textless{}/title\textgreater{}}
+\textbf{Meta Description:}
+\texttt{\textless{}meta\ name="description"\ content="Stop\ scams\ before\ you\ send\ money.\ Safety\ Intercept\ is\ an\ agentic\ AI\ Chrome\ extension\ that\ catches\ Zelle\ and\ PayPal\ invoice\ scams\ using\ the\ Intent\ Layer."\textgreater{}}
+\textbf{H1 (The Hero):} \texttt{Stop\ scams\ before\ you\ send\ money.}
+\textbf{H2 (Sub-header):}
+\texttt{The\ world\textquotesingle{}s\ first\ Intent-Layer\ agent\ that\ analyzes\ why\ you\textquotesingle{}re\ sending\ money.}
+\textbf{H3 (Feature):}
+\texttt{Is\ this\ PayPal\ email\ a\ scam?\ Don\textquotesingle{}t\ guess.\ Know.}
+
+\subsubsection{5. Weekly Operational Schedule (Daily
+Habits)}\label{weekly-operational-schedule-daily-habits}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Monday:} Write, format, and publish 1 SEO-optimized blog post
+  targeting Panic Keywords.
+\item
+  \textbf{Tuesday:} Reddit ops. Spend 1 hour finding 10 threads asking
+  ``is this a scam email''.
+\item
+  \textbf{Wednesday:} LinkedIn thought-leadership post defining Agentic
+  AI against legacy systems. Tag Stripe or legacy banks in a
+  provocative, intellectual comparison.
+\item
+  \textbf{Thursday:} Quora / Forum scanning. Detail answers for
+  \texttt{zelle\ fraud\ refund}.
+\item
+  \textbf{Friday:} Search Console Audit. Review weird, long-tail
+  queries. Refine next week's blog structure.
+\end{itemize}
+
+\subsubsection{6. Platform-Specific Content
+Strategies}\label{platform-specific-content-strategies}
+
+\paragraph{Reddit}\label{reddit}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Targets:} \texttt{r/Scams}, \texttt{r/personalfinance},
+  \texttt{r/PayPal}.
+\item
+  \textbf{Protocol:} Never drop raw extension links (spam flag risk).
+\item
+  \textbf{Template:} \emph{``This is the exact PayPal Memo Scam tactic.
+  Fraudsters use emotional urgency in the note to bypass the fraud
+  filters. I wrote a technical breakdown on exactly how they manipulate
+  the payment intent here: {[}Link to Blog Post{]}. Stop communicating
+  immediately.''}
+\end{itemize}
+
+\paragraph{Quora}\label{quora}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Targets:} Panic queries (``is this email a scam'').
+\item
+  \textbf{Protocol:} 4-paragraph detailed psychological breakdown. Last
+  paragraph mentions Safety Intercept as a pre-transaction circuit
+  breaker. Link to landing page.
+\end{itemize}
+
+\paragraph{Hacker News}\label{hacker-news}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Timing:} Tuesday morning (PST), exactly upon CWS approval.
+\item
+  \textbf{Title:}
+  \texttt{Show\ HN:\ I\ built\ an\ agentic\ Chrome\ extension\ that\ halts\ PayPal\ scams\ via\ DOM}
+\item
+  \textbf{Hook:} Explain the \texttt{stopImmediatePropagation} and
+  \texttt{chrome.storage.local} cross-layer correlation architecture. Do
+  not sell ``consumer safety'' to HN; sell the technical elegance of the
+  shadow DOM.
+\end{itemize}
+
+\paragraph{LinkedIn}\label{linkedin}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Cadence:} 2x per week.
+\item
+  \textbf{Hook:} Focus solely on ``Intent Layer'' and ``Agentic AI.''
+  Challenge the current paradigm of post-click network telemetry (e.g.,
+  Plaid). Target VPs of Risk at Chime and Varo.
+\end{itemize}
+
+\paragraph{YouTube Shorts / TikTok (5 Video
+Scripts)}\label{youtube-shorts-tiktok-5-video-scripts}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{The Hook:} \emph{``I built an AI tool to stop scammers from
+  robbing my grandparents.''} Focus on the Geek Squad scenario.
+\item
+  \textbf{The Breakdown:} \emph{``How the PayPal Invoice Scam actually
+  tricks you.''} Show the UI of the fake note.
+\item
+  \textbf{The Stop:} \emph{``Watch what happens when you try to send
+  money to a scammer on Zelle.''} Screen record the vault-door drop.
+\item
+  \textbf{The Developer:} \emph{``I reverse-engineered how scammers
+  hijack your brain.''} Technical explanation of the psychological
+  circuit breaker.
+\item
+  \textbf{The Warning:} \emph{``Don't click confirm on that Zelle
+  transfer until you watch this.''}
+\end{enumerate}
+
+\paragraph{Chrome Web Store
+Optimization}\label{chrome-web-store-optimization}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Title:} Safety Intercept: Scam Blocker
+\item
+  \textbf{Short Description:} ``Stop scams before you send money.
+  Agentic AI evaluates PayPal \& Zelle transfers.''
+\item
+  \textbf{Full Description:} Deeply transparent. \emph{``Unlike
+  traditional antivirus, Safety Intercept acts as a final psychological
+  circuit breaker natively in your browser. It explicitly intercepts
+  payment confirmation buttons solely to run AI intent checks. NO PII IS
+  SAVED.''}
+\item
+  \textbf{Screenshots:} 1. The Intercept Modal. 2. The Gmail flag. 3.
+  The Dashboard statistics. 4. The Privacy Guarantee. 5. The Threat Map.
+\item
+  \textbf{Video:} A high-fidelity 45-second Loom demonstrating the
+  Margaret scenario.
+\end{itemize}
+
+\paragraph{Directory Submission Blitz}\label{directory-submission-blitz}
+
+Submit to Betalist, Product Hunt, AlternativeTo, SaaSHub, There's an AI
+for That, and 45+ consumer security indexing directories to build
+immediate domain authority backlinks.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{VII. The Viral Loop \& Referral
+Engine}\label{vii.-the-viral-loop-referral-engine}
+
+\subsubsection{Post-Intercept Share
+Screen}\label{post-intercept-share-screen}
+
+When the user successfully abandons a transaction due to the
+Trance-Breaker: * \textbf{UI Copy:} \emph{``Safety Intercept just saved
+you from losing \$500 to a confirmed scammer. Do not let this happen to
+someone you love.''} * \textbf{Pre-written Share Text:} \emph{``I almost
+got caught in a horrific internet scam today, but this free extension
+blocked it. Install Safety Intercept to protect yourself.''} *
+\textbf{Channels:} Giant highly visible buttons for WhatsApp, SMS, and
+`Copy Link'.
+
+\subsubsection{Email Welcome Sequence}\label{email-welcome-sequence}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Day 0:} Absolute gratitude. Clear explanation of privacy
+  standards (No PII sent to cloud). Value proposition established.
+\item
+  \textbf{Day 3:} The ``Bait and Switch'' explanation. How fraudsters
+  abuse Zelle memos.
+\item
+  \textbf{Day 7:} The ``Arm Your Family'' request. Explicit ask to
+  install it on a parent or grandparent's desktop browser.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{VIII. Partnership \& Influencer
+Outreach}\label{viii.-partnership-influencer-outreach}
+
+\subsubsection{1. Pleasant Green (and similar Scam-Baiting
+YouTubers)}\label{pleasant-green-and-similar-scam-baiting-youtubers}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Subject:} Built an AI extension that hard-stops the refund
+  scams you investigate
+\item
+  \textbf{Template:} ``Hey {[}Name{]}, I've watched your channel for
+  years. I am a UC Berkeley student who got sick of watching seniors
+  lose their savings to the `refund overcharge' scam. I built a free,
+  non-profit-driven Chrome extension that acts as a cognitive circuit
+  breaker right on the PayPal `Send' button\ldots{} I'd love to arm your
+  community with this.''
+\end{itemize}
+
+\subsubsection{2. Kitboga / Scamfish / Jim
+Browning}\label{kitboga-scamfish-jim-browning}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Angle:} ``This is the structural defense layer for the victims
+  you talk to daily.'' These influencers have immense dedicated
+  followings focused squarely on scam prevention. Offer them a dedicated
+  tracking link or beta-access to the underlying data metrics.
+\end{itemize}
+
+\subsubsection{3. Local News / Bay Area
+Pitch}\label{local-news-bay-area-pitch}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Subject:} UC Berkeley Student Builds AI ``Agent'' to Stop
+  Call-Center Scams
+\item
+  \textbf{Template:} Pitch the local CBS/NBC affiliates in the Bay Area.
+  The narrative is iron-clad: ``While big banks fail to stop billions in
+  outbound fraud, a solo student engineered a `virtual bodyguard' that
+  lives inside the browser.'' Local news audiences index heavily toward
+  the highest-risk demographic (55+).
+\end{itemize}
+
+\subsubsection{4. The Daily Cal (Campus
+Outreach)}\label{the-daily-cal-campus-outreach}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Angle:} Student entrepreneur leverages Agentic AI to solve a
+  societal epidemic. Drives localized installs across the student pop,
+  converting students into ``deployers'' who install it for their
+  families during holidays.
+\end{itemize}
+
+\subsubsection{5. Senior Centers \& Public
+Libraries}\label{senior-centers-public-libraries}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Strategy:} In-person grassroots.
+\item
+  \textbf{Script/Flyer:} ``Free Scam Protection Clinic.'' Offer to
+  install Secure Browsing (uBlock) alongside Safety Intercept for
+  seniors at local libraries. Unbeatable conversion rate and creates
+  highly concentrated, vocal advocates.
+\end{itemize}
+
+\section{VOLUME III: EXECUTION \&
+OPERATIONS}\label{volume-iii-execution-operations}
+
+\subsection{IX. The 30-Day Tactical Sprint (Post-CWS
+Approval)}\label{ix.-the-30-day-tactical-sprint-post-cws-approval}
+
+The 30 days immediately following Chrome Web Store approval are
+mission-critical. The explicit goal is unlocking the first 100 organic
+intercepts and proving the baseline conversion metric of the flywheel.
+Apathy is the absolute enemy of this sprint.
+
+\subsubsection{Week 1: The Beachhead}\label{week-1-the-beachhead}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Day 1 (Launch Day):}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Hacker News (``Show HN''). Emphasize the shadow DOM observer +
+    Agentic AI context.
+  \item
+    Reddit operations begin. Monitor \texttt{r/Scams},
+    \texttt{r/personalfinance} for fresh panic queries. Deploy the
+    \texttt{payment\ request\ manipulation} template.
+  \item
+    \emph{Time Estimate: 3 Hours.}
+  \end{itemize}
+\item
+  \textbf{Day 3:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Publish Blog Article 1: \emph{``I Think I'm Being Scammed on Zelle:
+    What to Do Right Now''}.
+  \item
+    Link the blog back to the Reddit threads.
+  \item
+    \emph{Time Estimate: 2 Hours.}
+  \end{itemize}
+\item
+  \textbf{Day 4-7:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{The Campus Blitz:} Print 100 flyers (``Scammers are using
+    AI. So am I.''). Tape them to bulletin boards at UC Berkeley
+    libraries, dining halls, and Haas School of Business. Leverage the
+    immediate geographic density.
+  \item
+    Pitch 3 Berkeley cybersecurity/CS professors out of session on the
+    architecture.
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Week 2: The Trust Circle}\label{week-2-the-trust-circle}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Day 8-10:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{The Family Angle:} Run a coordinated SMS campaign to 15
+    personal contacts. Request they install the extension on their
+    parents'/grandparents' desktop browser over the weekend. Target 50
+    direct installs.
+  \end{itemize}
+\item
+  \textbf{Day 11-14:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Publish Blog Article 2: \emph{``The PayPal Memo Scam: How Fraudsters
+    Hide in Plain Sight''}.
+  \item
+    Visit two local senior centers / public libraries. Offer a free
+    10-minute digital security check and install the extension manually.
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Week 3: PR and Credibility
+Multipliers}\label{week-3-pr-and-credibility-multipliers}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Day 15-18:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Execute the Influencer Outreach templates (Pleasant Green, Kitboga).
+  \item
+    Pitch local Bay Area NBC/CBS affiliates (``Berkeley Student Builds
+    AI Bodyguard for Seniors'').
+  \end{itemize}
+\item
+  \textbf{Day 19-21:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Publish Blog Article 3 (B2B Targeted): \emph{``Why the Future of
+    Fraud Prevention Lives in the Intent Layer''}.
+  \item
+    Share on LinkedIn, tagging VPs of Fraud at regional banks.
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Week 4: The Metrics
+Audit}\label{week-4-the-metrics-audit}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Day 22-26:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Directory Submission Blitz. Submit the landing page to 50+ startup
+    directories (BetaList, ProductHunt, There's An AI For That) for SEO
+    backlinking.
+  \end{itemize}
+\item
+  \textbf{Day 27-30:}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Analyze the SQLite dataset. Count true interceptions vs false
+    positives.
+  \item
+    Calculate the exact accuracy rate of the Claude Haiku intent
+    scoring.
+  \item
+    \textbf{Prepare the 1,000 Install Pivot:} If organic acquisition
+    drops, launch the Viral Loop email sequences.
+  \end{itemize}
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{X. The 90-Day \& 12-Month
+Roadmaps}\label{x.-the-90-day-12-month-roadmaps}
+
+Safety Intercept operates on two distinct execution tracks for its solo
+founder.
+
+\subsubsection{Technical Track (Months
+1--3)}\label{technical-track-months-13}
+
+The engineering mandate shifts from feature generation to architectural
+hardening. 1. \textbf{Manifest V3 Hardening:} Ensure the service worker
+(\texttt{background.js}) perfectly serializes session state to
+\texttt{chrome.storage.local} prior to idle death (30 seconds limit) and
+hydrates state upon reactivation without losing the 24-hour Cross-Layer
+Correlation memory. 2. \textbf{Self-Healing DOM Selectors:} Major banks
+heavily A/B test UI classes. Transition the
+\texttt{payment\_interceptor.tsx} from observing hard-coded classes
+(e.g., \texttt{.send-btn}) to semantic parsing (e.g., locating
+\texttt{\textless{}button\textgreater{}} elements containing text
+``Send'' or SVG checkmarks within known coordinate bounding boxes). 3.
+\textbf{Cloudflare Worker Stabilization:} Implement robust retry logic
+for Anthropic API rate limits. Ensure silent, graceful degradation to
+regex heuristics if the worker returns an HTTP 5XX failure. 4.
+\textbf{B2B API Mock Deployment:} Build the \texttt{/score\_memo} API
+endpoint in Cloudflare Workers and route production dataset traffic
+through it internally to establish exact cost-per-call metrics.
+
+\subsubsection{Non-Technical Track (Months
+1--3)}\label{non-technical-track-months-13}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Execute the 30-Day Sprint to secure the first 100 users.
+\item
+  Maintain the relentless weekly SEO publication schedule (1 blog post,
+  Reddit daily, LinkedIn weekly).
+\item
+  Draft and finalize the provisional patent (see Sec. XI).
+\end{enumerate}
+
+\subsubsection{Months 4--12: The Scale
+Cycle}\label{months-412-the-scale-cycle}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{100 Users:} Prove the core product loop. Hunt for the first
+  real interception.
+\item
+  \textbf{1,000 Users:} Initial statistical validity. You now possess a
+  labeled dataset of fraudulent zero-second transaction intent. Publish
+  \emph{``State of P2P Fraud Memory''} whitepaper derived from
+  proprietary data.
+\item
+  \textbf{5,000 Users:} Transition to the Enterprise Intelligence
+  narrative. The dataset is large enough to execute the B2B Outreach.
+  Utilize Strawberry Creek Ventures / Berkeley alumni to initiate pilot
+  conversations with Neobanks.
+\item
+  \textbf{10,000 Users:} Activate fundraising track (Seed / Pre-Seed)
+  using the Neobank pilot LOI (Letter of Intent) and the massive
+  un-reproducible dataset to command an outlier valuation lock.
+\end{itemize}
+
+\subsubsection{Explicit Non-Goals (What NOT to
+Build)}\label{explicit-non-goals-what-not-to-build}
+
+Until 5,000 DAU (Daily Active Users) are achieved on desktop Chrome,
+\textbf{do NOT build:} * iOS/Android Mobile apps (Too expensive,
+structurally impossible to intercept banking apps natively without OS
+root). * Firefox/Safari ports (Diverts focus from raw dataset
+generation). * Identity Verification or Dark Web monitoring (The space
+is utterly saturated by Socure/Aura). * WhatsApp/SMS interception (Stay
+focused strictly on the final payment gateway authorization).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{XI. Defensibility \& Intellectual
+Property}\label{xi.-defensibility-intellectual-property}
+
+If Safety Intercept succeeds, incumbents like Plaid, Sardine, or Gen
+Digital will immediately attempt to clone it. A multi-layered moat
+strategy is non-negotiable.
+
+\subsubsection{1. The Provisional Patent
+Strategy}\label{the-provisional-patent-strategy}
+
+File a provisional patent via the USPTO for \textbf{``Systems and
+Methods for Correlating Email Threat Vectors with Peer-to-Peer Payment
+Memos''}. * \textbf{Cost:} \$65 utilizing the micro-entity fee. *
+\textbf{Claim Family 1:} The act of assigning a psychological risk score
+to user-entered text within a verified payment application DOM. *
+\textbf{Claim Family 2:} Temporally correlating a parsed inbox threat
+vector with a subsequent transaction event on the same endpoint device.
+* \textbf{Claim Family 3:} The closed-feedback loop of degrading API
+models to zero-latency heuristic models upon specific threshold
+triggers. * \textbf{Timeline Advantage:} The provisional filing
+immediately legally protects the IP for 12 months, blocking Scamnetic or
+Stripe from casually adding standard semantic correlation to their
+product line without risking IP infringement prior to Series A funding.
+
+\subsubsection{2. The Dataset Moat}\label{the-dataset-moat-1}
+
+Any competitor can pay an engineer to write a React
+\texttt{MutationObserver} and proxy Anthropic's API via Cloudflare. The
+React code is fully replicable. \textbf{The live, labeled, real-time
+database of user fraud intent is NOT replicable.} Sardine and Plaid
+possess \emph{transactions}. Norton possesses \emph{emails}. Safety
+Intercept possesses the exact linguistic coercion utilized in the 17
+seconds preceding an abandoned fraudulent transaction. As the user base
+crosses 10,000, the dataset becomes an unassailable asset that cannot be
+back-filled by a competitor starting today.
+
+\subsubsection{3. The B2B Institutional Conflict (The Extension
+Moat)}\label{the-b2b-institutional-conflict-the-extension-moat}
+
+Why can't Plaid build this Chrome extension? Plaid, Stripe, and Sardine
+are B2B infrastructure. Their clients are banks. If Plaid ships an
+aggressive Chrome Extension that begins arbitrarily pausing Bank of
+America user sessions to demand a questionnaire, Plaid violates its
+neutrality and destroys trust with its B2B banking clients. Legacy
+vendors are structurally trapped outside the consumer browser.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{XII. Risk Register \& Contingency
+Plans}\label{xii.-risk-register-contingency-plans}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.2000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Risk
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Probability
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Severity
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Mitigation Strategy
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Contingency Plan
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Consumer Trust Deficit} (Providing a solo-dev extension access
+to Gmail contents). & High & Critical & Execute extreme UI transparency.
+Strip all PII (names/amounts) locally in the client prior to sending the
+semantic string to Cloudflare. Clear, human-readable Privacy Policy. &
+Utilize UC Berkeley organizational umbrella/email accounts for public
+legitimacy. Lean into ``Student Researcher'' angle. \\
+\textbf{DOM Fragility} (PayPal alters standard CSS selectors). & High &
+High & Implement generic, semantic parsing for buttons and confirmation
+dialogues. Deploy CI/CD alerts tracking 404s on targeted DOM nodes. &
+Maintain a 4-hour hotfix SLA for payment DOM breaking changes. \\
+\textbf{CWS Rejection} (Google flags the active blocking code as
+malicious injection, a policy violation). & Medium & Critical & Disclose
+payment disruption explicitly in the store description. Avoid hidden
+traffic masking. Request minimal permissions. & Shift to direct web
+download of Chromium extension via a Zip bypass protocol. \\
+\textbf{Scamnetic Capital Gap} (\$16M vs Bootstrap). & Medium & High &
+Focus aggressively on what their patent-pending mobile app lacks: The
+physical ``Send'' button interception + Cross Layer Gmail correlation. &
+Shift messaging to heavily highlight cross-layer capabilities to
+prospective Neobanks. \\
+\textbf{False Positive Liability} (Blocking a legitimate transfer limits
+user freedom/bank revenue). & Medium & High & Set LLM confidence caps
+incredibly high (e.g., 90\%+ certainty). The default state is ``Pass''.
+& Only surface the ``Trance-Breaker'' UI, do not \emph{prevent} the
+transaction permanently; allow an override if the user clicks ``I
+understand the risk.'' \\
+\textbf{Apathy} (Installs stall at 60 users). & High & Critical & The
+30-Day Sprint (Section IX) is designed explicitly to overcome early
+momentum death through absolute manual hustle. & Pivot to the
+family-insurance marketing narrative; run micro-budget Facebook ads
+targeting the elderly. \\
+\textbf{Google Gemini Nano} (Expands from call-fraud to payment-fraud).
+& High & High & Treat as inevitable within 18 months. Focus purely on
+scaling the dataset to monetize via the B2B endpoint before Google
+renders the extension obsolete. & License the aggregated dataset to
+alternative browser engines (Brave, Edge) or direct FIs. \\
+\end{longtable}
+}
+
+\section{VOLUME IV: APPENDICES}\label{volume-iv-appendices}
+
+\subsection{Appendix A: Code Architecture
+Reference}\label{appendix-a-code-architecture-reference}
+
+The Safety Intercept architecture is fully dependent on Chrome
+Extensions Manifest V3 (MV3) acting in tandem with edge compute services
+to bypass the heavy requirements of local LLMs.
+
+\subsubsection{Core File Structure}\label{core-file-structure}
+
+Based on \texttt{claude\_knowledge\_base.txt}:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{manifest.json}: Defines the MV3 permissions. Declares broad
+  host permissions (\texttt{"*://*.paypal.com/*"},
+  \texttt{"*://*.mail.google.com/*"}) required for DOM injection.
+  Enforces \texttt{chrome.storage} for the correlation variables.
+\item
+  \texttt{content\_scripts/payment\_interceptor.tsx}: The primary
+  execution node. Uses \texttt{MutationObvserver} to query the DOM
+  asynchronously as React hydrates the page. Binds a
+  \texttt{\{\ capture:\ true\ \}} click listener to the \texttt{Send} or
+  \texttt{Pay} button.
+\item
+  \texttt{content\_scripts/gmail\_analyzer.tsx}: Executes asynchronously
+  on \texttt{mail.google.com}. Parses email bodies for coercive
+  semantics. Triggers warning banners using standard
+  \texttt{document.createElement}, dropping visual warning pills at the
+  top of the viewport.
+\item
+  \texttt{background/background.ts}: The MV3 Service Worker. Acts
+  strictly as an ephemeral message router to circumvent the 30-second
+  execution kill limit. Brokers the fetch requests between the content
+  scripts and the Cloudflare worker.
+\item
+  \texttt{cloudflare/relay-worker.js}: The backend proxy hosted at
+  \texttt{shield-relay.bleblanc.workers.dev}. Hardcodes the Anthropic
+  API key (\texttt{ANTHROPIC\_API\_KEY}) and authenticates inbound
+  extension traffic via a shared secret
+  (\texttt{VITE\_RELAY\_AUTH\_TOKEN}). Exposes \texttt{/analyze\_intent}
+  endpoint communicating exclusively with
+  \texttt{claude-3-haiku-20240307}.
+\item
+  \texttt{risk\_engine.ts}: Contains the mathematical thresholds.
+  Evaluates heuristics, invokes the LLM API call via the background
+  script, factors in the 24-hour Cross-Layer Correlation score boost
+  using
+  \texttt{await\ chrome.storage.local.get({[}\textquotesingle{}threat\_token\textquotesingle{}{]})},
+  and computes the final 0-100 \texttt{riskScore}.
+\end{itemize}
+
+\subsubsection{The End-to-End Data Flow}\label{the-end-to-end-data-flow}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Context Acquisition:} \texttt{gmail\_analyzer.tsx} identifies
+  a threat → sets
+  \texttt{chrome.storage.local.set(\{\ threat\_token:\ timestamp\ \})}.
+\item
+  \textbf{Execution Halt:} User attempts P2P transfer →
+  \texttt{payment\_interceptor.tsx} captures the click, strips PII, and
+  halts propagation.
+\item
+  \textbf{Transmission:} Content script emits
+  \texttt{chrome.runtime.sendMessage()} to the Service Worker.
+\item
+  \textbf{Relay:} Service Worker authenticates against the Cloudflare
+  Worker.
+\item
+  \textbf{Inference:} Cloudflare Worker queries Anthropic Claude Haiku
+  with standard prompt engineering (``You are an expert fraud
+  analyst\ldots{} return JSON.'').
+\item
+  \textbf{Result Assembly:} Cloudflare returns JSON payload to Service
+  Worker.
+\item
+  \textbf{Score Calculation:} Service Worker feeds payload to
+  \texttt{risk\_engine.ts}. The storage token adds +30 correlation.
+\item
+  \textbf{Intervention:} Final score routed back to
+  \texttt{payment\_interceptor.tsx} → UI state updates to Drop Vault
+  Door if specific thresholds are breached.
+\end{enumerate}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Appendix B: Glossary of
+Terms}\label{appendix-b-glossary-of-terms}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Agentic AI Fraud Analyst:} Safety Intercept's operational
+  identity. An LLM agent configured to autonomously interdict threats
+  actively operating in the consumer's web environment.
+\item
+  \textbf{Authorized Push Payment (APP) Fraud:} A scam wherein a
+  consumer is socially engineered into willingly transferring funds
+  directly to a fraudulent counterparty using an instant payment
+  network.
+\item
+  \textbf{Cross-Layer Correlation:} The proprietary mechanism of
+  associating a hostile semantic flag in an inbox (e.g., Gmail) with a
+  subsequent payment transfer at a discrete endpoint (e.g., PayPal),
+  temporally linked within 24 hours.
+\item
+  \textbf{Decision-Layer Security:} The fundamental cybersecurity
+  paradigm where the protective measure addresses the \emph{user's
+  decision} to execute the action, as opposed to the \emph{network
+  transmission} of the action.
+\item
+  \textbf{Intent Layer:} The cognitive environment bridging the
+  consumer's psychological reason for initiating a transaction and their
+  physical input.
+\item
+  \textbf{Margaret Scenario:} The archetype case study representing the
+  core vulnerable demographic (aging seniors targeted by
+  tech-support/refund scams).
+\item
+  \textbf{Psychological Circuit Breaker:} The user interface
+  specifically designed to force a cognitive break, stopping the
+  ``automatic'' behavior driven by scammer urgency.
+\item
+  \textbf{Trance-Breaker Questionnaire:} The real-time interactive modal
+  dropped over a halted transaction that forces the victim to articulate
+  \emph{why} they are sending the money, thereby breaking the social
+  engineering momentum.
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Appendix C: Research Citations \& Gap
+Log}\label{appendix-c-research-citations-gap-log}
+
+\subsubsection{Core Document Citations}\label{core-document-citations}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \texttt{grand\_marketing.md} / \texttt{grand\_marketing.tex} ---
+  Strategy and SEO frameworks.
+\item
+  \texttt{seo\_master\_playbook.md} --- The execution marketing
+  schedule.
+\item
+  \texttt{POLLUX\_CORE\_LOAD\_White\_Paper.tex} --- Complete product
+  functionality log.
+\item
+  \texttt{Safety\_Intercept\_Pollux\_Synthesis.md} --- The initial
+  threat matrix model.
+\item
+  \texttt{battle\_plan.md} --- 30-day tactical projections.
+\item
+  \texttt{competitive\_intelligence.md} --- Base structural intelligence
+  on the 18 competitors.
+\item
+  \texttt{Safety\_Intercept\_Grand\_White\_Paper.tex} --- B2B API
+  integrations.
+\item
+  \texttt{marketing.md} --- Immediate viral acquisition.
+\item
+  \texttt{claude\_knowledge\_base.txt} --- Concrete code truth logic.
+\item
+  \texttt{CLAUDE.md} --- Supported surfaces.
+\end{enumerate}
+
+\subsubsection{2026 Web Research Citations (April 2026 ground
+truths)}\label{web-research-citations-april-2026-ground-truths}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{FTC 2026 Fraud Report:} Record-breaking \$15.9 billion in
+  fraud losses. (Consumer Financial Protection Bureau Litigation Notes).
+\item
+  \textbf{Nacha Phase 2 Rules:} June 19, 2026 ACH fraud monitoring
+  requirements targeting false-pretense schemes and Business Email
+  Compromise. {[}NACHA Operating Rules Updates{]}.
+\item
+  \textbf{Google Gemini Nano 2026 Roadmap:} On-device Chrome Enhanced
+  Protection targeting tech support scams and expanding to package
+  tracking scams via ephemeral edge models.
+\item
+  \textbf{Chrome Web Store Extensibility Policies:} Explicit
+  disallowance of standard hidden traffic blocking. Interceptors require
+  clear upfront disclosure preventing man-in-the-browser classification.
+\item
+  \textbf{Scamnetic IDeveryone USPTO Clarification:} Scamnetic
+  ``recipient identity-proofing'' patent clarified via formal Jan 2026
+  public notice as ``patent-pending,'' not fully issued.
+\end{enumerate}
+
+\subsubsection{Gap Log for Future Primary
+Research}\label{gap-log-for-future-primary-research}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Bank Pricing API Willingness:} What is the specific
+  price-ceiling a mid-tier Neobank (e.g., Varo) will pay per call for
+  intent analytics prior to developing it in-house? \emph{Action:
+  Execute Week 4 cold outreach pilot.}
+\item
+  \textbf{Sardine DIBB Efficacy vs Intent Analysis:} How effectively
+  does Sardine detect remote-desktop protocol (RDP) takeovers compared
+  to our manual semantic intent check? \emph{Action: Review public case
+  studies.}
+\item
+  \textbf{Google Gemini Payment Roadmap:} Is Google actively testing
+  payment-surface blocking in Chrome Canary builds? \emph{Action:
+  Monitor Chromium Git logs for \texttt{payment-intent} observer flags.}
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\emph{End of Encyclopedia.}
+
+\end{document}

@@ -219,6 +219,8 @@ Tell me what breaks. Tell me what's missing. That's how this gets better.
 ### The Core Narrative (The "Why We Exist")
 Existing fraud engines (like Stripe Radar, Sardine) calculate the *math* of fraud based on velocity, IP addresses, and behavioral biometrics on the merchant backend. **Safety Intercept calculates the *semantics* of fraud.** We sit at the DOM layer to read the actual psychological intent of the user right when the payment is initiated.
 
+**The Money Mule vs. The Origin:** Banks are spending billions trying to catch "money mules" (criminals who open fake LLCs to receive scammed funds and wash them overseas) *after* the money has already arrived in their accounts. This is a losing battle. Safety Intercept operates at **The Origin**. We intercept the psychological manipulation in the victim's browser, starving the laundering rings of capital before the victim ever clicks send.
+
 ### B2B Pitch: Neobanks & Credit Unions
 **Subject:** Bridging the gap between email security and ACH fraud
 

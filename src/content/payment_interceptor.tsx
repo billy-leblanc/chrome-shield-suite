@@ -86,52 +86,51 @@ const injectStyles = (shadow: ShadowRoot) => {
       font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
       margin-bottom: 16px;
     }
-    .badge-critical { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #F87171; }
-    .badge-high { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #FBBF24; }
-    .badge-info { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); color: #38BDF8; }
+    .badge-critical { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #FBBF24; }
+    .badge-high { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); color: #38BDF8; }
+    .badge-info { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; }
     .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     .title {
       font-size: 17px; font-weight: 700; color: #F1F5F9;
-      letter-spacing: -0.4px; line-height: 1.3; margin-bottom: 8px;
+      letter-spacing: -0.4px; line-height: 1.3; margin-bottom: 12px;
     }
     .desc {
-      font-size: 13px; color: #64748B; line-height: 1.6; margin-bottom: 22px;
+      font-size: 13px; color: #64748B; line-height: 1.7; margin-bottom: 24px;
     }
-    .divider { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 20px; }
-    .flags-label { font-size: 10px; font-weight: 600; color: #334155; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
-    .flags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 22px; }
-    .flag {
-      font-size: 11px; font-weight: 500; color: #94A3B8;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      padding: 3px 10px; border-radius: 99px;
-    }
+    .divider { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 24px; }
     .actions { display: flex; gap: 8px; }
     .btn {
-      flex: 1; padding: 11px; border-radius: 10px;
+      flex: 1; padding: 13px; border-radius: 12px;
       font-size: 13px; font-weight: 600; cursor: pointer;
-      border: none; transition: opacity 0.15s ease; letter-spacing: 0.01em;
+      border: none; transition: all 0.2s ease; letter-spacing: 0.01em;
     }
-    .btn:hover { opacity: 0.85; }
+    .btn:hover { opacity: 0.8; }
     .btn-cancel {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1) !important;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08) !important;
       color: #94A3B8;
     }
     .btn-proceed {
-      background: rgba(248,113,113,0.12);
-      border: 1px solid rgba(248,113,113,0.25) !important;
-      color: #F87171;
+      position: relative; overflow: hidden;
+      background: rgba(245,158,11,0.05);
+      border: 1px solid rgba(245,158,11,0.2) !important;
+      color: #FBBF24;
+    }
+    .btn-fill {
+      position: absolute; inset: 0; right: 100%;
+      background: rgba(245,158,11,0.15);
+      transition: right 1s linear;
     }
     .btn-proceed:disabled {
-      opacity: 0.35; cursor: not-allowed;
+      opacity: 0.8; cursor: not-allowed;
     }
     .btn-legitimate {
-      width: 100%; margin-top: 10px; padding: 8px;
+      width: 100%; margin-top: 14px; padding: 10px;
       background: none; border: none; cursor: pointer;
       font-size: 11px; color: #334155; text-decoration: underline;
-      text-underline-offset: 2px; font-family: inherit;
+      text-underline-offset: 3px; font-family: inherit; font-weight: 500;
     }
-    .btn-legitimate:hover { color: #64748B; }
+    .btn-legitimate:hover { color: #475569; }
     .q-item {
       display: flex; align-items: flex-start; gap: 12px;
       padding: 12px 14px; border-radius: 10px;
@@ -142,8 +141,8 @@ const injectStyles = (shadow: ShadowRoot) => {
     }
     .q-item:hover { background: rgba(255,255,255,0.04); }
     .q-item.checked {
-      background: rgba(248,113,113,0.06);
-      border-color: rgba(248,113,113,0.3);
+      background: rgba(245,158,11,0.05);
+      border-color: rgba(245,158,11,0.25);
     }
     .q-checkbox {
       width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
@@ -153,7 +152,7 @@ const injectStyles = (shadow: ShadowRoot) => {
       transition: all 0.15s ease;
     }
     .q-item.checked .q-checkbox {
-      background: #F87171; border-color: #F87171;
+      background: #F59E0B; border-color: #F59E0B;
     }
     .q-check-icon { display: none; }
     .q-item.checked .q-check-icon { display: block; }
@@ -843,6 +842,10 @@ const Interceptor = () => {
     !arr.some((other, j) => j !== i && other.startsWith(f) && other !== f)
   ).slice(0, 3);
 
+  const narrative = cleanFlags.length > 0 
+    ? `We identified ${cleanFlags.join(' and ')} as potential risk factors. ${riskReport.recommendation}`
+    : riskReport.recommendation;
+
   return (
     <div className="overlay">
       <div className="card">
@@ -854,19 +857,9 @@ const Interceptor = () => {
           {isCritical ? 'This matches how sophisticated scams work' : `Something looks off with this payment`}
         </div>
         <div className="desc">
-          {isCritical
-            ? 'Even experts fall for these. Our AI caught patterns that are nearly impossible to spot in the moment — take a second to review.'
-            : 'We flagged some unusual signals. Most people who lose money to scams say they had a gut feeling something was wrong — trust yours.'}
+          {narrative}
         </div>
         <div className="divider" />
-        {cleanFlags.length > 0 && (
-          <>
-            <div className="flags-label">Risk Signals</div>
-            <div className="flags">
-              {cleanFlags.map((f: string, i: number) => <span key={i} className="flag">{f}</span>)}
-            </div>
-          </>
-        )}
         {riskReport.correlationNote && (
           <div className="correlation-callout">
             <span className="correlation-icon">⚠️</span>
@@ -908,7 +901,10 @@ const Interceptor = () => {
               }
             }}
           >
-            {cooldown > 0 ? `Take a breath (${cooldown}s)` : 'I understand the risk — proceed'}
+            {cooldown > 0 && <div className="btn-fill" style={{ right: `${(cooldown / 12) * 100}%` }} />}
+            <span style={{ position: 'relative', zIndex: 1 }}>
+              {cooldown > 0 ? 'Take a breath' : 'I understand — proceed'}
+            </span>
           </button>
         </div>
         <button className="btn-legitimate" onClick={() => {

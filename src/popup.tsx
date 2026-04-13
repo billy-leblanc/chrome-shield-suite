@@ -35,6 +35,7 @@ const ShieldIcon = (p: any) => (
 );
 
 function PopupApp() {
+  const [view, setView] = useState<'main' | 'settings'>('main');
   const [interceptOn, setInterceptOn] = useState(true);
   const [telemetryEnabled, setTelemetryEnabled] = useState(false);
   const [stats, setStats] = useState({ blocked: 0, warnings: 0, safe: 0 });
@@ -72,323 +73,202 @@ function PopupApp() {
       setStats({ blocked: 0, warnings: 0, safe: 0 });
       setActivities([]);
       setShowResetConfirm(false);
+      setView('main');
     });
   }, []);
 
-  return (
-    <div style={{
-      width: 380,
-      minHeight: 520,
-      background: 'linear-gradient(160deg, #0D1526 0%, #0B1120 60%)',
-      color: '#F1F5F9',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
-      display: 'flex',
-      flexDirection: 'column',
-      WebkitFontSmoothing: 'antialiased',
-    }}>
+  const containerStyle: React.CSSProperties = {
+    width: 380,
+    minHeight: 520,
+    background: 'linear-gradient(160deg, #0D1526 0%, #0B1120 100%)',
+    color: '#F1F5F9',
+    fontFamily: 'Inter, -apple-system, system-ui, sans-serif',
+    display: 'flex',
+    flexDirection: 'column',
+    WebkitFontSmoothing: 'antialiased',
+    position: 'relative',
+    overflow: 'hidden',
+  };
 
-      {/* Header */}
-      <div style={{
-        padding: '22px 22px 18px',
-        background: 'linear-gradient(180deg, rgba(56,189,248,0.06) 0%, transparent 100%)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Shield icon with scan line */}
-          <div style={{
-            width: 42, height: 42, borderRadius: 12,
-            background: 'linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)',
-            boxShadow: interceptOn ? '0 0 18px rgba(56,189,248,0.3), inset 0 1px 0 rgba(56,189,248,0.1)' : 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'box-shadow 0.4s ease',
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-            <ShieldIcon style={{ width: 24, height: 24, color: interceptOn ? '#38BDF8' : '#475569', position: 'relative', zIndex: 1 }} />
-            {interceptOn && (
-              <div style={{
-                position: 'absolute', top: 0, left: '-100%',
-                width: '60%', height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.15), transparent)',
-                animation: 'scan 3s ease-in-out infinite',
-              }} />
-            )}
-          </div>
+  const pulseStyle = `
+    @keyframes shield-glow {
+      0% { filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4)); transform: scale(1); }
+      50% { filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6)); transform: scale(1.02); }
+      100% { filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4)); transform: scale(1); }
+    }
+    .shield-pulse {
+      animation: shield-glow 4s ease-in-out infinite;
+    }
+  `;
 
-          <div>
-            <div style={{
-              fontWeight: 800, fontSize: 15, color: '#F1F5F9',
-              letterSpacing: '-0.5px', lineHeight: 1.2,
-            }}>
-              Safety Intercept
-            </div>
-            <div style={{ fontSize: 11, color: '#475569', marginTop: 2, letterSpacing: '0.02em' }}>
-              AI-Powered Payment Protection
-            </div>
-          </div>
-        </div>
-
-        {/* Status pill */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          padding: '5px 12px', borderRadius: 99,
-          background: interceptOn ? 'rgba(34,197,94,0.08)' : 'rgba(248,113,113,0.08)',
-          border: `1px solid ${interceptOn ? 'rgba(34,197,94,0.25)' : 'rgba(248,113,113,0.25)'}`,
-        }}>
-          <div style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: interceptOn ? '#22C55E' : '#F87171',
-            animation: interceptOn ? 'pulse 2s infinite' : 'none',
-          }} />
-          <span style={{
-            fontSize: 10, fontWeight: 700,
-            color: interceptOn ? '#22C55E' : '#F87171',
-            letterSpacing: '0.08em', textTransform: 'uppercase',
-          }}>
-            {interceptOn ? 'Active' : 'Disabled'}
-          </span>
-        </div>
-      </div>
-
-      {/* Toggle Row */}
-      <div style={{ padding: '16px 22px 0' }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '13px 16px', borderRadius: 12,
-          background: 'rgba(255,255,255,0.03)',
-          border: '1px solid rgba(255,255,255,0.07)',
-        }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#CBD5E1', letterSpacing: '-0.1px' }}>
-              Real-time Protection
-            </div>
-            <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
-              {interceptOn ? 'Scanning all payment activity' : 'Protection is paused'}
-            </div>
-          </div>
-          <button onClick={toggleIntercept} style={{
-            padding: '6px 14px', borderRadius: 99, cursor: 'pointer',
-            background: interceptOn ? 'rgba(34,197,94,0.1)' : 'rgba(248,113,113,0.08)',
-            border: `1px solid ${interceptOn ? 'rgba(34,197,94,0.3)' : 'rgba(248,113,113,0.3)'}`,
-            color: interceptOn ? '#22C55E' : '#F87171',
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-            transition: 'all 0.2s ease',
-          }}>
-            {interceptOn ? 'On' : 'Off'}
+  if (view === 'settings') {
+    return (
+      <div style={containerStyle}>
+        <div style={{ padding: '24px 22px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => setView('main')} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: 4, display: 'flex' }}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
+          <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.3px' }}>Settings</div>
         </div>
-      </div>
 
-      {/* Stats */}
-      <div style={{ padding: '20px 22px 0' }}>
-        <div style={{ fontSize: 10, fontWeight: 600, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>
-          Protection Stats
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-          {[
-            { label: 'Blocked',  value: stats.blocked,  color: '#F87171', glow: 'rgba(248,113,113,0.12)', accent: 'rgba(248,113,113,0.4)' },
-            { label: 'Warnings', value: stats.warnings, color: '#FBBF24', glow: 'rgba(251,191,36,0.10)',  accent: 'rgba(251,191,36,0.4)'  },
-            { label: 'Safe',     value: stats.safe,     color: '#34D399', glow: 'rgba(52,211,153,0.10)',  accent: 'rgba(52,211,153,0.4)'  },
-          ].map((s) => (
-            <div key={s.label} style={{
-              background: `linear-gradient(160deg, ${s.glow} 0%, rgba(15,23,42,0.8) 100%)`,
-              borderRadius: 12, padding: '14px 10px',
-              border: `1px solid ${s.accent}`,
-              textAlign: 'center',
-              boxShadow: `0 2px 16px ${s.glow}`,
+        <div style={{ p: 22, display: 'flex', flexDirection: 'column', gap: 24, padding: '24px 22px' }}>
+          {/* Telemetry */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#F1F5F9' }}>Improve Detection</div>
+              <div style={{ fontSize: 11, color: '#64748B', marginTop: 4, lineHeight: 1.5 }}>
+                Share anonymized threat data. Personal info is stripped locally.
+              </div>
+            </div>
+            <button onClick={toggleTelemetry} style={{
+              width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
+              background: telemetryEnabled ? '#38BDF8' : 'rgba(255,255,255,0.1)',
+              position: 'relative', flexShrink: 0, transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
             }}>
-              <div style={{ fontSize: 26, fontWeight: 800, color: s.color, lineHeight: 1, letterSpacing: '-1px' }}>
-                {s.value}
-              </div>
-              <div style={{ fontSize: 9, color: '#475569', marginTop: 5, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                {s.label}
+              <span style={{ position: 'absolute', top: 3, width: 14, height: 14, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', left: telemetryEnabled ? 19 : 3 }} />
+            </button>
+          </div>
+
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.04)' }} />
+
+          {/* Feedback */}
+          <div onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSed8ont66Fs8Mid9Ys09rl4-wYxhtzy0-nW7_-O2hBkhm4wfA/viewform', '_blank')} 
+               style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>Help & Feedback</div>
+              <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>Tell us what's broken or missing</div>
+            </div>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#334155" strokeWidth="2"><path d="M7 3l7 7-7 7"/></svg>
+          </div>
+
+          {/* Reset */}
+          <div style={{ marginTop: 'auto', paddingTop: 40 }}>
+            <button onClick={() => setShowResetConfirm(true)} style={{
+              width: '100%', padding: '12px', borderRadius: 12, border: '1px solid rgba(248,113,113,0.2)',
+              background: 'rgba(248,113,113,0.05)', color: '#F87171', fontSize: 12, fontWeight: 600, cursor: 'pointer'
+            }}>
+              Reset All History
+            </button>
+            <div style={{ textAlign: 'center', marginTop: 16, fontSize: 10, color: '#1E293B', letterSpacing: '0.05em' }}>
+              SAFETY INTERCEPT V1.0.0
+            </div>
+          </div>
+        </div>
+
+        {/* Reset Modal Overlay */}
+        {showResetConfirm && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+            <div style={{ background: '#0D1526', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 24, width: 300 }}>
+              <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Clear all data?</div>
+              <div style={{ fontSize: 12, color: '#64748B', lineHeight: 1.6, marginBottom: 24 }}>This will permanently erase your protection stats and threat logs.</div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowResetConfirm(false)} style={{ flex: 1, padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.05)', background: 'transparent', color: '#94A3B8', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleReset} style={{ flex: 1, padding: 10, borderRadius: 10, border: 'none', background: '#F87171', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Reset</button>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
+    );
+  }
 
-      {/* Activity */}
-      <div style={{ padding: '20px 22px 0', flex: 1 }}>
-        <div style={{ fontSize: 10, fontWeight: 600, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 10 }}>
-          Recent Activity
-        </div>
-        <div style={{
-          background: 'rgba(15,23,42,0.6)',
-          borderRadius: 12,
-          border: '1px solid rgba(255,255,255,0.05)',
-          overflow: 'hidden',
-        }}>
-          {activities.length === 0 ? (
-            <div style={{ padding: '20px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                background: 'rgba(52,211,153,0.1)',
-                border: '1px solid rgba(52,211,153,0.2)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <svg viewBox="0 0 16 16" fill="none" style={{width:14,height:14,color:'#34D399'}}>
-                  <path d="M8 1L2 4v4c0 3.5 2.5 6.7 6 7.4 3.5-.7 6-3.9 6-7.4V4L8 1z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
-                  <path d="M5.5 8.5l2 2 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8' }}>All clear</div>
-                <div style={{ fontSize: 11, color: '#475569', marginTop: 1 }}>No threats detected in this session</div>
-              </div>
+  return (
+    <div style={containerStyle}>
+      <style>{pulseStyle}</style>
+      
+      {/* Header */}
+      <div style={{ padding: '24px 22px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="shield-pulse" style={{ 
+            width: 36, height: 36, background: 'rgba(56,189,248,0.1)', borderRadius: 12, 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38BDF8' 
+          }}>
+            <ShieldIcon width="22" height="22" />
+          </div>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.3px', color: '#F8FAFC' }}>Safety Intercept</div>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              marginTop: 4, padding: '2px 8px', borderRadius: 99,
+              background: interceptOn ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${interceptOn ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.08)'}`,
+            }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: interceptOn ? '#F59E0B' : '#334155', boxShadow: interceptOn ? '0 0 6px rgba(245,158,11,0.6)' : 'none' }} />
+              <span style={{ fontSize: 9, fontWeight: 700, color: interceptOn ? '#F59E0B' : '#334155', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                {interceptOn ? 'Protection Active' : 'Paused'}
+              </span>
             </div>
-          ) : (
-            activities.map((a, i) => {
-              const pm = getPlatformMeta(a.platform);
-              return (
-                <div key={i} style={{
-                  padding: '11px 14px', display: 'flex', alignItems: 'center', gap: 10,
-                  borderBottom: i < activities.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                }}>
-                  <div style={{
-                    width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                    background: a.type === 'blocked' ? '#F87171' : '#FBBF24',
-                    boxShadow: a.type === 'blocked' ? '0 0 6px rgba(248,113,113,0.7)' : '0 0 6px rgba(251,191,36,0.7)',
-                  }} />
-                  <span style={{ fontSize: 12, color: '#94A3B8', flex: 1, lineHeight: 1.4 }}>{a.text}</span>
-                  {pm && (
-                    <span style={{
-                      fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
-                      color: pm.color, background: pm.bg,
-                      padding: '2px 7px', borderRadius: 99,
-                      flexShrink: 0,
-                    }}>
-                      {pm.label}
-                    </span>
-                  )}
-                  <span style={{ fontSize: 10, color: '#334155', flexShrink: 0 }}>{a.time}</span>
-                </div>
-              );
-            })
-          )}
+          </div>
         </div>
+        <button onClick={() => setView('settings')} style={{ background: 'none', border: 'none', color: '#334155', cursor: 'pointer', padding: 8 }}>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
       </div>
 
-      {/* Feedback Banner */}
-      <div style={{
-        margin: '16px 22px 0',
-        padding: '12px 16px',
-        borderRadius: 12,
-        background: 'linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(129,140,248,0.08) 100%)',
-        border: '1px solid rgba(56,189,248,0.2)',
-        display: 'flex', alignItems: 'center', gap: 10,
-        cursor: 'pointer',
-        transition: 'border-color 0.2s ease',
-      }}
-        onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSed8ont66Fs8Mid9Ys09rl4-wYxhtzy0-nW7_-O2hBkhm4wfA/viewform', '_blank')}
-        onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(56,189,248,0.5)')}
-        onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(56,189,248,0.2)')}
-      >
-        <span style={{ fontSize: 16, lineHeight: 1 }}>💬</span>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#38BDF8', letterSpacing: '-0.1px' }}>
-            Beta — Give Feedback
-          </div>
-          <div style={{ fontSize: 10, color: '#64748B', marginTop: 1 }}>
-            Tell us what's broken, what's missing, what's working
-          </div>
-        </div>
-        <svg viewBox="0 0 16 16" fill="none" style={{ width: 14, height: 14, color: '#475569', marginLeft: 'auto', flexShrink: 0 }}>
-          <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-
-      {/* Telemetry Opt-In */}
-      <div style={{
-        margin: '10px 22px 0',
-        padding: '11px 14px',
-        borderRadius: 10,
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.06)',
-        display: 'flex', alignItems: 'center', gap: 12,
-      }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: '#64748B' }}>Help improve detection</div>
-          <div style={{ fontSize: 10, color: '#334155', marginTop: 2, lineHeight: 1.4 }}>
-            Share anonymized detection data to train better scam detection. Phone numbers, emails & URLs are removed before sending.
-          </div>
-        </div>
-        <button
-          onClick={toggleTelemetry}
-          title={telemetryEnabled ? 'Disable telemetry' : 'Enable telemetry'}
-          style={{
-            width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
-            background: telemetryEnabled ? 'rgba(56,189,248,0.7)' : 'rgba(255,255,255,0.08)',
-            position: 'relative', flexShrink: 0, transition: 'background 0.2s ease', padding: 0,
+      <div style={{ flex: 1, padding: '0 22px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {/* Unified Protection Card */}
+        <div 
+          onClick={toggleIntercept}
+          style={{ 
+            padding: '24px', borderRadius: 24, cursor: 'pointer',
+            background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+            display: 'flex', flexDirection: 'column', gap: 24,
+            transition: 'all 0.3s ease'
           }}
         >
-          <span style={{
-            position: 'absolute', top: 3, width: 14, height: 14, borderRadius: '50%',
-            background: '#fff', transition: 'left 0.2s ease',
-            left: telemetryEnabled ? 19 : 3,
-          }} />
-        </button>
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        padding: '16px 22px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        borderTop: '1px solid rgba(255,255,255,0.05)',
-        marginTop: 16,
-      }}>
-        <span style={{ fontSize: 10, color: '#1E293B', fontWeight: 500 }}>v1.0.0-beta</span>
-        <button onClick={() => setShowResetConfirm(true)} style={{
-          fontSize: 10, color: '#475569', background: 'none', border: 'none',
-          cursor: 'pointer', letterSpacing: '0.02em',
-        }}>
-          Reset Stats
-        </button>
-      </div>
-
-      {/* Reset Modal */}
-      {showResetConfirm && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50,
-        }}>
-          <div style={{
-            background: 'linear-gradient(160deg, #131B2E 0%, #0D1526 100%)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 16, padding: 24, width: 300,
-            boxShadow: '0 24px 48px rgba(0,0,0,0.5)',
-          }}>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8, color: '#F1F5F9' }}>Reset all stats?</div>
-            <div style={{ fontSize: 12, color: '#64748B', marginBottom: 20, lineHeight: 1.6 }}>
-              This will permanently clear all blocked counts, warnings, and threat history.
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Neutralized</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#F8FAFC', letterSpacing: '-1.5px', marginTop: 4 }}>{stats.blocked + stats.warnings}</div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setShowResetConfirm(false)} style={{
-                flex: 1, padding: '9px', borderRadius: 8,
-                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
-                color: '#94A3B8', cursor: 'pointer', fontWeight: 600, fontSize: 13,
-              }}>Cancel</button>
-              <button onClick={handleReset} style={{
-                flex: 1, padding: '9px', borderRadius: 8,
-                background: '#F87171', border: 'none',
-                color: '#0B1120', cursor: 'pointer', fontWeight: 700, fontSize: 13,
-              }}>Reset</button>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Protected</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#38BDF8', letterSpacing: '-1.5px', marginTop: 4 }}>$1,240</div>
             </div>
           </div>
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>Real-time scanning {interceptOn ? 'active' : 'paused'}</div>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: interceptOn ? '#3B82F6' : '#334155', boxShadow: interceptOn ? '0 0 10px rgba(59,130,246,0.7)' : 'none' }} />
+          </div>
         </div>
-      )}
+
+        {/* Intelligence Feed */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Intelligence Feed</div>
+          <div style={{ background: 'rgba(15,23,42,0.4)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.03)', overflow: 'hidden' }}>
+            {activities.length === 0 ? (
+              <div style={{ padding: '32px 24px', textAlign: 'center' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>Environment Secure</div>
+              </div>
+            ) : (
+              activities.map((a, i) => (
+                <div key={i} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, borderBottom: i < activities.length - 1 ? '1px solid rgba(255,255,255,0.02)' : 'none' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.type === 'blocked' ? '#38BDF8' : '#64748B' }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.4, fontWeight: 500 }}>{a.text}</div>
+                    <div style={{ fontSize: 10, color: '#334155', marginTop: 4, textTransform: 'uppercase', fontWeight: 700 }}>{a.platform || 'System'} • {a.time}</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: 20 }} />
 
       <style>{`
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        @keyframes scan { 0% { left: -60%; } 100% { left: 160%; } }
-        button:hover { opacity: 0.85; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.1); } }
+        @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
+        button { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        button:hover { opacity: 0.8 !important; transform: scale(1.02); }
+        button:active { transform: scale(0.98); }
       `}</style>
     </div>
   );
 }
+
+createRoot(document.getElementById('root')!).render(<PopupApp />);
 
 createRoot(document.getElementById('root')!).render(<PopupApp />);
