@@ -10,7 +10,7 @@ export default function Privacy() {
         </a>
 
         <h1 style={{ fontSize: 32, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.8px", marginBottom: 8 }}>Privacy Policy</h1>
-        <p style={{ fontSize: 13, color: "#334155", marginBottom: 56 }}>Last updated: April 11, 2026</p>
+        <p style={{ fontSize: 13, color: "#334155", marginBottom: 56 }}>Last updated: April 13, 2026</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
@@ -37,12 +37,12 @@ export default function Privacy() {
 
             <h3 style={h3}>Gmail email content</h3>
             <p style={p}>
-              When Safety Intercept detects a potentially suspicious email in your Gmail tab, the subject line and a portion of the email body are sent to our Cloudflare relay and Anthropic for analysis. We do not read or transmit emails that are not flagged as potentially suspicious.
+              When you open an email in Gmail, Safety Intercept reads the subject line and a portion of the body and sends it to our Cloudflare relay and Anthropic for analysis. This happens for every email you open — the analysis is what determines whether it's suspicious. If the score is low, no banner appears and nothing is stored. If the score is high, a warning banner is shown and a detection event is logged (see below).
             </p>
 
             <h3 style={h3}>Detection events</h3>
             <p style={p}>
-              When a fraud risk is detected, we log an anonymized event to our Cloudflare infrastructure. This includes: the platform (e.g. "PayPal"), the risk level, the fraud flags triggered (e.g. "Family Emergency Script"), and a timestamp. This data does not include your payment memo text or email content.
+              When a fraud risk is detected, we log an anonymized event to our Cloudflare infrastructure. For payment events this includes: platform, risk level, fraud flags triggered, and a timestamp — no memo text. For Gmail events this also includes the sender's email address and subject line (truncated to 200 characters), which are necessary to power the 24-hour cross-layer correlation between email and payment threats.
             </p>
 
             <h3 style={h3}>Anonymized telemetry (opt-in only)</h3>
