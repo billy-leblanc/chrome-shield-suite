@@ -84,7 +84,7 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
         }}>
           <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>⚠️</span>
           <span style={{ fontSize: 12, color: "#FBBF24", lineHeight: 1.5 }}>
-            You received a suspicious email from nurse-help@gmail.com 14 minutes ago. That email and this payment are connected. This is how coordinated scams work.
+            You received a suspicious email from billing@geeksquad-renewal.com 26 minutes ago. That email and this payment are connected. This is how coordinated scams work.
           </span>
         </div>
 
@@ -117,7 +117,9 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
               transition: "all 0.2s",
             }}
           >
-            {cooldown > 0 ? `${cooldown}s` : "I understand — proceed"}
+            {cooldown > 0 ? (
+            <span>Take a breath. <span style={{ opacity: 0.45 }}>({cooldown}s)</span></span>
+          ) : "I understand — proceed"}
           </button>
         </div>
       </div>
