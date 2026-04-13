@@ -259,7 +259,7 @@ function InterceptDemo() {
         {/* Questionnaire */}
         <div style={{
           position: "absolute", left: 14, right: 14,
-          top: "50%", transform: phase === "questionnaire" ? "translateY(-50%) scale(1)" : "translateY(calc(-50% + 10px)) scale(0.97)",
+          top: "46%", transform: phase === "questionnaire" ? "translateY(-50%) scale(1)" : "translateY(calc(-50% + 10px)) scale(0.97)",
           background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
           border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
           padding: "14px 14px 10px",
