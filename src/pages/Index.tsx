@@ -115,13 +115,23 @@ function InterceptDemo() {
 
   useEffect(() => {
     let dead = false;
+    function click(delay: number) {
+      setTimeout(() => { if (!dead) setCursorClicking(true); }, delay);
+      setTimeout(() => { if (!dead) setCursorClicking(false); }, delay + 180);
+    }
+    function move(x: number, y: number, delay: number) {
+      setTimeout(() => { if (!dead) { setCursorX(x); setCursorY(y); } }, delay);
+    }
+
     function loop() {
       if (dead) return;
       setCursorX(68); setCursorY(16); setPhase("idle");
       setChecked([false, false, false]); setFillPct(100);
 
-      setTimeout(() => { if (!dead) { setCursorX(50); setCursorY(88); } }, 700);
+      // glide to Send button
+      move(50, 88, 700);
 
+      // click Send button
       setTimeout(() => {
         if (dead) return;
         setCursorClicking(true); setBtnScale(0.95); setPhase("clicking");
@@ -129,17 +139,24 @@ function InterceptDemo() {
         setTimeout(() => {
           if (dead) return;
           setCursorClicking(false); setBtnScale(1);
-          setCursorX(68); setCursorY(16);
           setPhase("questionnaire");
 
-          // simulate user checking first box after 1.1s
-          setTimeout(() => { if (!dead) setChecked([true, false, false]); }, 1100);
+          // cursor glides to first checkbox (top-left of card, ~12% x, 33% y)
+          move(12, 33, 350);
+          // click checkbox
+          click(850);
+          setTimeout(() => { if (!dead) setChecked([true, false, false]); }, 950);
 
+          // cursor glides to continue button (center, ~77% y)
+          move(50, 77, 1400);
+          // click continue
+          click(2000);
+
+          // → warning modal
           setTimeout(() => {
             if (dead) return;
             setPhase("intercepted");
 
-            // fill drains: 100 → 0 over 12s, but demo only shows ~4s
             let fc = 100;
             const iv = setInterval(() => {
               fc = Math.max(0, fc - 100 / 12);
@@ -153,7 +170,7 @@ function InterceptDemo() {
               setPhase("fading");
               setTimeout(() => { if (!dead) loop(); }, 900);
             }, 4200);
-          }, 2800);
+          }, 2700);
         }, 320);
       }, 1700);
     }
@@ -239,29 +256,26 @@ function InterceptDemo() {
         WebkitFontSmoothing: "antialiased",
       }}>
 
-        {/* Questionnaire — exact copy of extension */}
+        {/* Questionnaire */}
         <div style={{
-          position: "absolute", width: "calc(100% - 28px)",
+          position: "absolute", left: 14, right: 14,
+          top: "50%", transform: phase === "questionnaire" ? "translateY(-50%) scale(1)" : "translateY(calc(-50% + 10px)) scale(0.97)",
           background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
           border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
-          padding: "20px 18px 18px",
+          padding: "16px 16px 14px",
           boxShadow: "0 32px 64px rgba(0,0,0,0.6)",
           opacity: phase === "questionnaire" ? 1 : 0,
-          transform: phase === "questionnaire" ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)",
           transition: "opacity 0.3s ease, transform 0.35s cubic-bezier(0.34,1.4,0.64,1)",
         }}>
-          {/* Badge */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", marginBottom: 13 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", marginBottom: 11 }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#94A3B8" }} />
             <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.1em", textTransform: "uppercase" }}>Quick Check</span>
           </div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 10 }}>Before you send.</div>
-          <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.65, marginBottom: 16 }}>Scammers are incredibly convincing — this isn't about being careful enough. Check anything that applies.</div>
-          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 14 }} />
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 12 }}>Before you send.</div>
           {DEMO_QUESTIONS.map((q, i) => (
             <div key={i} style={{
               display: "flex", alignItems: "flex-start", gap: 10,
-              padding: "10px 12px", borderRadius: 10, marginBottom: 7,
+              padding: "9px 11px", borderRadius: 10, marginBottom: 6,
               background: checked[i] ? "rgba(245,158,11,0.05)" : "rgba(255,255,255,0.02)",
               border: `1px solid ${checked[i] ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.06)"}`,
               transition: "background 0.15s, border-color 0.15s",
@@ -275,14 +289,11 @@ function InterceptDemo() {
               }}>
                 {checked[i] && <svg width="9" height="7" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
-              <div>
-                <div style={{ fontSize: 12, color: checked[i] ? "#F1F5F9" : "#94A3B8", lineHeight: 1.5 }}>{q.text}</div>
-                {checked[i] && <div style={{ fontSize: 10, color: "#FBBF24", lineHeight: 1.5, marginTop: 3 }}>{q.context}</div>}
-              </div>
+              <div style={{ fontSize: 11, color: checked[i] ? "#F1F5F9" : "#94A3B8", lineHeight: 1.5 }}>{q.text}</div>
             </div>
           ))}
           <button style={{
-            width: "100%", padding: "11px", borderRadius: 10, marginTop: 6,
+            width: "100%", padding: "10px", borderRadius: 10, marginTop: 8,
             background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)",
             border: "1px solid rgba(56,189,248,0.3)",
             color: "#38BDF8", fontSize: 12, fontWeight: 700, cursor: "default",
@@ -290,58 +301,52 @@ function InterceptDemo() {
           }}>
             {anyChecked ? "Analyze Payment →" : "Looks fine, continue →"}
           </button>
-          <div style={{ textAlign: "center", marginTop: 8 }}>
+          <div style={{ textAlign: "center", marginTop: 7 }}>
             <span style={{ fontSize: 10, color: "#334155" }}>Send anyway</span>
           </div>
         </div>
 
-        {/* Warning modal — exact copy of extension */}
+        {/* Warning modal */}
         <div style={{
-          position: "absolute", width: "calc(100% - 28px)",
+          position: "absolute", left: 14, right: 14,
+          top: "50%", transform: showWarning ? "translateY(-50%) scale(1)" : "translateY(calc(-50% + 10px)) scale(0.97)",
           background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
           border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
-          padding: "20px 18px 18px",
+          padding: "16px 16px 14px",
           boxShadow: "0 32px 64px rgba(0,0,0,0.6)",
           opacity: showWarning ? 1 : 0,
-          transform: showWarning ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)",
           transition: "opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.4,0.64,1)",
         }}>
-          {/* Badge */}
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", marginBottom: 13 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", marginBottom: 11 }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#FBBF24" }} />
             <span style={{ fontSize: 10, fontWeight: 700, color: "#FBBF24", letterSpacing: "0.1em", textTransform: "uppercase" }}>Caution</span>
           </div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 10 }}>This matches how sophisticated scams work</div>
-          <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7, marginBottom: 16 }}>
-            This request involves an unexpected contact, a first-time recipient and an artificial sense of urgency. This is how most people lose money to scams. There is no shame in pausing.
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 9 }}>This matches how sophisticated scams work</div>
+          <div style={{ fontSize: 11, color: "#64748B", lineHeight: 1.7, marginBottom: 12 }}>
+            Unexpected contact, first-time recipient, artificial urgency. This is how most people lose money to scams. There is no shame in pausing.
           </div>
-          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 14 }} />
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: 10, padding: "10px 12px", marginBottom: 16 }}>
-            <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>⚠️</span>
-            <span style={{ fontSize: 11, color: "#FBBF24", lineHeight: 1.5 }}>You received a scam email from billing@geeksquad-renewal.com 26 minutes ago. That email and this payment are connected. This is how coordinated scams work.</span>
+          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 12 }} />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: 10, padding: "9px 11px", marginBottom: 12 }}>
+            <span style={{ fontSize: 12, flexShrink: 0 }}>⚠️</span>
+            <span style={{ fontSize: 10, color: "#FBBF24", lineHeight: 1.55 }}>You received a scam email from billing@geeksquad-renewal.com 26 min ago. That email and this payment are connected.</span>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button style={{
-              flex: 1, padding: "11px", borderRadius: 12,
+              flex: 1, padding: "10px", borderRadius: 12,
               background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-              color: "#94A3B8", fontSize: 12, fontWeight: 600, cursor: "default",
+              color: "#94A3B8", fontSize: 11, fontWeight: 600, cursor: "default",
             }}>Go back — stay safe</button>
             <button style={{
-              flex: 1, padding: "11px", borderRadius: 12,
+              flex: 1, padding: "10px", borderRadius: 12,
               position: "relative", overflow: "hidden",
               background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)",
-              color: "#FBBF24", fontSize: 12, fontWeight: 600, cursor: "default",
+              color: "#FBBF24", fontSize: 11, fontWeight: 600, cursor: "default",
             }}>
-              <div style={{
-                position: "absolute", top: 0, left: 0, bottom: 0,
-                right: `${fillPct}%`,
-                background: "rgba(245,158,11,0.15)",
-                transition: "right 1s linear",
-              }} />
+              <div style={{ position: "absolute", top: 0, left: 0, bottom: 0, right: `${fillPct}%`, background: "rgba(245,158,11,0.15)", transition: "right 1s linear" }} />
               <span style={{ position: "relative", zIndex: 1 }}>Take a breath.</span>
             </button>
           </div>
-          <div style={{ textAlign: "center", marginTop: 10 }}>
+          <div style={{ textAlign: "center", marginTop: 8 }}>
             <span style={{ fontSize: 10, color: "#334155", textDecoration: "underline", textUnderlineOffset: 3 }}>I know this person — this is legitimate</span>
           </div>
         </div>
