@@ -466,13 +466,13 @@ export default function Index() {
               <div>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", marginBottom: 24 }}>
                   <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B" }} />
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#F59E0B", letterSpacing: "0.1em", textTransform: "uppercase" }}>The Cooldown Protocol</span>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#F59E0B", letterSpacing: "0.1em", textTransform: "uppercase" }}>The Pause</span>
                 </div>
                 <h2 style={{ fontSize: 28, fontWeight: 700, color: "#E2E8F0", letterSpacing: "-0.7px", lineHeight: 1.22, marginBottom: 20 }}>
                   "Take a breath."<br />We mean it.
                 </h2>
                 <p style={{ fontSize: 14, fontWeight: 400, color: "#475569", lineHeight: 1.95, marginBottom: 16 }}>
-                  When we flag a payment as high-risk, we don't just warn you. We introduce a deliberate 10-second cooldown before you can proceed. Not to stop you — to break the scammer's trance.
+                  When we flag a payment as high-risk, we don't just warn you. We introduce a deliberate 12-second cooldown before you can proceed. Not to stop you — to break the scammer's trance.
                 </p>
                 <p style={{ fontSize: 14, fontWeight: 400, color: "#334155", lineHeight: 1.95 }}>
                   Scams operate on momentum. If you have to wait 10 seconds, you think. If you think, you don't send. That pause has saved more money than any alert ever written.
@@ -481,7 +481,7 @@ export default function Index() {
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {[
                   { color: "#F59E0B", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)", label: "Caution", text: "A risk pattern was detected. Review the details before proceeding." },
-                  { color: "#3B82F6", bg: "rgba(59,130,246,0.06)", border: "rgba(59,130,246,0.2)", label: "On Guard", text: "Cross-layer correlation is running. Email and payment contexts are being linked." },
+                  { color: "#3B82F6", bg: "rgba(59,130,246,0.06)", border: "rgba(59,130,246,0.2)", label: "On Guard", text: "Watching your inbox and your wallet at the same time." },
                   { color: "#34D399", bg: "rgba(52,211,153,0.06)", border: "rgba(52,211,153,0.2)", label: "Clear", text: "No scam signals detected. Your payment guard is patrolling silently." },
                 ].map(s => (
                   <div key={s.label} style={{ padding: "16px 18px", borderRadius: 12, background: s.bg, border: `1px solid ${s.border}` }}>
@@ -536,8 +536,8 @@ export default function Index() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 32, textAlign: "center" }}>
               {[
                 { value: "$15.9B", label: "Lost to fraud in the US in 2025" },
-                { value: "3",      label: "Surfaces patrolled" },
-                { value: "24h",    label: "Correlation window" },
+                { value: "3",      label: "Platforms covered" },
+                { value: "24h",    label: "Memory window" },
                 { value: "Free",   label: "Always. No subscription." },
               ].map(p => (
                 <div key={p.label}>
@@ -547,7 +547,7 @@ export default function Index() {
               ))}
             </div>
             <p style={{ textAlign: "center", fontSize: 11, fontWeight: 400, color: "#334155", marginTop: 40, letterSpacing: "0.04em" }}>
-              <a href="https://www.linkedin.com/in/billy-leblanc/" target="_blank" rel="noreferrer" style={{ color: "#334155", textDecoration: "underline" }}>Built at UC Berkeley</a> · Evaluated against real r/Scams cases
+              <a href="https://www.linkedin.com/in/billy-leblanc/" target="_blank" rel="noreferrer" style={{ color: "#334155", textDecoration: "underline" }}>Built at UC Berkeley</a> · Tested against r/Scams corpus
             </p>
           </div>
         </Reveal>
