@@ -131,6 +131,13 @@ const injectStyles = (shadow: ShadowRoot) => {
       text-underline-offset: 3px; font-family: inherit; font-weight: 500;
     }
     .btn-legitimate:hover { color: #475569; }
+    
+    /* Jobsian UI Polish: Rebrand red survey markers to Blue */
+    .q-item input[type="checkbox"] {
+      accent-color: #38BDF8;
+    }
+    .badge-critical { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #FBBF24; }
+
     .q-item {
       display: flex; align-items: flex-start; gap: 12px;
       padding: 12px 14px; border-radius: 10px;
@@ -642,7 +649,7 @@ const Interceptor = () => {
             const minutesAgo = Math.round((now - latest.timestamp) / 60000);
             const timeAgo = minutesAgo < 60 ? `${minutesAgo} minute${minutesAgo !== 1 ? 's' : ''} ago`
               : `${Math.round(minutesAgo / 60)} hour${Math.round(minutesAgo / 60) !== 1 ? 's' : ''} ago`;
-            correlationNote = `You received a scam email from ${latest.senderEmail} ${timeAgo}. Combined with this payment, fraud risk is elevated.`;
+            correlationNote = `You received a scam email from ${latest.senderEmail} ${timeAgo}. That email and this payment are connected. This is how coordinated scams work.`;
           }
           setRiskReport(buildReport(correlationNote));
           setShowModal(true);
@@ -795,7 +802,7 @@ const Interceptor = () => {
             <span className="badge-dot" />
             Quick Check
           </div>
-          <div className="title">Quick safety check</div>
+          <div className="title">Before you send.</div>
           <div className="desc">Scammers are incredibly convincing — this isn't about being careful enough. Check anything that applies.</div>
           <div className="divider" />
           {questions.map(q => (
@@ -822,7 +829,7 @@ const Interceptor = () => {
             {anyChecked ? 'Analyze Payment →' : 'Looks fine, continue →'}
           </button>
           <button className="btn-skip" onClick={() => handleQuestionnaireSubmit(true)}>
-            Skip and send now
+            Send anyway
           </button>
         </div>
       </div>
@@ -842,16 +849,36 @@ const Interceptor = () => {
     !arr.some((other, j) => j !== i && other.startsWith(f) && other !== f)
   ).slice(0, 3);
 
-  const narrative = cleanFlags.length > 0 
-    ? `We identified ${cleanFlags.join(' and ')} as potential risk factors. ${riskReport.recommendation}`
-    : riskReport.recommendation;
+  const narrative = (() => {
+    if (cleanFlags.length === 0) return riskReport.recommendation;
+    
+    const storyMap: Record<string, string> = {
+      'First Time Recipient': "someone you’ve never paid before",
+      'Urgency Or Secrecy Pressure': "an artificial sense of urgency",
+      'Unsolicited Contact Requested Payment': "an unexpected request",
+      'Highly Suspect Domain': "a suspicious website",
+      'Social Engineering Pattern': "patterns of a known scam",
+    };
+
+    const stories = cleanFlags.map(f => storyMap[f] || f.toLowerCase()).filter(Boolean);
+    
+    let base = "This payment involve";
+    if (stories.length === 1) {
+      base = `This request involves ${stories[0]}.`;
+    } else {
+      const last = stories.pop();
+      base = `This request involves ${stories.join(', ')} and ${last}.`;
+    }
+
+    return `${base} This is how most people lose money to scams. ${riskReport.recommendation}`;
+  })();
 
   return (
     <div className="overlay">
       <div className="card">
         <div className={`badge ${isCritical ? 'badge-critical' : 'badge-high'}`}>
           <span className="badge-dot" />
-          {isCritical ? 'Protection Active' : 'Heads Up'}
+          {isCritical ? 'Caution' : 'Heads Up'}
         </div>
         <div className="title">
           {isCritical ? 'This matches how sophisticated scams work' : `Something looks off with this payment`}
