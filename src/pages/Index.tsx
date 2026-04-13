@@ -343,9 +343,9 @@ export default function Index() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
             {[
-              { step: "01", title: "Email arrives.", desc: "Our anti-phishing AI reads the scam signal in Gmail. A quiet amber banner drops. The threat signature is stored locally." },
+              { step: "01", title: "Email arrives.", desc: "We read it for scam patterns — fake emergencies, impersonation, pressure to pay. A quiet amber banner drops. We remember it." },
               { step: "02", title: "You go to pay.", desc: "You open PayPal or Zelle. You write the memo. We are already comparing it against the email you received." },
-              { step: "03", title: "We interdict.", desc: "The patterns match. The vault door closes. You see why. You decide. Your money doesn't move until you do." },
+              { step: "03", title: "We step in.", desc: "The patterns match. The payment pauses. You see exactly why. You decide. Your money doesn't move until you do." },
             ].map((s, i) => (
               <Reveal key={s.step} delay={i * 100}>
                 <div style={{ padding: "26px 24px 30px", borderRadius: 16, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", transition: "border-color 0.3s ease" }}
@@ -414,7 +414,7 @@ export default function Index() {
               Infrastructure first.<br />Consumer second.
             </h2>
             <p style={{ fontSize: 15, fontWeight: 400, color: "#475569", lineHeight: 1.95, maxWidth: 520, margin: "0 auto 48px" }}>
-              Every consumer interception generates labeled intent signal — the exact linguistic coercion in the seconds before an abandoned fraudulent payment. That corpus is what no network-side vendor can replicate.
+              Every consumer interception generates labeled intent signal — the exact linguistic coercion in the seconds before an abandoned fraudulent payment. That corpus is what no network-side vendor can replicate. It's the training data for an agentic fraud prevention layer that lives where the decision actually happens: the browser.
             </p>
             {enterpriseSubmitted ? (
               <div style={{ padding: "16px 24px", borderRadius: 12, background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)", color: "#3B82F6", fontSize: 14, fontWeight: 600 }}>
