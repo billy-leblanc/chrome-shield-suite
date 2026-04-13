@@ -7,10 +7,10 @@ const DOWNLOAD_URL = "https://shield-relay.bleblanc.workers.dev/download";
 const KONAMI = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
 
 const EGG_MESSAGES = [
-  { title: "🛡️ Max shield engaged.", body: "Pollux sees all. Scammers fear all." },
-  { title: "👾 You found it.", body: "Most people just scroll past. You're the kind of person who reads the fine print. Scammers hate you." },
-  { title: "🐉 There be dragons.", body: "And also fraud detection. But mainly dragons." },
-  { title: "⚡ Achilles mode unlocked.", body: "You chose glory. Smart." },
+  { title: "Pass not through life in silence like cattle.", body: "— Sallust, Bellum Catilinae, Ch. 1. You found a hidden thing. That's not nothing." },
+  { title: "Those who had easily endured toil and danger —", body: "— to them leisure and wealth became a burden and a misery. Sallust's warning. Don't forget it when things go well." },
+  { title: "All of my time is worth it if I can give one person that feeling.", body: "— Billy LeBlanc, April 5, 2026. That sentence is why this exists." },
+  { title: "Life is mundane when you aren't lost.", body: "— Billy LeBlanc. You were curious enough to look for something hidden. You're not lost. Keep going." },
 ];
 
 function EasterEggToast({ onClose }: { onClose: () => void }) {
