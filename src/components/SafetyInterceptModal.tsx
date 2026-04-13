@@ -15,14 +15,18 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
 
   if (!open) return null;
 
-  const flags = ["Third-Party Impersonation", "Isolation Tactic", "Medical Urgency"];
+  const reasons = [
+    "Someone you've never met is speaking on your family's behalf.",
+    "You were asked to keep this secret from the people closest to you.",
+    "A medical emergency was created to make you act before you could think.",
+  ];
 
   return (
     <div
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)",
+        background: "rgba(0,0,0,0.72)", backdropFilter: "blur(6px)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "24px",
         opacity: visible ? 1 : 0,
@@ -34,65 +38,61 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
         style={{
           width: "100%", maxWidth: 400,
           background: "#0D1526",
-          border: "1px solid rgba(255,255,255,0.08)",
+          border: "1px solid rgba(255,255,255,0.07)",
           borderRadius: 20,
           padding: "28px 28px 24px",
-          boxShadow: "0 0 0 1px rgba(239,68,68,0.15), 0 32px 64px rgba(0,0,0,0.6)",
+          boxShadow: "0 0 0 1px rgba(239,68,68,0.12), 0 40px 80px rgba(0,0,0,0.7)",
           transform: visible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.97)",
           transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
         }}
       >
-        {/* Risk badge */}
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: 7,
-          padding: "5px 12px", borderRadius: 999,
-          background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)",
-          marginBottom: 18,
-        }}>
-          <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#EF4444" }} />
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#EF4444", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-            High Risk Detected
+        {/* Quiet red dot — no label, no caps */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+          <div style={{
+            width: 8, height: 8, borderRadius: "50%", background: "#EF4444",
+            boxShadow: "0 0 8px rgba(239,68,68,0.6)",
+          }} />
+          <span style={{ fontSize: 12, color: "#EF4444", fontWeight: 600, letterSpacing: "0.01em" }}>
+            We stopped this payment.
           </span>
         </div>
 
         {/* Title */}
-        <div style={{ fontSize: 20, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.5px", marginBottom: 10, lineHeight: 1.2 }}>
-          This payment looks like a scam.
+        <div style={{ fontSize: 21, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.5px", lineHeight: 1.2, marginBottom: 12 }}>
+          Don't send this.
         </div>
 
         {/* Memo */}
         <div style={{
           padding: "12px 14px", borderRadius: 10,
-          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
-          fontSize: 13, color: "#64748B", fontStyle: "italic", lineHeight: 1.55,
-          marginBottom: 18,
+          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+          fontSize: 13, color: "#64748B", fontStyle: "italic", lineHeight: 1.6,
+          marginBottom: 22,
         }}>
           "for Daniel's hospital stay — nurse Margaret said it's urgent, please don't tell family yet"
         </div>
 
-        {/* Flags */}
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#334155", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>
-          Risk signals
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
-          {flags.map(f => (
-            <span key={f} style={{
-              fontSize: 12, fontWeight: 600, color: "#CBD5E1",
-              padding: "5px 11px", borderRadius: 8,
-              background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.18)",
-            }}>{f}</span>
+        {/* Human reasons — no label, no pills */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+          {reasons.map((r, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <div style={{
+                width: 5, height: 5, borderRadius: "50%", background: "#EF4444",
+                marginTop: 6, flexShrink: 0, opacity: 0.7,
+              }} />
+              <span style={{ fontSize: 13, color: "#94A3B8", lineHeight: 1.6 }}>{r}</span>
+            </div>
           ))}
         </div>
 
-        {/* Score */}
+        {/* Human closing line */}
         <div style={{
-          padding: "12px 14px", borderRadius: 10,
-          background: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.12)",
-          fontSize: 13, color: "#94A3B8", lineHeight: 1.55,
-          marginBottom: 24,
+          fontSize: 13, color: "#475569", lineHeight: 1.6,
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+          paddingTop: 16, marginBottom: 22,
         }}>
-          Risk score: <strong style={{ color: "#EF4444" }}>94 / 100</strong>
-          <span style={{ color: "#475569" }}> · Even experts fall for these. Take a breath.</span>
+          This is how these scams work. The urgency is manufactured. The secrecy is a trap.{" "}
+          <span style={{ color: "#64748B" }}>Even people who know better fall for them.</span>
         </div>
 
         {/* Buttons */}
@@ -114,12 +114,12 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
             onClick={onClose}
             style={{
               flex: 1, padding: "13px 0", borderRadius: 12,
-              background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+              background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.15)",
               color: "#EF4444", fontWeight: 600, fontSize: 13, cursor: "pointer",
               transition: "background 0.15s",
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.14)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.08)")}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.13)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.07)")}
           >
             Proceed anyway
           </button>
