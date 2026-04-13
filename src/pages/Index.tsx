@@ -102,19 +102,17 @@ function InterceptDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
   const [cooldown, setCooldown] = useState(10);
   const [btnScale, setBtnScale] = useState(1);
-  const { ref: demoRef, visible: demoVisible } = useReveal(0.4);
 
   useEffect(() => {
-    if (!demoVisible) return;
     if (phase !== "idle") return;
     const timers = [
-      setTimeout(() => { setBtnScale(0.95); setPhase("clicking"); }, 800),
-      setTimeout(() => { setBtnScale(1); setPhase("intercepted"); setCooldown(10); }, 1300),
-      setTimeout(() => setPhase("fading"), 6000),
-      setTimeout(() => { setPhase("idle"); setCooldown(10); }, 6800),
+      setTimeout(() => { setBtnScale(0.95); setPhase("clicking"); }, 1200),
+      setTimeout(() => { setBtnScale(1); setPhase("intercepted"); setCooldown(10); }, 1700),
+      setTimeout(() => setPhase("fading"), 6500),
+      setTimeout(() => { setPhase("idle"); setCooldown(10); }, 7300),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [phase, demoVisible]);
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== "intercepted") return;
@@ -127,7 +125,7 @@ function InterceptDemo() {
   const modalVisible = phase === "intercepted";
 
   return (
-    <div ref={demoRef} style={{ position: "relative", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}>
       {/* Browser chrome */}
       <div style={{ background: "#1C1C1E", padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#FF5F57" }} />

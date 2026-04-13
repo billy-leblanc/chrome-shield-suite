@@ -88,6 +88,19 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
           </span>
         </div>
 
+        {/* Loading bar */}
+        {cooldown > 0 && (
+          <div style={{ height: 2, background: "rgba(255,255,255,0.06)", borderRadius: 2, marginBottom: 14, overflow: "hidden" }}>
+            <div style={{
+              height: "100%",
+              background: "linear-gradient(90deg, #F59E0B, #FBBF24)",
+              borderRadius: 2,
+              width: `${((12 - cooldown) / 12) * 100}%`,
+              transition: "width 1s linear",
+            }} />
+          </div>
+        )}
+
         {/* Buttons */}
         <div style={{ display: "flex", gap: 8 }}>
           <button
@@ -117,9 +130,7 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
               transition: "all 0.2s",
             }}
           >
-            {cooldown > 0 ? (
-            <span>Take a breath. <span style={{ opacity: 0.45 }}>({cooldown}s)</span></span>
-          ) : "I understand — proceed"}
+            {cooldown > 0 ? "Take a breath." : "I understand — proceed"}
           </button>
         </div>
       </div>
