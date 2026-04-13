@@ -262,20 +262,20 @@ function InterceptDemo() {
           top: "50%", transform: phase === "questionnaire" ? "translateY(-50%) scale(1)" : "translateY(calc(-50% + 10px)) scale(0.97)",
           background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
           border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
-          padding: "16px 16px 14px",
+          padding: "14px 14px 10px",
           boxShadow: "0 32px 64px rgba(0,0,0,0.6)",
           opacity: phase === "questionnaire" ? 1 : 0,
           transition: "opacity 0.3s ease, transform 0.35s cubic-bezier(0.34,1.4,0.64,1)",
         }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", marginBottom: 11 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", marginBottom: 8 }}>
             <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#94A3B8" }} />
             <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.1em", textTransform: "uppercase" }}>Quick Check</span>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 12 }}>Before you send.</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 8 }}>Before you send.</div>
           {DEMO_QUESTIONS.map((q, i) => (
             <div key={i} style={{
               display: "flex", alignItems: "flex-start", gap: 10,
-              padding: "9px 11px", borderRadius: 10, marginBottom: 6,
+              padding: "7px 10px", borderRadius: 10, marginBottom: 5,
               background: checked[i] ? "rgba(245,158,11,0.05)" : "rgba(255,255,255,0.02)",
               border: `1px solid ${checked[i] ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.06)"}`,
               transition: "background 0.15s, border-color 0.15s",
@@ -293,7 +293,7 @@ function InterceptDemo() {
             </div>
           ))}
           <button style={{
-            width: "100%", padding: "10px", borderRadius: 10, marginTop: 8,
+            width: "100%", padding: "9px", borderRadius: 10, marginTop: 6,
             background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)",
             border: "1px solid rgba(56,189,248,0.3)",
             color: "#38BDF8", fontSize: 12, fontWeight: 700, cursor: "default",
@@ -301,7 +301,7 @@ function InterceptDemo() {
           }}>
             {anyChecked ? "Analyze Payment →" : "Looks fine, continue →"}
           </button>
-          <div style={{ textAlign: "center", marginTop: 7 }}>
+          <div style={{ textAlign: "center", marginTop: 5 }}>
             <span style={{ fontSize: 10, color: "#334155" }}>Send anyway</span>
           </div>
         </div>
