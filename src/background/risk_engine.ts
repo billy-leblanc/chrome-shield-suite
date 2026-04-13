@@ -174,13 +174,16 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(({ reason }) => {
   chrome.storage.local.set({
     interceptEnabled: true,
     threatLog: [],
     eventLog: [],
     stats: { blocked: 0, warnings: 0, safe: 0 },
   });
+  if (reason === 'install') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+  }
   console.log("Chrome Shield Suite: Initialized");
 });
 

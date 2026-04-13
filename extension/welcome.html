@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Safety Intercept</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #060C1A;
+      color: #F1F5F9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .container {
+      max-width: 560px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Shield */
+    .shield-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+    .shield-ring {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: rgba(56,189,248,0.06);
+      border: 1px solid rgba(56,189,248,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(56,189,248,0.15); }
+      50% { box-shadow: 0 0 0 16px rgba(56,189,248,0); }
+    }
+
+    /* Steps */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 48px 0;
+      text-align: left;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 18px 20px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .step.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .step-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .step-icon-blue { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); }
+    .step-icon-amber { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.2); }
+    .step-icon-green { background: rgba(52,211,153,0.1); border: 1px solid rgba(52,211,153,0.2); }
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #F1F5F9;
+      margin-bottom: 3px;
+      letter-spacing: -0.2px;
+    }
+    .step-desc {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.55;
+    }
+
+    /* Privacy note */
+    .privacy {
+      margin: 32px 0 40px;
+      padding: 16px 20px;
+      background: rgba(52,211,153,0.04);
+      border: 1px solid rgba(52,211,153,0.15);
+      border-radius: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      text-align: left;
+      opacity: 0;
+      transition: opacity 0.5s ease 1.2s;
+    }
+    .privacy.visible { opacity: 1; }
+    .privacy-icon { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+    .privacy-text { font-size: 12px; color: #475569; line-height: 1.6; }
+    .privacy-text strong { color: #34D399; font-weight: 600; }
+
+    /* CTA */
+    .cta {
+      opacity: 0;
+      transition: opacity 0.5s ease 1.5s;
+    }
+    .cta.visible { opacity: 1; }
+    .btn-primary {
+      display: inline-block;
+      padding: 14px 40px;
+      background: linear-gradient(135deg, #1a3a60 0%, #0f2040 100%);
+      border: 1px solid rgba(56,189,248,0.35);
+      border-radius: 12px;
+      color: #38BDF8;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s ease;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .sub-link {
+      display: block;
+      margin-top: 14px;
+      font-size: 12px;
+      color: #334155;
+      text-decoration: none;
+    }
+    .sub-link:hover { color: #475569; }
+
+    /* Typography */
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #38BDF8;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      color: #F8FAFC;
+      margin-bottom: 14px;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: #475569;
+      line-height: 1.65;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="shield-wrap">
+      <div class="shield-ring">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L4 5.5V11c0 5.25 3.4 10.15 8 11.5 4.6-1.35 8-6.25 8-11.5V5.5L12 2z"
+            fill="rgba(56,189,248,0.12)" stroke="#38BDF8" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M9 12l2 2 4-4" stroke="#38BDF8" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="eyebrow">Safety Intercept is active</div>
+    <h1>You're protected now.</h1>
+    <p class="subtitle">
+      Before you send another payment, we'll be there — quietly watching for the patterns scammers use, so you don't have to.
+    </p>
+
+    <div class="steps">
+      <div class="step" id="step1">
+        <div class="step-icon step-icon-blue">📧</div>
+        <div>
+          <div class="step-title">We read your Gmail for scam signals</div>
+          <div class="step-desc">When an email shows signs of social engineering — fake emergencies, impersonation, urgency — we flag it before you act on it.</div>
+        </div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-icon step-icon-amber">🛡️</div>
+        <div>
+          <div class="step-title">We pause before you pay</div>
+          <div class="step-desc">On PayPal and Wells Fargo Zelle, we intercept your Send button and ask three quick questions. If something looks wrong, we stop and show you why.</div>
+        </div>
+      </div>
+      <div class="step" id="step3">
+        <div class="step-icon step-icon-green">🔗</div>
+        <div>
+          <div class="step-title">We connect the dots</div>
+          <div class="step-desc">If a suspicious email arrived before you tried to pay, we link them. That connection — email then payment — is the fingerprint of a coordinated scam.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="privacy" id="privacy">
+      <div class="privacy-icon">🔒</div>
+      <div class="privacy-text">
+        <strong>Your data stays yours.</strong> We never store your payment details, account numbers, or browsing history. Memo text is analyzed in real time and never saved to our servers unless you choose to opt in to telemetry — which is off by default.
+        <br/><br/>
+        <a href="https://safetyintercept.vercel.app/privacy" target="_blank"
+          style="color: #38BDF8; text-decoration: none;">Read our full privacy policy →</a>
+      </div>
+    </div>
+
+    <div class="cta" id="cta">
+      <a class="btn-primary" href="javascript:window.close()">I'm ready — close this tab</a>
+      <a class="sub-link" href="https://safetyintercept.vercel.app" target="_blank">
+        Learn more about Safety Intercept
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    // Stagger step animations
+    const steps = document.querySelectorAll('.step');
+    steps.forEach((step, i) => {
+      setTimeout(() => step.classList.add('visible'), 300 + i * 200);
+    });
+    setTimeout(() => document.getElementById('privacy').classList.add('visible'), 1200);
+    setTimeout(() => document.getElementById('cta').classList.add('visible'), 1500);
+  </script>
+</body>
+</html>

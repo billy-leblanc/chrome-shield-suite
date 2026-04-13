@@ -583,9 +583,9 @@ const Interceptor = () => {
             setRiskReport({
               score: 98,
               riskLevel: 'critical',
-              flags: ['Memo Matches Scam Email', 'Cross-Layer: Keyword Correlation'],
-              recommendation: 'STOP. Your payment memo contains keywords from a scam email you received. This is almost certainly fraud.',
-              correlationNote: `Your memo matches a scam email from ${det.senderEmail} ${timeAgo}. Matched keywords: "${matchedWords.join('", "')}". Do NOT send this payment.`,
+              flags: ['Email and payment are connected', 'Coordinated scam pattern'],
+              recommendation: 'We connected this payment to a suspicious email you received. The memo matches words from that email — this is the pattern of a coordinated scam. You don\'t have to send this.',
+              correlationNote: `You received a suspicious email from ${det.senderEmail} ${timeAgo}. Your payment memo contains words from that email: "${matchedWords.join('", "')}". We\'ve seen this exact pattern before — please take a moment before proceeding.`,
             });
             setShowModal(true);
             return;
@@ -685,9 +685,9 @@ const Interceptor = () => {
             setRiskReport({
               score: 98,
               riskLevel: 'critical',
-              flags: ['Memo Matches Scam Email', 'Cross-Layer: Keyword Correlation'],
-              recommendation: 'Your payment memo contains keywords from a scam email you received. This is almost certainly fraud.',
-              correlationNote: `Your memo matches a scam email from ${det.senderEmail} ${timeAgo}. Matched keywords: "${matchedWords.join('", "')}". Do NOT send this payment.`,
+              flags: ['Email and payment are connected', 'Coordinated scam pattern'],
+              recommendation: 'We connected this payment to a suspicious email you received. The memo matches words from that email — this is the pattern of a coordinated scam. You don\'t have to send this.',
+              correlationNote: `You received a suspicious email from ${det.senderEmail} ${timeAgo}. Your payment memo contains words from that email: "${matchedWords.join('", "')}". We\'ve seen this exact pattern before — please take a moment before proceeding.`,
             });
             setShowModal(true);
 
