@@ -481,7 +481,7 @@ export default function Index() {
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {[
                   { color: "#F59E0B", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)", label: "Caution", text: "A risk pattern was detected. Review the details before proceeding." },
-                  { color: "#3B82F6", bg: "rgba(59,130,246,0.06)", border: "rgba(59,130,246,0.2)", label: "System Active", text: "Cross-layer correlation is running. Email and payment contexts are being linked." },
+                  { color: "#3B82F6", bg: "rgba(59,130,246,0.06)", border: "rgba(59,130,246,0.2)", label: "On Guard", text: "Cross-layer correlation is running. Email and payment contexts are being linked." },
                   { color: "#34D399", bg: "rgba(52,211,153,0.06)", border: "rgba(52,211,153,0.2)", label: "Clear", text: "No scam signals detected. Your payment guard is patrolling silently." },
                 ].map(s => (
                   <div key={s.label} style={{ padding: "16px 18px", borderRadius: 12, background: s.bg, border: `1px solid ${s.border}` }}>
