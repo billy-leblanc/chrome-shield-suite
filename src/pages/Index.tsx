@@ -98,10 +98,10 @@ function Reveal({ children, delay = 0, style = {} }: { children: React.ReactNode
 // ─── Animated Intercept Demo ──────────────────────────────────────────────────
 type DemoPhase = "idle" | "clicking" | "questionnaire" | "intercepted" | "fading";
 
-const QUESTIONS = [
-  "Were you told to send this payment?",
-  "First time sending to this person?",
-  "Did they create urgency or secrecy?",
+const DEMO_QUESTIONS = [
+  { text: "Someone contacted me and asked me to send this", context: "Real companies and agencies never cold-call you to request a payment." },
+  { text: "I've never paid this person or account before", context: "First-time recipients are involved in 80% of payment scams." },
+  { text: "I was told to act fast or keep this private", context: "Urgency and secrecy are the #1 tools scammers use — legitimate requests don't need either." },
 ];
 
 function InterceptDemo() {
@@ -110,18 +110,18 @@ function InterceptDemo() {
   const [cursorX, setCursorX] = useState(68);
   const [cursorY, setCursorY] = useState(16);
   const [cursorClicking, setCursorClicking] = useState(false);
+  const [checked, setChecked] = useState([false, false, false]);
+  const [fillPct, setFillPct] = useState(100);
 
   useEffect(() => {
     let dead = false;
     function loop() {
       if (dead) return;
-      setCursorX(68); setCursorY(16);
-      setPhase("idle");
+      setCursorX(68); setCursorY(16); setPhase("idle");
+      setChecked([false, false, false]); setFillPct(100);
 
-      // cursor drifts toward button
       setTimeout(() => { if (!dead) { setCursorX(50); setCursorY(88); } }, 700);
 
-      // click
       setTimeout(() => {
         if (dead) return;
         setCursorClicking(true); setBtnScale(0.95); setPhase("clicking");
@@ -132,16 +132,25 @@ function InterceptDemo() {
           setCursorX(68); setCursorY(16);
           setPhase("questionnaire");
 
-          // questionnaire visible → warning modal
+          // simulate user checking first box after 1.1s
+          setTimeout(() => { if (!dead) setChecked([true, false, false]); }, 1100);
+
           setTimeout(() => {
             if (dead) return;
             setPhase("intercepted");
 
-            // warning visible → fade
+            // fill drains: 100 → 0 over 12s, but demo only shows ~4s
+            let fc = 100;
+            const iv = setInterval(() => {
+              fc = Math.max(0, fc - 100 / 12);
+              if (!dead) setFillPct(fc);
+              if (fc <= 0) clearInterval(iv);
+            }, 1000);
+
             setTimeout(() => {
               if (dead) return;
+              clearInterval(iv);
               setPhase("fading");
-
               setTimeout(() => { if (!dead) loop(); }, 900);
             }, 4200);
           }, 2800);
@@ -152,12 +161,14 @@ function InterceptDemo() {
     return () => { dead = true; };
   }, []);
 
-  const paused = phase === "clicking" || phase === "questionnaire" || phase === "intercepted" || phase === "fading";
+  const paused = phase !== "idle";
   const overlayVisible = phase === "questionnaire" || phase === "intercepted";
   const showWarning = phase === "intercepted" || phase === "fading";
+  const anyChecked = checked.some(Boolean);
 
   return (
     <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}>
+      <style>{`@keyframes si-spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Browser chrome */}
       <div style={{ background: "#1C1C1E", padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -205,9 +216,8 @@ function InterceptDemo() {
 
       {/* Fake cursor */}
       <div style={{
-        position: "absolute",
-        left: `${cursorX}%`, top: `${cursorY}%`,
-        transform: `translate(-4px, -4px) scale(${cursorClicking ? 0.75 : 1})`,
+        position: "absolute", left: `${cursorX}%`, top: `${cursorY}%`,
+        transform: `translate(-4px,-4px) scale(${cursorClicking ? 0.75 : 1})`,
         transition: "left 1s cubic-bezier(0.4,0,0.2,1), top 1s cubic-bezier(0.4,0,0.2,1), transform 0.1s ease",
         pointerEvents: "none", zIndex: 60,
         filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.5))",
@@ -217,81 +227,122 @@ function InterceptDemo() {
         </svg>
       </div>
 
-      {/* Overlay: questionnaire + warning modal */}
+      {/* Overlay */}
       <div style={{
         position: "absolute", inset: 0,
-        background: overlayVisible ? "rgba(4,8,18,0.9)" : "rgba(4,8,18,0)",
-        backdropFilter: overlayVisible ? "blur(10px)" : "blur(0px)",
-        WebkitBackdropFilter: overlayVisible ? "blur(10px)" : "blur(0px)",
+        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
         opacity: overlayVisible ? 1 : 0,
-        transition: "opacity 0.45s ease, background 0.45s ease",
+        transition: "opacity 0.4s ease",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: 14, pointerEvents: "none",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+        WebkitFontSmoothing: "antialiased",
       }}>
 
-        {/* Questionnaire panel */}
+        {/* Questionnaire — exact copy of extension */}
         <div style={{
           position: "absolute", width: "calc(100% - 28px)",
           background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 14, padding: "16px 14px",
-          boxShadow: "0 0 0 1px rgba(56,189,248,0.08), 0 20px 40px rgba(0,0,0,0.8)",
+          border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
+          padding: "20px 18px 18px",
+          boxShadow: "0 32px 64px rgba(0,0,0,0.6)",
           opacity: phase === "questionnaire" ? 1 : 0,
-          transform: phase === "questionnaire" ? "translateY(0) scale(1)" : "translateY(10px) scale(0.97)",
-          transition: "opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.4,0.64,1)",
+          transform: phase === "questionnaire" ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)",
+          transition: "opacity 0.3s ease, transform 0.35s cubic-bezier(0.34,1.4,0.64,1)",
         }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 99, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", marginBottom: 10 }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#38BDF8", boxShadow: "0 0 5px rgba(56,189,248,0.5)" }} />
-            <span style={{ fontSize: 9, fontWeight: 700, color: "#38BDF8", letterSpacing: "0.1em", textTransform: "uppercase" }}>Safety Intercept</span>
+          {/* Badge */}
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", marginBottom: 13 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#94A3B8" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", letterSpacing: "0.1em", textTransform: "uppercase" }}>Quick Check</span>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.3px", marginBottom: 12 }}>Before you send.</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
-            {QUESTIONS.map((q, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "7px 10px", background: "rgba(255,255,255,0.02)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.04)" }}>
-                <span style={{ fontSize: 10, color: "#94A3B8", lineHeight: 1.4, flex: 1 }}>{q}</span>
-                <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                  <span style={{ fontSize: 9, fontWeight: 600, color: "#334155", padding: "3px 7px", borderRadius: 5, border: "1px solid rgba(255,255,255,0.05)" }}>Yes</span>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: "#34D399", padding: "3px 7px", borderRadius: 5, border: "1px solid rgba(52,211,153,0.3)", background: "rgba(52,211,153,0.08)" }}>No ✓</span>
-                </div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 10 }}>Before you send.</div>
+          <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.65, marginBottom: 16 }}>Scammers are incredibly convincing — this isn't about being careful enough. Check anything that applies.</div>
+          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 14 }} />
+          {DEMO_QUESTIONS.map((q, i) => (
+            <div key={i} style={{
+              display: "flex", alignItems: "flex-start", gap: 10,
+              padding: "10px 12px", borderRadius: 10, marginBottom: 7,
+              background: checked[i] ? "rgba(245,158,11,0.05)" : "rgba(255,255,255,0.02)",
+              border: `1px solid ${checked[i] ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.06)"}`,
+              transition: "background 0.15s, border-color 0.15s",
+            }}>
+              <div style={{
+                width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 1,
+                border: checked[i] ? "1.5px solid #F59E0B" : "1.5px solid rgba(255,255,255,0.15)",
+                background: checked[i] ? "#F59E0B" : "rgba(255,255,255,0.04)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all 0.15s",
+              }}>
+                {checked[i] && <svg width="9" height="7" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
-            ))}
+              <div>
+                <div style={{ fontSize: 12, color: checked[i] ? "#F1F5F9" : "#94A3B8", lineHeight: 1.5 }}>{q.text}</div>
+                {checked[i] && <div style={{ fontSize: 10, color: "#FBBF24", lineHeight: 1.5, marginTop: 3 }}>{q.context}</div>}
+              </div>
+            </div>
+          ))}
+          <button style={{
+            width: "100%", padding: "11px", borderRadius: 10, marginTop: 6,
+            background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)",
+            border: "1px solid rgba(56,189,248,0.3)",
+            color: "#38BDF8", fontSize: 12, fontWeight: 700, cursor: "default",
+            letterSpacing: "0.02em",
+          }}>
+            {anyChecked ? "Analyze Payment →" : "Looks fine, continue →"}
+          </button>
+          <div style={{ textAlign: "center", marginTop: 8 }}>
+            <span style={{ fontSize: 10, color: "#334155" }}>Send anyway</span>
           </div>
-          <div style={{ fontSize: 10, color: "#475569", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            <div style={{ width: 12, height: 12, borderRadius: "50%", border: "1.5px solid #38BDF8", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
-            Analyzing payment memo with AI...
-          </div>
-          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
 
-        {/* Warning modal */}
+        {/* Warning modal — exact copy of extension */}
         <div style={{
           position: "absolute", width: "calc(100% - 28px)",
           background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
-          border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 14, padding: "16px 14px",
-          boxShadow: "0 0 0 1px rgba(245,158,11,0.1), 0 20px 40px rgba(0,0,0,0.8)",
+          border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16,
+          padding: "20px 18px 18px",
+          boxShadow: "0 32px 64px rgba(0,0,0,0.6)",
           opacity: showWarning ? 1 : 0,
-          transform: showWarning ? "translateY(0) scale(1)" : "translateY(10px) scale(0.97)",
-          transition: "opacity 0.4s ease, transform 0.4s cubic-bezier(0.34,1.4,0.64,1)",
+          transform: showWarning ? "translateY(0) scale(1)" : "translateY(12px) scale(0.97)",
+          transition: "opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.4,0.64,1)",
         }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 99, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", marginBottom: 10 }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B", boxShadow: "0 0 5px rgba(245,158,11,0.5)" }} />
-            <span style={{ fontSize: 9, fontWeight: 700, color: "#F59E0B", letterSpacing: "0.1em", textTransform: "uppercase" }}>Caution</span>
+          {/* Badge */}
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", marginBottom: 13 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#FBBF24" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color: "#FBBF24", letterSpacing: "0.1em", textTransform: "uppercase" }}>Caution</span>
           </div>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.3px", marginBottom: 6, lineHeight: 1.3 }}>This matches how sophisticated scams work.</div>
-          <div style={{ fontSize: 10, color: "#475569", lineHeight: 1.7, marginBottom: 10 }}>
-            Unexpected contact, first-time recipient, artificial urgency. This is the exact pattern of coordinated fraud.
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 10 }}>This matches how sophisticated scams work</div>
+          <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.7, marginBottom: 16 }}>
+            This request involves an unexpected contact, a first-time recipient and an artificial sense of urgency. This is how most people lose money to scams. There is no shame in pausing.
           </div>
-          <div style={{ fontSize: 10, color: "#FBBF24", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 8, padding: "8px 10px", marginBottom: 12, lineHeight: 1.6 }}>
-            ⚠️ You received a scam email from billing@geeksquad-renewal.com 26 minutes ago. That email and this payment are connected.
+          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 14 }} />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: 10, padding: "10px 12px", marginBottom: 16 }}>
+            <span style={{ fontSize: 13, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+            <span style={{ fontSize: 11, color: "#FBBF24", lineHeight: 1.5 }}>You received a scam email from billing@geeksquad-renewal.com 26 minutes ago. That email and this payment are connected. This is how coordinated scams work.</span>
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            <div style={{ flex: 1, padding: "9px 0", borderRadius: 9, background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)", border: "1px solid rgba(56,189,248,0.3)", color: "#38BDF8", fontWeight: 700, fontSize: 11, textAlign: "center" }}>
-              Go back — stay safe
-            </div>
-            <div style={{ flex: 1, padding: "9px 0", borderRadius: 9, background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.15)", color: "#64748B", fontWeight: 600, fontSize: 11, textAlign: "center" }}>
-              Take a breath.
-            </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button style={{
+              flex: 1, padding: "11px", borderRadius: 12,
+              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+              color: "#94A3B8", fontSize: 12, fontWeight: 600, cursor: "default",
+            }}>Go back — stay safe</button>
+            <button style={{
+              flex: 1, padding: "11px", borderRadius: 12,
+              position: "relative", overflow: "hidden",
+              background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)",
+              color: "#FBBF24", fontSize: 12, fontWeight: 600, cursor: "default",
+            }}>
+              <div style={{
+                position: "absolute", top: 0, left: 0, bottom: 0,
+                right: `${fillPct}%`,
+                background: "rgba(245,158,11,0.15)",
+                transition: "right 1s linear",
+              }} />
+              <span style={{ position: "relative", zIndex: 1 }}>Take a breath.</span>
+            </button>
+          </div>
+          <div style={{ textAlign: "center", marginTop: 10 }}>
+            <span style={{ fontSize: 10, color: "#334155", textDecoration: "underline", textUnderlineOffset: 3 }}>I know this person — this is legitimate</span>
           </div>
         </div>
 
