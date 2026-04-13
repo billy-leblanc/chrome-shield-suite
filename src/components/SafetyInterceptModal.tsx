@@ -38,6 +38,7 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
         transition: "opacity 0.2s ease",
       }}
     >
+      <style>{`@keyframes callout-pulse { 0% { box-shadow: 0 0 0 0 rgba(251,191,36,0.35); } 60% { box-shadow: 0 0 0 7px rgba(251,191,36,0); } 100% { box-shadow: none; } }`}</style>
       <div
         onClick={e => e.stopPropagation()}
         style={{
@@ -81,6 +82,7 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
           display: "flex", alignItems: "flex-start", gap: 10,
           background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)",
           borderRadius: 10, padding: "12px 14px", marginBottom: 20,
+          animation: "callout-pulse 1.4s ease-out 0.45s 1",
         }}>
           <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>⚠️</span>
           <span style={{ fontSize: 12, color: "#FBBF24", lineHeight: 1.5 }}>
@@ -97,10 +99,12 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
               background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)",
               border: "1px solid rgba(56,189,248,0.3)",
               color: "#38BDF8", fontWeight: 700, fontSize: 13, cursor: "pointer",
-              letterSpacing: "0.01em", transition: "opacity 0.15s",
+              letterSpacing: "0.01em", transition: "opacity 0.15s, transform 0.08s ease",
             }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
             onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+            onMouseDown={e => (e.currentTarget.style.transform = "scale(0.97)")}
+            onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
           >
             Go back — stay safe
           </button>
@@ -115,8 +119,10 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
               color: cooldown > 0 ? "#64748B" : "#FBBF24",
               fontWeight: 600, fontSize: 13,
               cursor: cooldown > 0 ? "not-allowed" : "pointer",
-              transition: "color 0.3s, border-color 0.3s",
+              transition: "color 0.3s, border-color 0.3s, transform 0.08s ease",
             }}
+            onMouseDown={e => (e.currentTarget.style.transform = "scale(0.97)")}
+            onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
           >
             {/* Fill sweep */}
             <div style={{

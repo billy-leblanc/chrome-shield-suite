@@ -107,6 +107,7 @@ const DEMO_QUESTIONS = [
 function InterceptDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
   const [btnScale, setBtnScale] = useState(1);
+  const [analyzeScale, setAnalyzeScale] = useState(1);
   const [cursorX, setCursorX] = useState(68);
   const [cursorY, setCursorY] = useState(16);
   const [cursorClicking, setCursorClicking] = useState(false);
@@ -147,10 +148,11 @@ function InterceptDemo() {
           click(850);
           setTimeout(() => { if (!dead) setChecked([true, false, false]); }, 950);
 
-          // cursor glides to continue button (center, ~77% y)
+          // cursor glides to analyze button (center, ~77% y)
           move(50, 77, 1400);
-          // click continue
-          click(2000);
+          // click analyze button
+          setTimeout(() => { if (!dead) setAnalyzeScale(0.95); }, 2000);
+          setTimeout(() => { if (!dead) setAnalyzeScale(1); }, 2100);
 
           // → warning modal
           setTimeout(() => {
@@ -185,7 +187,11 @@ function InterceptDemo() {
 
   return (
     <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}>
-      <style>{`@keyframes si-spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes si-spin { to { transform: rotate(360deg); } }
+        @keyframes check-bounce { 0% { transform: scale(1); } 35% { transform: scale(0.8); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @keyframes callout-pulse { 0% { box-shadow: 0 0 0 0 rgba(251,191,36,0.35); } 60% { box-shadow: 0 0 0 7px rgba(251,191,36,0); } 100% { box-shadow: none; } }
+      `}</style>
 
       {/* Browser chrome */}
       <div style={{ background: "#1C1C1E", padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -280,12 +286,13 @@ function InterceptDemo() {
               border: `1px solid ${checked[i] ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.06)"}`,
               transition: "background 0.15s, border-color 0.15s",
             }}>
-              <div style={{
+              <div key={`cb-${i}-${checked[i]}`} style={{
                 width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 1,
                 border: checked[i] ? "1.5px solid #F59E0B" : "1.5px solid rgba(255,255,255,0.15)",
                 background: checked[i] ? "#F59E0B" : "rgba(255,255,255,0.04)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 transition: "all 0.15s",
+                animation: checked[i] ? "check-bounce 0.28s cubic-bezier(0.34,1.56,0.64,1)" : undefined,
               }}>
                 {checked[i] && <svg width="9" height="7" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
@@ -298,6 +305,8 @@ function InterceptDemo() {
             border: "1px solid rgba(56,189,248,0.3)",
             color: "#38BDF8", fontSize: 12, fontWeight: 700, cursor: "default",
             letterSpacing: "0.02em",
+            transform: `scale(${analyzeScale})`,
+            transition: "transform 0.08s ease",
           }}>
             {anyChecked ? "Analyze Payment →" : "Looks fine, continue →"}
           </button>
@@ -326,7 +335,7 @@ function InterceptDemo() {
             Unexpected contact, first-time recipient, artificial urgency. This is how most people lose money to scams. There is no shame in pausing.
           </div>
           <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 8 }} />
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: 10, padding: "8px 10px", marginBottom: 8 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: 10, padding: "8px 10px", marginBottom: 8, animation: "callout-pulse 1.4s ease-out 0.35s 1" }}>
             <span style={{ fontSize: 12, flexShrink: 0 }}>⚠️</span>
             <span style={{ fontSize: 10, color: "#FBBF24", lineHeight: 1.55 }}>You received a scam email from billing@geeksquad-renewal.com 26 min ago. That email and this payment are connected.</span>
           </div>

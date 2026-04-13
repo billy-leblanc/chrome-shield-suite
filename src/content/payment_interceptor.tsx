@@ -79,6 +79,7 @@ const injectStyles = (shadow: ShadowRoot) => {
       padding: 28px 24px 24px;
       width: 360px;
       box-shadow: 0 32px 64px rgba(0,0,0,0.6);
+      animation: cardIn 0.32s cubic-bezier(0.34, 1.4, 0.64, 1);
     }
     .badge {
       display: inline-flex; align-items: center; gap: 6px;
@@ -105,6 +106,10 @@ const injectStyles = (shadow: ShadowRoot) => {
       border: none; transition: all 0.2s ease; letter-spacing: 0.01em;
     }
     .btn:hover { opacity: 0.8; }
+    .btn:active, .btn-continue:active {
+      transform: scale(0.97);
+      transition: transform 0.08s ease;
+    }
     .btn-cancel {
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08) !important;
@@ -160,6 +165,7 @@ const injectStyles = (shadow: ShadowRoot) => {
     }
     .q-item.checked .q-checkbox {
       background: #F59E0B; border-color: #F59E0B;
+      animation: check-bounce 0.28s cubic-bezier(0.34,1.56,0.64,1);
     }
     .q-check-icon { display: none; }
     .q-item.checked .q-check-icon { display: block; }
@@ -168,11 +174,20 @@ const injectStyles = (shadow: ShadowRoot) => {
     .q-context {
       font-size: 11px; color: #FBBF24; line-height: 1.5;
       margin-top: 4px; padding-left: 0;
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity 0.2s ease 0.1s, max-height 0.2s ease 0.05s;
+    }
+    .q-item.checked .q-context {
+      opacity: 1;
+      max-height: 60px;
     }
     .correlation-callout {
       display: flex; align-items: flex-start; gap: 10px;
       background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.25);
       border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;
+      animation: callout-pulse 1.4s ease-out 0.35s 1;
     }
     .correlation-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
     .correlation-text { font-size: 12px; color: #FBBF24; line-height: 1.5; }
@@ -220,6 +235,9 @@ const injectStyles = (shadow: ShadowRoot) => {
       font-size: 11px; color: #334155; font-family: inherit; padding: 6px;
     }
     .share-dismiss:hover { color: #64748B; }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes check-bounce { 0% { transform: scale(1); } 35% { transform: scale(0.8); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    @keyframes callout-pulse { 0% { box-shadow: 0 0 0 0 rgba(251,191,36,0.35); } 60% { box-shadow: 0 0 0 7px rgba(251,191,36,0); } 100% { box-shadow: none; } }
   `;
   shadow.appendChild(style);
 };
