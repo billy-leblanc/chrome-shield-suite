@@ -414,10 +414,13 @@ export default function Index() {
           <Reveal>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: "#3B82F6", textTransform: "uppercase", marginBottom: 24 }}>For Fintechs & Banks</div>
             <h2 style={{ fontSize: 32, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-1px", marginBottom: 18, lineHeight: 1.12 }}>
-              Infrastructure first.<br />Consumer second.
+              The fraud detection layer<br />banks can't build themselves.
             </h2>
-            <p style={{ fontSize: 15, fontWeight: 400, color: "#475569", lineHeight: 1.95, maxWidth: 520, margin: "0 auto 48px" }}>
-              Every consumer interception generates labeled intent signal — the exact linguistic coercion in the seconds before an abandoned fraudulent payment. That corpus is what no network-side vendor can replicate. It's the training data for an agentic fraud prevention layer that lives where the decision actually happens: the browser.
+            <p style={{ fontSize: 15, fontWeight: 400, color: "#475569", lineHeight: 1.95, maxWidth: 520, margin: "0 auto 16px" }}>
+              Every consumer interception generates labeled intent signal — the exact words used to manipulate someone in the seconds before they abandon a fraudulent payment. That corpus is what no network-side vendor can replicate.
+            </p>
+            <p style={{ fontSize: 15, fontWeight: 400, color: "#334155", lineHeight: 1.95, maxWidth: 520, margin: "0 auto 48px" }}>
+              We call this the <strong style={{ color: "#3B82F6" }}>Intent Layer</strong> — agentic fraud protection that lives where the decision actually happens, inside the browser, at the moment of send. Not after the money moves. Not in a dashboard nobody reads. At the decision.
             </p>
             {enterpriseSubmitted ? (
               <div style={{ padding: "16px 24px", borderRadius: 12, background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)", color: "#3B82F6", fontSize: 14, fontWeight: 600 }}>
