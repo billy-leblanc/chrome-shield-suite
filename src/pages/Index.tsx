@@ -309,7 +309,7 @@ function InterceptDemo() {
         {/* Warning modal */}
         <div style={{
           position: "absolute", left: 14, right: 14,
-          top: "46%", transform: showWarning ? "translateY(-50%) scale(1)" : "translateY(calc(-50% + 10px)) scale(0.97)",
+          top: "50%", transform: showWarning ? "translateY(-50%) scale(1)" : "translateY(calc(-50% + 10px)) scale(0.97)",
           background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
           borderRadius: 16,
           padding: "12px 14px 10px",
