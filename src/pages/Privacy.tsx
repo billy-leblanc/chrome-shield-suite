@@ -22,6 +22,9 @@ export default function Privacy() {
             <p style={p}>
               We do not sell your data. We do not build advertising profiles. The only reason any data leaves your device is to run the AI fraud analysis that makes the extension work.
             </p>
+            <p style={{ ...p, marginTop: 16, padding: "14px 18px", background: "rgba(245,158,11,0.04)", border: "1px solid rgba(245,158,11,0.15)", borderRadius: 10 }}>
+              <strong style={{ color: "#F59E0B" }}>Scope:</strong> Safety Intercept currently covers three surfaces — PayPal, Wells Fargo Zelle, and Gmail. Payments made through other platforms (Chase, Venmo, Coinbase, Cash App, or any mobile banking app) are not monitored or protected by this extension.
+            </p>
           </section>
 
           <section>

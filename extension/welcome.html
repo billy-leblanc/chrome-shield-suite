@@ -217,10 +217,17 @@
       </div>
     </div>
 
+    <div class="privacy" id="scope-note" style="background: rgba(245,158,11,0.04); border-color: rgba(245,158,11,0.15); opacity: 0; transition: opacity 0.5s ease 1.0s;">
+      <div class="privacy-icon">⚠️</div>
+      <div class="privacy-text" style="color: #64748B;">
+        <strong style="color: #F59E0B;">Covered surfaces only.</strong> Safety Intercept protects PayPal, Wells Fargo Zelle, and Gmail. Payments made on other platforms — Chase, Venmo, Coinbase, or any mobile banking app — are not covered. We protect the surfaces we've tested. Nothing beyond that.
+      </div>
+    </div>
+
     <div class="privacy" id="privacy">
       <div class="privacy-icon">🔒</div>
       <div class="privacy-text">
-        <strong>Your data stays yours.</strong> We never store your payment details, account numbers, or browsing history. Memo text is analyzed in real time and never saved to our servers unless you choose to opt in to telemetry — which is off by default.
+        <strong>Your data stays yours.</strong> Memo text is sent to our AI analysis relay and discarded immediately — never stored on our servers. We never save your payment details, account numbers, or browsing history. Telemetry is opt-in and off by default.
         <br/><br/>
         <a href="https://safetyintercept.vercel.app/privacy" target="_blank"
           style="color: #38BDF8; text-decoration: none;">Read our full privacy policy →</a>
@@ -242,6 +249,7 @@
     steps.forEach((step, i) => {
       setTimeout(() => step.classList.add('visible'), 300 + i * 200);
     });
+    setTimeout(() => document.getElementById('scope-note').style.opacity = '1', 1000);
     setTimeout(() => document.getElementById('privacy').classList.add('visible'), 1200);
     setTimeout(() => document.getElementById('cta').classList.add('visible'), 1500);
   </script>

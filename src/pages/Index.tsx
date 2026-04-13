@@ -173,25 +173,21 @@ export default function Index() {
       </nav>
 
       {/* ── Hero ── */}
-      <section style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "120px 24px 100px", textAlign: "center" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "4px 13px", borderRadius: 999, background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", fontSize: 10, fontWeight: 700, color: "#F59E0B", marginBottom: 44, letterSpacing: "0.14em", textTransform: "uppercase" }}>
+      <section style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "140px 24px 120px", textAlign: "center" }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "4px 13px", borderRadius: 999, background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", fontSize: 10, fontWeight: 700, color: "#F59E0B", marginBottom: 36, letterSpacing: "0.14em", textTransform: "uppercase" }}>
           <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B", boxShadow: "0 0 6px rgba(245,158,11,0.5)" }} />
-          Fraud Protection · PayPal · Zelle
+          Free · PayPal · Zelle · Gmail
         </div>
 
-        <h1 style={{ fontSize: "clamp(42px, 6.5vw, 74px)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-2.5px", color: "#F8FAFC", marginBottom: 26 }}>
-          Quiet protection<br />for loud threats.
+        <h1 style={{ fontSize: "clamp(42px, 6.5vw, 74px)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-2.5px", color: "#F8FAFC", marginBottom: 28 }}>
+          Stop scams before<br />you send money.
         </h1>
 
-        <p style={{ fontSize: 18, fontWeight: 400, color: "#64748B", lineHeight: 1.85, maxWidth: 480, margin: "0 auto 14px", letterSpacing: "0.005em" }}>
-          The invisible security layer patrolling your digital wallet. Active fraud prevention — without the noise.
+        <p style={{ fontSize: 18, fontWeight: 400, color: "#64748B", lineHeight: 1.85, maxWidth: 460, margin: "0 auto 52px", letterSpacing: "0.005em" }}>
+          Real-time fraud protection for PayPal and Zelle. Intercepts at the Send button — before your money moves.
         </p>
 
-        <p style={{ fontSize: 14, fontWeight: 400, color: "#334155", lineHeight: 1.95, maxWidth: 540, margin: "0 auto 52px", letterSpacing: "0.01em" }}>
-          Safety Intercept guards your PayPal and Zelle payments at the exact moment you decide to send. It reads your Gmail for incoming scam signals, intercepts the Send button, and interjects a single question before your money moves.
-        </p>
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
           <a
             href={DOWNLOAD_URL} target="_blank" rel="noreferrer"
             style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "15px 34px", borderRadius: 12, background: "#2563EB", color: "#fff", fontWeight: 700, fontSize: 15, textDecoration: "none", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15), 0 0 24px rgba(37,99,235,0.28)", transition: "all 0.3s ease", letterSpacing: "-0.01em" }}
@@ -207,32 +203,22 @@ export default function Index() {
             onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#94A3B8"; }}
             onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.color = "#475569"; }}
           >
-            See the intercept →
+            See it in action →
           </button>
-        </div>
-        <p style={{ fontSize: 11, fontWeight: 400, color: "#1E3A5F", letterSpacing: "0.04em", marginBottom: 44 }}>Chrome Web Store review in progress · Install the beta now</p>
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
-          {["PayPal", "Wells Fargo + Zelle", "Gmail"].map(p => (
-            <span key={p} style={{ fontSize: 11, fontWeight: 600, color: "#1E3A5F", padding: "5px 12px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.05)", letterSpacing: "0.04em" }}>{p}</span>
-          ))}
         </div>
       </section>
 
       {/* ── The Narrative ── */}
-      <section style={{ position: "relative", zIndex: 1, maxWidth: 860, margin: "0 auto", padding: "0 24px 112px" }}>
+      <section style={{ position: "relative", zIndex: 1, maxWidth: 860, margin: "0 auto", padding: "0 24px 140px" }}>
         <Reveal>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#1E3A5F", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 24 }}>The threat pattern</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#334155", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 24 }}>The threat pattern</div>
               <h2 style={{ fontSize: 28, fontWeight: 700, color: "#E2E8F0", letterSpacing: "-0.7px", lineHeight: 1.22, marginBottom: 24 }}>
                 Scams don't look like scams.<br />They look like emergencies.
               </h2>
-              <p style={{ fontSize: 14, fontWeight: 400, color: "#475569", lineHeight: 1.95, marginBottom: 16 }}>
+              <p style={{ fontSize: 14, fontWeight: 400, color: "#475569", lineHeight: 1.95 }}>
                 A Geek Squad charge. A family member in trouble. An IRS penalty due today. Scammers manufacture urgency because urgency bypasses instinct. By the time you realize what's happening, the money is gone.
-              </p>
-              <p style={{ fontSize: 14, fontWeight: 400, color: "#334155", lineHeight: 1.95 }}>
-                Safety Intercept is the Zelle scam prevention layer that no bank has built. It operates in your browser — at the exact millisecond you click Send — and interjects before the momentum carries you through.
               </p>
             </div>
             <div style={{ maxWidth: 320 }}>
@@ -286,7 +272,7 @@ export default function Index() {
       <section style={{ position: "relative", zIndex: 1, maxWidth: 860, margin: "0 auto", padding: "96px 24px" }}>
         <Reveal>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#1E3A5F", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 20 }}>The moat</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#334155", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 20 }}>The moat</div>
             <h2 style={{ fontSize: 30, fontWeight: 700, color: "#E2E8F0", letterSpacing: "-0.8px", lineHeight: 1.2, maxWidth: 560, margin: "0 auto 20px" }}>
               We connect the email to the payment. Nobody else does.
             </h2>
@@ -304,7 +290,7 @@ export default function Index() {
                 <div style={{ padding: "26px 24px 30px", borderRadius: 16, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", transition: "border-color 0.3s ease" }}
                   onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(59,130,246,0.2)")}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)")}>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: "#1E3A5F", letterSpacing: "0.1em", marginBottom: 16 }}>{s.step}</div>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "#334155", letterSpacing: "0.1em", marginBottom: 16 }}>{s.step}</div>
                   <div style={{ fontSize: 15, fontWeight: 700, color: "#CBD5E1", marginBottom: 10, letterSpacing: "-0.2px" }}>{s.title}</div>
                   <div style={{ fontSize: 13, fontWeight: 400, color: "#334155", lineHeight: 1.85 }}>{s.desc}</div>
                 </div>
@@ -327,11 +313,11 @@ export default function Index() {
               ].map(p => (
                 <div key={p.label}>
                   <div style={{ fontSize: 36, fontWeight: 800, color: "#3B82F6", letterSpacing: "-1.5px", marginBottom: 8 }}>{p.value}</div>
-                  <div style={{ fontSize: 11, fontWeight: 500, color: "#1E3A5F", letterSpacing: "0.04em" }}>{p.label}</div>
+                  <div style={{ fontSize: 11, fontWeight: 500, color: "#334155", letterSpacing: "0.04em" }}>{p.label}</div>
                 </div>
               ))}
             </div>
-            <p style={{ textAlign: "center", fontSize: 11, fontWeight: 400, color: "#1E3A5F", marginTop: 40, letterSpacing: "0.04em" }}>
+            <p style={{ textAlign: "center", fontSize: 11, fontWeight: 400, color: "#334155", marginTop: 40, letterSpacing: "0.04em" }}>
               Built at UC Berkeley · Evaluated against real r/Scams cases
             </p>
           </div>
@@ -347,10 +333,10 @@ export default function Index() {
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#34D399", marginBottom: 8 }}>Your data never leaves your device.</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#34D399", marginBottom: 8 }}>No payment details stored. Ever.</div>
                 <div style={{ fontSize: 13, fontWeight: 400, color: "#1E3A5F", lineHeight: 1.9 }}>
-                  We never store payment details, account numbers, or browsing history. Memo text is analyzed in real time and discarded. No PII is ever saved to our servers. Telemetry is opt-in and off by default.{" "}
-                  <a href="/privacy" style={{ color: "#34D399", textDecoration: "none" }}>Read our privacy policy →</a>
+                  To run AI fraud analysis, memo text is sent through our Cloudflare relay to Anthropic and discarded immediately — never stored. No account numbers, no browsing history, no PII saved. Telemetry is opt-in and off by default.{" "}
+                  <a href="/privacy" style={{ color: "#34D399", textDecoration: "none" }}>Full details in our privacy policy →</a>
                 </div>
               </div>
             </div>
@@ -366,11 +352,8 @@ export default function Index() {
             <h2 style={{ fontSize: 32, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-1px", marginBottom: 18, lineHeight: 1.12 }}>
               Infrastructure first.<br />Consumer second.
             </h2>
-            <p style={{ fontSize: 15, fontWeight: 400, color: "#334155", lineHeight: 1.95, maxWidth: 540, margin: "0 auto 14px" }}>
-              Nacha's 2026 Phase 2 rules mandate active monitoring for social engineering and false-pretense transfers. Every interception through our consumer extension generates labeled intent signal — the training corpus for a decision-layer security API no network-side vendor can replicate.
-            </p>
-            <p style={{ fontSize: 12, fontWeight: 400, color: "#1E3A5F", lineHeight: 1.7, maxWidth: 480, margin: "0 auto 48px", letterSpacing: "0.03em" }}>
-              Memo scoring · Social engineering classification · Cross-channel fraud correlation
+            <p style={{ fontSize: 15, fontWeight: 400, color: "#475569", lineHeight: 1.95, maxWidth: 520, margin: "0 auto 48px" }}>
+              Every consumer interception generates labeled intent signal — the exact linguistic coercion in the seconds before an abandoned fraudulent payment. That corpus is what no network-side vendor can replicate.
             </p>
             {enterpriseSubmitted ? (
               <div style={{ padding: "16px 24px", borderRadius: 12, background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)", color: "#3B82F6", fontSize: 14, fontWeight: 600 }}>

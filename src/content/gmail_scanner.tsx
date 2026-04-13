@@ -35,24 +35,24 @@ const injectStyles = (shadow: ShadowRoot) => {
       to { transform: translateY(0); opacity: 1; }
     }
     .banner-critical {
-      background: linear-gradient(135deg, #1a0505 0%, #2d0a0a 100%);
-      border-bottom: 1px solid rgba(248,113,113,0.3);
+      background: linear-gradient(135deg, #110d00 0%, #1f1600 100%);
+      border-bottom: 1px solid rgba(245,158,11,0.35);
     }
     .banner-high {
-      background: linear-gradient(135deg, #1a0808 0%, #2d1010 100%);
-      border-bottom: 1px solid rgba(248,113,113,0.2);
+      background: linear-gradient(135deg, #0e0c00 0%, #1a1200 100%);
+      border-bottom: 1px solid rgba(245,158,11,0.2);
     }
     .icon {
       width: 20px; height: 20px; flex-shrink: 0;
     }
-    .icon-critical { color: #F87171; }
-    .icon-high { color: #F87171; }
+    .icon-critical { color: #F59E0B; }
+    .icon-high { color: #FBBF24; }
     .text-group { flex: 1; min-width: 0; }
     .title {
       font-size: 13px; font-weight: 700; letter-spacing: -0.2px;
     }
-    .title-critical { color: #F87171; }
-    .title-high { color: #FCA5A5; }
+    .title-critical { color: #F59E0B; }
+    .title-high { color: #FCD34D; }
     .desc {
       font-size: 12px; color: #94A3B8; line-height: 1.4; margin-top: 2px;
     }

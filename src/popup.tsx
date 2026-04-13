@@ -149,7 +149,7 @@ function PopupApp() {
             }}>
               Reset All History
             </button>
-            <div style={{ textAlign: 'center', marginTop: 16, fontSize: 10, color: '#1E293B', letterSpacing: '0.05em' }}>
+            <div style={{ textAlign: 'center', marginTop: 16, fontSize: 10, color: '#334155', letterSpacing: '0.05em' }}>
               SAFETY INTERCEPT V1.0.0
             </div>
           </div>
@@ -235,11 +235,12 @@ function PopupApp() {
 
         {/* Intelligence Feed */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Intelligence Feed</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Intelligence Feed</div>
           <div style={{ background: 'rgba(15,23,42,0.4)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.03)', overflow: 'hidden' }}>
             {activities.length === 0 ? (
               <div style={{ padding: '32px 24px', textAlign: 'center' }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>Environment Secure</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>Watching for threats</div>
+                <div style={{ fontSize: 11, color: '#334155', marginTop: 4 }}>No activity yet</div>
               </div>
             ) : (
               activities.map((a, i) => (
