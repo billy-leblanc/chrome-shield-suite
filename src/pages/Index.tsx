@@ -251,7 +251,7 @@ function InterceptDemo() {
         opacity: overlayVisible ? 1 : 0,
         transition: "opacity 0.4s ease",
         display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 14, pointerEvents: "none",
+        pointerEvents: "none",
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
         WebkitFontSmoothing: "antialiased",
       }}>
