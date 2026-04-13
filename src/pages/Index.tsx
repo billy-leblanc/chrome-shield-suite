@@ -96,139 +96,205 @@ function Reveal({ children, delay = 0, style = {} }: { children: React.ReactNode
 }
 
 // ─── Animated Intercept Demo ──────────────────────────────────────────────────
-type DemoPhase = "idle" | "clicking" | "intercepted" | "fading";
+type DemoPhase = "idle" | "clicking" | "questionnaire" | "intercepted" | "fading";
+
+const QUESTIONS = [
+  "Were you told to send this payment?",
+  "First time sending to this person?",
+  "Did they create urgency or secrecy?",
+];
 
 function InterceptDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
-  const [cooldown, setCooldown] = useState(10);
   const [btnScale, setBtnScale] = useState(1);
+  const [cursorX, setCursorX] = useState(68);
+  const [cursorY, setCursorY] = useState(16);
+  const [cursorClicking, setCursorClicking] = useState(false);
 
   useEffect(() => {
     let dead = false;
     function loop() {
       if (dead) return;
+      setCursorX(68); setCursorY(16);
+      setPhase("idle");
+
+      // cursor drifts toward button
+      setTimeout(() => { if (!dead) { setCursorX(50); setCursorY(88); } }, 700);
+
+      // click
       setTimeout(() => {
         if (dead) return;
-        setBtnScale(0.95); setPhase("clicking");
+        setCursorClicking(true); setBtnScale(0.95); setPhase("clicking");
+
         setTimeout(() => {
           if (dead) return;
-          setBtnScale(1); setPhase("intercepted"); setCooldown(10);
+          setCursorClicking(false); setBtnScale(1);
+          setCursorX(68); setCursorY(16);
+          setPhase("questionnaire");
+
+          // questionnaire visible → warning modal
           setTimeout(() => {
             if (dead) return;
-            setPhase("fading");
+            setPhase("intercepted");
+
+            // warning visible → fade
             setTimeout(() => {
               if (dead) return;
-              setPhase("idle"); setCooldown(10);
-              loop();
-            }, 800);
-          }, 4800);
-        }, 500);
-      }, 1500);
+              setPhase("fading");
+
+              setTimeout(() => { if (!dead) loop(); }, 900);
+            }, 4200);
+          }, 2800);
+        }, 320);
+      }, 1700);
     }
     loop();
     return () => { dead = true; };
   }, []);
 
-  useEffect(() => {
-    if (phase !== "intercepted") return;
-    if (cooldown <= 0) return;
-    const t = setTimeout(() => setCooldown(c => c - 1), 1000);
-    return () => clearTimeout(t);
-  }, [phase, cooldown]);
-
-  const intercepted = phase === "intercepted" || phase === "fading";
-  const modalVisible = phase === "intercepted";
+  const paused = phase === "clicking" || phase === "questionnaire" || phase === "intercepted" || phase === "fading";
+  const overlayVisible = phase === "questionnaire" || phase === "intercepted";
+  const showWarning = phase === "intercepted" || phase === "fading";
 
   return (
     <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}>
+
       {/* Browser chrome */}
       <div style={{ background: "#1C1C1E", padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#FF5F57" }} />
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#FEBC2E" }} />
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#28C840" }} />
         <div style={{ flex: 1, marginLeft: 6, padding: "3px 10px", borderRadius: 5, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: 5 }}>
-          <svg viewBox="0 0 16 16" fill="none" style={{ width: 9, height: 9, opacity: 0.5 }}><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM2 8a6 6 0 116 6A6 6 0 012 8z" fill="#94A3B8"/><path d="M8 3.5c0-.28.22-.5.5-.5h.5a.5.5 0 010 1H8.5A.5.5 0 018 3.5z" fill="#94A3B8"/></svg>
-          <span style={{ fontSize: 10, color: "#64748B", letterSpacing: "0.01em" }}>paypal.com/myaccount/transfer/send</span>
+          <svg viewBox="0 0 16 16" fill="none" style={{ width: 9, height: 9, opacity: 0.5 }}><path d="M8 1a7 7 0 100 14A7 7 0 008 1zM2 8a6 6 0 116 6A6 6 0 012 8z" fill="#94A3B8"/></svg>
+          <span style={{ fontSize: 10, color: "#64748B" }}>paypal.com/myaccount/transfer/send</span>
         </div>
       </div>
 
-      {/* PayPal page — white background like the real thing */}
+      {/* PayPal page */}
       <div style={{ background: "#F5F7FA", padding: "22px 20px 20px" }}>
-        {/* Header */}
-        <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Send Money</div>
           <div style={{ fontSize: 10, color: "#9CA3AF" }}>paypal.com</div>
         </div>
-
-        {/* Recipient row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, padding: "10px 12px", background: "#fff", borderRadius: 8, border: "1px solid #E5E7EB" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, padding: "10px 12px", background: "#fff", borderRadius: 8, border: "1px solid #E5E7EB" }}>
           <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#E5E7EB", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#6B7280", flexShrink: 0 }}>G</div>
           <div>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#111827" }}>Geek Squad Support</div>
             <div style={{ fontSize: 10, color: "#9CA3AF" }}>geeksquad-billing@gmail.com</div>
           </div>
         </div>
-
-        {/* Amount */}
-        <div style={{ textAlign: "center", marginBottom: 14 }}>
-          <div style={{ fontSize: 36, fontWeight: 700, color: "#111827", letterSpacing: "-1.5px" }}>$899<span style={{ fontSize: 18, fontWeight: 500 }}>.00</span></div>
+        <div style={{ textAlign: "center", marginBottom: 12 }}>
+          <div style={{ fontSize: 34, fontWeight: 700, color: "#111827", letterSpacing: "-1.5px" }}>$899<span style={{ fontSize: 18, fontWeight: 500 }}>.00</span></div>
           <div style={{ fontSize: 10, color: "#9CA3AF", marginTop: 2 }}>USD</div>
         </div>
-
-        {/* Memo */}
-        <div style={{ padding: "8px 12px", borderRadius: 6, background: "#fff", border: "1px solid #E5E7EB", fontSize: 11, color: "#6B7280", fontStyle: "italic", marginBottom: 16, lineHeight: 1.5 }}>
+        <div style={{ padding: "8px 12px", borderRadius: 6, background: "#fff", border: "1px solid #E5E7EB", fontSize: 11, color: "#6B7280", fontStyle: "italic", marginBottom: 14, lineHeight: 1.5 }}>
           geek squad refund — process reversal
         </div>
-
-        {/* Send button */}
         <button style={{
           width: "100%", padding: "12px 0", borderRadius: 25, fontWeight: 700, fontSize: 14,
-          background: intercepted ? "rgba(0,112,186,0.12)" : "#0070BA",
-          border: intercepted ? "2px solid rgba(0,112,186,0.3)" : "2px solid transparent",
-          color: intercepted ? "#0070BA" : "#fff",
+          background: paused ? "rgba(0,112,186,0.1)" : "#0070BA",
+          border: paused ? "2px solid rgba(0,112,186,0.25)" : "2px solid transparent",
+          color: paused ? "#0070BA" : "#fff",
           transform: `scale(${btnScale})`,
-          transition: "transform 0.1s ease, background 0.3s ease, color 0.3s ease",
+          transition: "transform 0.12s ease, background 0.3s ease, color 0.3s ease",
           cursor: "default",
-          letterSpacing: "-0.01em",
         }}>
-          {intercepted ? "⏸ Payment paused" : "Send $899.00"}
+          {paused ? "⏸ Payment paused" : "Send $899.00"}
         </button>
       </div>
 
-      {/* Warning overlay — pops over PayPal */}
+      {/* Fake cursor */}
+      <div style={{
+        position: "absolute",
+        left: `${cursorX}%`, top: `${cursorY}%`,
+        transform: `translate(-4px, -4px) scale(${cursorClicking ? 0.75 : 1})`,
+        transition: "left 1s cubic-bezier(0.4,0,0.2,1), top 1s cubic-bezier(0.4,0,0.2,1), transform 0.1s ease",
+        pointerEvents: "none", zIndex: 60,
+        filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.5))",
+      }}>
+        <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+          <path d="M1 1L1 15.5L4.5 12L7 18L9 17L6.5 11L11 11Z" fill="white" stroke="#1a1a1a" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round"/>
+        </svg>
+      </div>
+
+      {/* Overlay: questionnaire + warning modal */}
       <div style={{
         position: "absolute", inset: 0,
-        background: modalVisible ? "rgba(5,10,20,0.88)" : "rgba(5,10,20,0)",
-        backdropFilter: modalVisible ? "blur(8px)" : "blur(0px)",
-        WebkitBackdropFilter: modalVisible ? "blur(8px)" : "blur(0px)",
-        opacity: modalVisible ? 1 : 0,
-        transition: "opacity 0.4s ease, background 0.4s ease",
+        background: overlayVisible ? "rgba(4,8,18,0.9)" : "rgba(4,8,18,0)",
+        backdropFilter: overlayVisible ? "blur(10px)" : "blur(0px)",
+        WebkitBackdropFilter: overlayVisible ? "blur(10px)" : "blur(0px)",
+        opacity: overlayVisible ? 1 : 0,
+        transition: "opacity 0.45s ease, background 0.45s ease",
         display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 16, pointerEvents: modalVisible ? "auto" : "none",
+        padding: 14, pointerEvents: "none",
       }}>
+
+        {/* Questionnaire panel */}
         <div style={{
-          width: "100%", background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
+          position: "absolute", width: "calc(100% - 28px)",
+          background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
           border: "1px solid rgba(255,255,255,0.07)",
-          borderRadius: 14, padding: "18px 16px",
-          boxShadow: "0 0 0 1px rgba(245,158,11,0.12), 0 24px 48px rgba(0,0,0,0.8)",
-          transform: modalVisible ? "translateY(0) scale(1)" : "translateY(-12px) scale(0.97)",
-          transition: "transform 0.45s cubic-bezier(0.34, 1.4, 0.64, 1)",
+          borderRadius: 14, padding: "16px 14px",
+          boxShadow: "0 0 0 1px rgba(56,189,248,0.08), 0 20px 40px rgba(0,0,0,0.8)",
+          opacity: phase === "questionnaire" ? 1 : 0,
+          transform: phase === "questionnaire" ? "translateY(0) scale(1)" : "translateY(10px) scale(0.97)",
+          transition: "opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.4,0.64,1)",
         }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 99, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", marginBottom: 12 }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B", boxShadow: "0 0 5px rgba(245,158,11,0.5)" }} />
-            <span style={{ fontSize: 9, fontWeight: 700, color: "#F59E0B", letterSpacing: "0.1em", textTransform: "uppercase" }}>Safety Intercept</span>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 99, background: "rgba(56,189,248,0.08)", border: "1px solid rgba(56,189,248,0.2)", marginBottom: 10 }}>
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#38BDF8", boxShadow: "0 0 5px rgba(56,189,248,0.5)" }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: "#38BDF8", letterSpacing: "0.1em", textTransform: "uppercase" }}>Safety Intercept</span>
           </div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.3px", marginBottom: 6, lineHeight: 1.3 }}>This matches how scams work.</div>
-          <div style={{ fontSize: 11, color: "#475569", lineHeight: 1.7, marginBottom: 10 }}>
-            You received a suspicious email 26 minutes ago. This payment and that email are connected.
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.3px", marginBottom: 12 }}>Before you send.</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
+            {QUESTIONS.map((q, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "7px 10px", background: "rgba(255,255,255,0.02)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.04)" }}>
+                <span style={{ fontSize: 10, color: "#94A3B8", lineHeight: 1.4, flex: 1 }}>{q}</span>
+                <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                  <span style={{ fontSize: 9, fontWeight: 600, color: "#334155", padding: "3px 7px", borderRadius: 5, border: "1px solid rgba(255,255,255,0.05)" }}>Yes</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: "#34D399", padding: "3px 7px", borderRadius: 5, border: "1px solid rgba(52,211,153,0.3)", background: "rgba(52,211,153,0.08)" }}>No ✓</span>
+                </div>
+              </div>
+            ))}
           </div>
-          <div style={{ fontSize: 11, color: "#FBBF24", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 8, padding: "8px 10px", marginBottom: 12, lineHeight: 1.5 }}>
-            ⚠️ billing@geeksquad-renewal.com
+          <div style={{ fontSize: 10, color: "#475569", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+            <div style={{ width: 12, height: 12, borderRadius: "50%", border: "1.5px solid #38BDF8", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+            Analyzing payment memo with AI...
           </div>
-          <button style={{ width: "100%", padding: "10px 0", borderRadius: 9, background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)", border: "1px solid rgba(59,130,246,0.3)", color: "#38BDF8", fontWeight: 700, fontSize: 12, cursor: "default" }}>
-            Go back — stay safe
-          </button>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
+
+        {/* Warning modal */}
+        <div style={{
+          position: "absolute", width: "calc(100% - 28px)",
+          background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 14, padding: "16px 14px",
+          boxShadow: "0 0 0 1px rgba(245,158,11,0.1), 0 20px 40px rgba(0,0,0,0.8)",
+          opacity: showWarning ? 1 : 0,
+          transform: showWarning ? "translateY(0) scale(1)" : "translateY(10px) scale(0.97)",
+          transition: "opacity 0.4s ease, transform 0.4s cubic-bezier(0.34,1.4,0.64,1)",
+        }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px", borderRadius: 99, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)", marginBottom: 10 }}>
+            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B", boxShadow: "0 0 5px rgba(245,158,11,0.5)" }} />
+            <span style={{ fontSize: 9, fontWeight: 700, color: "#F59E0B", letterSpacing: "0.1em", textTransform: "uppercase" }}>Caution</span>
+          </div>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.3px", marginBottom: 6, lineHeight: 1.3 }}>This matches how sophisticated scams work.</div>
+          <div style={{ fontSize: 10, color: "#475569", lineHeight: 1.7, marginBottom: 10 }}>
+            Unexpected contact, first-time recipient, artificial urgency. This is the exact pattern of coordinated fraud.
+          </div>
+          <div style={{ fontSize: 10, color: "#FBBF24", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 8, padding: "8px 10px", marginBottom: 12, lineHeight: 1.6 }}>
+            ⚠️ You received a scam email from billing@geeksquad-renewal.com 26 minutes ago. That email and this payment are connected.
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ flex: 1, padding: "9px 0", borderRadius: 9, background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)", border: "1px solid rgba(56,189,248,0.3)", color: "#38BDF8", fontWeight: 700, fontSize: 11, textAlign: "center" }}>
+              Go back — stay safe
+            </div>
+            <div style={{ flex: 1, padding: "9px 0", borderRadius: 9, background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.15)", color: "#64748B", fontWeight: 600, fontSize: 11, textAlign: "center" }}>
+              Take a breath.
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
