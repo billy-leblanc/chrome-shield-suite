@@ -104,15 +104,30 @@ function InterceptDemo() {
   const [btnScale, setBtnScale] = useState(1);
 
   useEffect(() => {
-    if (phase !== "idle") return;
-    const timers = [
-      setTimeout(() => { setBtnScale(0.95); setPhase("clicking"); }, 1200),
-      setTimeout(() => { setBtnScale(1); setPhase("intercepted"); setCooldown(10); }, 1700),
-      setTimeout(() => setPhase("fading"), 6500),
-      setTimeout(() => { setPhase("idle"); setCooldown(10); }, 7300),
-    ];
-    return () => timers.forEach(clearTimeout);
-  }, [phase]);
+    let dead = false;
+    function loop() {
+      if (dead) return;
+      setTimeout(() => {
+        if (dead) return;
+        setBtnScale(0.95); setPhase("clicking");
+        setTimeout(() => {
+          if (dead) return;
+          setBtnScale(1); setPhase("intercepted"); setCooldown(10);
+          setTimeout(() => {
+            if (dead) return;
+            setPhase("fading");
+            setTimeout(() => {
+              if (dead) return;
+              setPhase("idle"); setCooldown(10);
+              loop();
+            }, 800);
+          }, 4800);
+        }, 500);
+      }, 1500);
+    }
+    loop();
+    return () => { dead = true; };
+  }, []);
 
   useEffect(() => {
     if (phase !== "intercepted") return;
