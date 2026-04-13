@@ -379,7 +379,7 @@ export default function Index() {
               ))}
             </div>
             <p style={{ textAlign: "center", fontSize: 11, fontWeight: 400, color: "#334155", marginTop: 40, letterSpacing: "0.04em" }}>
-              Built at UC Berkeley · Evaluated against real r/Scams cases
+              <a href="https://www.linkedin.com/in/billy-leblanc/" target="_blank" rel="noreferrer" style={{ color: "#334155", textDecoration: "underline" }}>Built at UC Berkeley</a> · Evaluated against real r/Scams cases
             </p>
           </div>
         </Reveal>
@@ -442,7 +442,7 @@ export default function Index() {
       {/* ── Footer ── */}
       <footer style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.04)", padding: "28px 24px", textAlign: "center" }}>
         <span style={{ fontSize: 11, fontWeight: 400, color: "#1E3A5F", letterSpacing: "0.04em" }}>
-          © 2026 Safety Intercept · Built at UC Berkeley ·{" "}
+          © 2026 Safety Intercept · <a href="https://www.linkedin.com/in/billy-leblanc/" target="_blank" rel="noreferrer" style={{ color: "#1E3A5F", textDecoration: "underline" }}>Built at UC Berkeley</a> ·{" "}
           <a href="mailto:safetyintercept@gmail.com" style={{ color: "#1E3A5F", textDecoration: "underline" }}>safetyintercept@gmail.com</a>
           {" "}·{" "}
           <a href="/privacy" style={{ color: "#1E3A5F", textDecoration: "underline" }}>Privacy Policy</a>
