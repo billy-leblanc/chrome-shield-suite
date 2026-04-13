@@ -12,8 +12,8 @@ const FEATURES = [
         <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    title: "Pre-Transaction Threat Detection",
-    desc: "Monitors your inbox for the social engineering scripts that precede payment fraud — fake emergencies, impersonation, isolation tactics. Flags them before you open your wallet.",
+    title: "We read the email before you open your wallet.",
+    desc: "Scams start in your inbox. We watch for the fake emergency, the impersonation, the pressure to act fast. When we see it, we flag it — before you ever think about sending money.",
   },
   {
     icon: (
@@ -21,8 +21,8 @@ const FEATURES = [
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    title: "Payment Interception",
-    desc: "Sits inside PayPal and Wells Fargo Zelle at the transaction layer. When you hit Send, it intercepts the payment, scores the memo with an AI fraud model, and blocks if risk is critical.",
+    title: "We stop you before you hit Send.",
+    desc: "When you go to pay someone on PayPal or Zelle, we're already there. We check the memo, score the risk, and if something looks wrong, we pause the payment and tell you why.",
   },
   {
     icon: (
@@ -30,22 +30,22 @@ const FEATURES = [
         <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
-    title: "Cross-Layer Correlation",
-    desc: "Tracks the window between a suspicious email and a payment attempt. If you received a social engineering email in the last 24 hours and are now sending money, fraud risk is automatically elevated.",
+    title: "We connect what you didn't notice.",
+    desc: "You got an email two hours ago. Now you're sending money. We connect those two moments — because that sequence, email then payment, is the fingerprint of a coordinated scam.",
   },
 ];
 
 const STEPS = [
-  { n: "01", label: "Scam email arrives", detail: "Safety Intercept reads it in your Gmail tab. A red banner drops: 'Social Engineering Detected — Family Emergency.'" },
-  { n: "02", label: "You go to send money", detail: "You open PayPal, enter an amount, type the memo. The send button gets intercepted before anything clears." },
-  { n: "03", label: "Payment blocked", detail: "A questionnaire asks: did someone you don't know ask you to send this? Cross-layer correlation elevates risk. Money stays in your account." },
+  { n: "01", label: "A scam email arrives.", detail: "We read it in your Gmail tab and drop a quiet banner: 'Social Engineering Detected.' You see it. Most people don't — and that's when they get hurt." },
+  { n: "02", label: "You go to pay someone.", detail: "You open PayPal, enter the amount, write the memo. We're already there. Before anything sends, we step in and ask three questions." },
+  { n: "03", label: "We stop it.", detail: "The email, the memo, the timing — connected. We show you exactly what we found and let you decide. Your money stays in your account." },
 ];
 
 const PROOF = [
   { value: "7", label: "Scam types detected" },
   { value: "3", label: "Surfaces protected" },
-  { value: "~500ms", label: "Analysis latency" },
-  { value: "Free", label: "Always, no subscription" },
+  { value: "$10B+", label: "Lost to scams in the US last year" },
+  { value: "Free", label: "Always. No subscription." },
 ];
 
 export default function Index() {
@@ -97,11 +97,11 @@ export default function Index() {
         </h1>
 
         <p style={{ fontSize: 18, color: "#94A3B8", lineHeight: 1.75, maxWidth: 540, margin: "0 auto 16px", fontWeight: 400 }}>
-          A free Chrome extension that watches your email, intercepts suspicious payments, and tells you the truth before you hit Send. Built by a student who got tired of watching good people lose money to scams.
+          A free Chrome extension that reads your email, watches your payments, and steps in before it's too late. Built by a student who got tired of watching good people lose everything to scams.
         </p>
 
         <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.75, maxWidth: 560, margin: "0 auto 44px" }}>
-          Safety Intercept is the first real-time scam interception layer. It reads the email that caused the payment, scores the memo before you hit Send, and blocks transactions that look like fraud — on PayPal and Zelle, in your browser, in under a second.
+          Most fraud protection catches bad transactions. We catch bad decisions — before they happen. On PayPal and Zelle, in your inbox, in the moment you're most vulnerable.
         </p>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16 }}>
@@ -137,7 +137,7 @@ export default function Index() {
 
       {/* Features */}
       <section style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto", padding: "0 24px 96px" }}>
-        <p style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "#1E3A5F", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 40 }}>How the interception layer works</p>
+        <p style={{ textAlign: "center", fontSize: 11, fontWeight: 700, color: "#1E3A5F", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 40 }}>How it works</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
           {FEATURES.map(f => (
             <div key={f.title} style={{ padding: "28px 28px 32px", borderRadius: 16, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", transition: "border-color 0.2s" }}
@@ -156,7 +156,7 @@ export default function Index() {
       {/* How it works */}
       <section style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.01)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 24px" }}>
-          <h2 style={{ fontSize: 28, fontWeight: 700, color: "#F1F5F9", textAlign: "center", marginBottom: 56, letterSpacing: "-0.5px" }}>How the layer stops a scam before it becomes fraud</h2>
+          <h2 style={{ fontSize: 28, fontWeight: 700, color: "#F1F5F9", textAlign: "center", marginBottom: 56, letterSpacing: "-0.5px" }}>Three moments. One outcome.</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 32 }}>
             {STEPS.map(s => (
               <div key={s.n} style={{ display: "flex", gap: 18 }}>
@@ -181,8 +181,8 @@ export default function Index() {
             </div>
           ))}
         </div>
-        <p style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#1E3A5F", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 32 }}>The layer in numbers</p>
-        <p style={{ textAlign: "center", fontSize: 12, color: "#334155", marginTop: 8 }}>Evaluated against real r/Scams corpus. Built at UC Berkeley.</p>
+        <p style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#1E3A5F", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 32 }}>The problem is real</p>
+        <p style={{ textAlign: "center", fontSize: 12, color: "#334155", marginTop: 8 }}>Built at UC Berkeley. Evaluated against real r/Scams cases.</p>
       </section>
 
       {/* Enterprise section */}
@@ -190,10 +190,10 @@ export default function Index() {
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "96px 24px", textAlign: "center" }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: "#38BDF8", textTransform: "uppercase", marginBottom: 20 }}>For Fintechs & Neobanks</div>
           <h2 style={{ fontSize: 32, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.8px", marginBottom: 16, lineHeight: 1.15 }}>
-            The payment fraud API built from<br />real transaction interceptions.
+            Built for consumers.<br />Designed for banks.
           </h2>
           <p style={{ fontSize: 16, color: "#64748B", lineHeight: 1.75, marginBottom: 28, maxWidth: 560, margin: "0 auto 28px" }}>
-            Every interception through the consumer extension generates labeled fraud signal. We're packaging that into an API — memo scoring, social engineering detection, and cross-channel correlation — for platforms that want to protect users at the transaction layer.
+            Every time we stop a scam, we learn something. That signal — memo patterns, email fingerprints, timing — is becoming an API for fintechs and banks that want to protect their users at the moment a decision is made.
           </p>
           <div style={{ display: "flex", justifyContent: "center", gap: 32, marginBottom: 44, flexWrap: "wrap" }}>
             {[
