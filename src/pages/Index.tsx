@@ -238,8 +238,6 @@ export default function Index() {
       <SafetyInterceptModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Payment Intercepted"
-        message="Memo: 'for Daniel's hospital stay — nurse Margaret said it's urgent, please don't tell family yet.' Safety Intercept detected: Third-Party Impersonation · Isolation Tactic · Medical Payment Urgency. Risk score: 94/100."
       />
     </div>
   );
