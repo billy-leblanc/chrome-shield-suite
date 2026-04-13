@@ -7,26 +7,31 @@ interface SafetyInterceptModalProps {
 
 const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
   const [visible, setVisible] = useState(false);
+  const [cooldown, setCooldown] = useState(12);
 
   useEffect(() => {
-    if (open) setTimeout(() => setVisible(true), 10);
-    else setVisible(false);
+    if (open) {
+      setTimeout(() => setVisible(true), 10);
+      setCooldown(12);
+    } else {
+      setVisible(false);
+    }
   }, [open]);
 
-  if (!open) return null;
+  useEffect(() => {
+    if (!open || cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown(c => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [open, cooldown]);
 
-  const reasons = [
-    "Someone you've never met is speaking on your family's behalf.",
-    "You were asked to keep this secret from the people closest to you.",
-    "A medical emergency was created to make you act before you could think.",
-  ];
+  if (!open) return null;
 
   return (
     <div
       onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 9999,
-        background: "rgba(0,0,0,0.72)", backdropFilter: "blur(6px)",
+        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)",
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: "24px",
         opacity: visible ? 1 : 0,
@@ -36,92 +41,83 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          width: "100%", maxWidth: 400,
-          background: "#0D1526",
-          border: "1px solid rgba(255,255,255,0.07)",
+          width: "100%", maxWidth: 360,
+          background: "linear-gradient(160deg, #131B2E 0%, #0D1526 100%)",
+          border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 20,
-          padding: "28px 28px 24px",
-          boxShadow: "0 0 0 1px rgba(239,68,68,0.12), 0 40px 80px rgba(0,0,0,0.7)",
+          padding: "28px 24px 24px",
+          boxShadow: "0 32px 64px rgba(0,0,0,0.6)",
           transform: visible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.97)",
           transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+          WebkitFontSmoothing: "antialiased",
         }}
       >
-        {/* Quiet red dot — no label, no caps */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-          <div style={{
-            width: 8, height: 8, borderRadius: "50%", background: "#EF4444",
-            boxShadow: "0 0 8px rgba(239,68,68,0.6)",
-          }} />
-          <span style={{ fontSize: 12, color: "#EF4444", fontWeight: 600, letterSpacing: "0.01em" }}>
-            We stopped this payment.
-          </span>
+        {/* Amber caution badge */}
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "4px 12px", borderRadius: 99,
+          background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)",
+          marginBottom: 16,
+        }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F59E0B", boxShadow: "0 0 6px rgba(245,158,11,0.6)" }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#FBBF24", letterSpacing: "0.1em", textTransform: "uppercase" }}>Caution</span>
         </div>
 
         {/* Title */}
-        <div style={{ fontSize: 21, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.5px", lineHeight: 1.2, marginBottom: 12 }}>
-          Don't send this.
+        <div style={{ fontSize: 17, fontWeight: 700, color: "#F1F5F9", letterSpacing: "-0.4px", lineHeight: 1.3, marginBottom: 12 }}>
+          This matches how sophisticated scams work
         </div>
 
-        {/* Memo */}
+        {/* Narrative */}
+        <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.7, marginBottom: 20 }}>
+          This request involves an unexpected contact, a first-time recipient and an artificial sense of urgency. This is how most people lose money to scams. There is no shame in pausing — that instinct could save you thousands.
+        </div>
+
+        <div style={{ height: 1, background: "rgba(255,255,255,0.06)", marginBottom: 16 }} />
+
+        {/* Cross-layer correlation callout */}
         <div style={{
-          padding: "12px 14px", borderRadius: 10,
-          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
-          fontSize: 13, color: "#64748B", fontStyle: "italic", lineHeight: 1.6,
-          marginBottom: 22,
+          display: "flex", alignItems: "flex-start", gap: 10,
+          background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)",
+          borderRadius: 10, padding: "12px 14px", marginBottom: 20,
         }}>
-          "for Daniel's hospital stay — nurse Margaret said it's urgent, please don't tell family yet"
-        </div>
-
-        {/* Human reasons — no label, no pills */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
-          {reasons.map((r, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <div style={{
-                width: 5, height: 5, borderRadius: "50%", background: "#EF4444",
-                marginTop: 6, flexShrink: 0, opacity: 0.7,
-              }} />
-              <span style={{ fontSize: 13, color: "#94A3B8", lineHeight: 1.6 }}>{r}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Human closing line */}
-        <div style={{
-          fontSize: 13, color: "#475569", lineHeight: 1.6,
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          paddingTop: 16, marginBottom: 22,
-        }}>
-          This is how these scams work. The urgency is manufactured. The secrecy is a trap.{" "}
-          <span style={{ color: "#64748B" }}>Even people who know better fall for them.</span>
+          <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+          <span style={{ fontSize: 12, color: "#FBBF24", lineHeight: 1.5 }}>
+            You received a suspicious email from nurse-help@gmail.com 14 minutes ago. That email and this payment are connected. This is how coordinated scams work.
+          </span>
         </div>
 
         {/* Buttons */}
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={onClose}
             style={{
               flex: 1, padding: "13px 0", borderRadius: 12,
-              background: "transparent", border: "1px solid rgba(56,189,248,0.25)",
-              color: "#38BDF8", fontWeight: 700, fontSize: 14, cursor: "pointer",
-              transition: "background 0.15s",
+              background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)",
+              border: "1px solid rgba(56,189,248,0.3)",
+              color: "#38BDF8", fontWeight: 700, fontSize: 13, cursor: "pointer",
+              letterSpacing: "0.01em", transition: "opacity 0.15s",
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(56,189,248,0.07)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+            onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
           >
             Go back — stay safe
           </button>
           <button
-            onClick={onClose}
+            onClick={cooldown > 0 ? undefined : onClose}
+            disabled={cooldown > 0}
             style={{
               flex: 1, padding: "13px 0", borderRadius: 12,
-              background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.15)",
-              color: "#EF4444", fontWeight: 600, fontSize: 13, cursor: "pointer",
-              transition: "background 0.15s",
+              background: "rgba(245,158,11,0.05)",
+              border: "1px solid rgba(245,158,11,0.2)",
+              color: cooldown > 0 ? "#64748B" : "#FBBF24",
+              fontWeight: 600, fontSize: 13,
+              cursor: cooldown > 0 ? "not-allowed" : "pointer",
+              transition: "all 0.2s",
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.13)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.07)")}
           >
-            Proceed anyway
+            {cooldown > 0 ? `${cooldown}s` : "I understand — proceed"}
           </button>
         </div>
       </div>
