@@ -102,17 +102,19 @@ function InterceptDemo() {
   const [phase, setPhase] = useState<DemoPhase>("idle");
   const [cooldown, setCooldown] = useState(10);
   const [btnScale, setBtnScale] = useState(1);
+  const { ref: demoRef, visible: demoVisible } = useReveal(0.4);
 
   useEffect(() => {
+    if (!demoVisible) return;
     if (phase !== "idle") return;
     const timers = [
-      setTimeout(() => { setBtnScale(0.95); setPhase("clicking"); }, 2400),
-      setTimeout(() => { setBtnScale(1); setPhase("intercepted"); setCooldown(10); }, 2900),
-      setTimeout(() => setPhase("fading"), 7200),
-      setTimeout(() => { setPhase("idle"); setCooldown(10); }, 8000),
+      setTimeout(() => { setBtnScale(0.95); setPhase("clicking"); }, 800),
+      setTimeout(() => { setBtnScale(1); setPhase("intercepted"); setCooldown(10); }, 1300),
+      setTimeout(() => setPhase("fading"), 6000),
+      setTimeout(() => { setPhase("idle"); setCooldown(10); }, 6800),
     ];
     return () => timers.forEach(clearTimeout);
-  }, [phase]);
+  }, [phase, demoVisible]);
 
   useEffect(() => {
     if (phase !== "intercepted") return;
@@ -125,7 +127,7 @@ function InterceptDemo() {
   const modalVisible = phase === "intercepted";
 
   return (
-    <div style={{ position: "relative", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div ref={demoRef} style={{ position: "relative", borderRadius: 14, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.08)" }}>
       {/* Browser chrome */}
       <div style={{ background: "#1C1C1E", padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#FF5F57" }} />
@@ -138,13 +140,11 @@ function InterceptDemo() {
       </div>
 
       {/* PayPal page — white background like the real thing */}
-      <div style={{ background: "#F5F7FA", padding: "22px 20px 20px", position: "relative" }}>
-        {/* PayPal wordmark */}
+      <div style={{ background: "#F5F7FA", padding: "22px 20px 20px" }}>
+        {/* Header */}
         <div style={{ marginBottom: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.5px" }}>
-            <span style={{ color: "#003087" }}>Pay</span><span style={{ color: "#009CDE" }}>Pal</span>
-          </div>
-          <div style={{ fontSize: 10, color: "#9CA3AF", fontWeight: 500 }}>Send Money</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Send Money</div>
+          <div style={{ fontSize: 10, color: "#9CA3AF" }}>paypal.com</div>
         </div>
 
         {/* Recipient row */}
