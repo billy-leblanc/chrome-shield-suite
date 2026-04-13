@@ -16,7 +16,7 @@ const EGG_MESSAGES = [
 function EasterEggToast({ onClose }: { onClose: () => void }) {
   const msg = EGG_MESSAGES[Math.floor(Math.random() * EGG_MESSAGES.length)];
   useEffect(() => {
-    const t = setTimeout(onClose, 4200);
+    const t = setTimeout(onClose, 9000);
     return () => clearTimeout(t);
   }, [onClose]);
   return (
