@@ -417,7 +417,7 @@ export default function Index() {
               The fraud detection layer<br />banks can't build themselves.
             </h2>
             <p style={{ fontSize: 15, fontWeight: 400, color: "#475569", lineHeight: 1.95, maxWidth: 500, margin: "0 auto 48px" }}>
-              We call this the <strong style={{ color: "#3B82F6" }}>Intent Layer</strong> — fraud protection that lives at the moment of decision, not after the money moves. Every interception generates labeled signal no network-side vendor can replicate: the exact words used to manipulate someone in the seconds before they send.
+              We call this the <strong style={{ color: "#3B82F6" }}>Intent Layer</strong> — fraud protection that lives at the moment of decision, not after the money moves. Every interception captures the exact language scammers use to manipulate someone into sending. That data is what no bank or network-side vendor can get on their own.
             </p>
             {enterpriseSubmitted ? (
               <div style={{ padding: "16px 24px", borderRadius: 12, background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.12)", color: "#3B82F6", fontSize: 14, fontWeight: 600 }}>
