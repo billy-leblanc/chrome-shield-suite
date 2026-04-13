@@ -279,8 +279,11 @@ export default function Index() {
               <h2 style={{ fontSize: 28, fontWeight: 700, color: "#E2E8F0", letterSpacing: "-0.7px", lineHeight: 1.22, marginBottom: 24 }}>
                 Scams don't look like scams.<br />They look like emergencies.
               </h2>
-              <p style={{ fontSize: 14, fontWeight: 400, color: "#475569", lineHeight: 1.95 }}>
+              <p style={{ fontSize: 14, fontWeight: 400, color: "#475569", lineHeight: 1.95, marginBottom: 16 }}>
                 A Geek Squad charge. A family member in trouble. An IRS penalty due today. Scammers manufacture urgency because urgency bypasses instinct. By the time you realize what's happening, the money is gone.
+              </p>
+              <p style={{ fontSize: 14, fontWeight: 400, color: "#334155", lineHeight: 1.95 }}>
+                We analyze every payment memo for scam patterns — and if a suspicious email arrived first, we connect them. That combination is what the best scams rely on. It's what we're built to catch.
               </p>
             </div>
             <div style={{ maxWidth: 320 }}>
@@ -338,7 +341,7 @@ export default function Index() {
               We connect the email to the payment. Nobody else does.
             </h2>
             <p style={{ fontSize: 15, fontWeight: 400, color: "#475569", lineHeight: 1.9, maxWidth: 520, margin: "0 auto" }}>
-              Scams don't start at the payment screen. They start in your inbox. Our anti-phishing AI reads Gmail for social engineering signals, records the threat, then correlates it when you open PayPal 14 minutes later. That connection is the fingerprint. It's the proof. And it's ours alone.
+              Scams don't start at the payment screen. They start in your inbox. We read your Gmail for warning signs — fake emergencies, impersonation, pressure to pay fast. If you try to send money shortly after, we connect the dots. That link between the email and the payment is what catches the scam.
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
