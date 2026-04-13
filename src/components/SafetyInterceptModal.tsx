@@ -88,19 +88,6 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
           </span>
         </div>
 
-        {/* Loading bar */}
-        {cooldown > 0 && (
-          <div style={{ height: 2, background: "rgba(255,255,255,0.06)", borderRadius: 2, marginBottom: 14, overflow: "hidden" }}>
-            <div style={{
-              height: "100%",
-              background: "linear-gradient(90deg, #F59E0B, #FBBF24)",
-              borderRadius: 2,
-              width: `${((12 - cooldown) / 12) * 100}%`,
-              transition: "width 1s linear",
-            }} />
-          </div>
-        )}
-
         {/* Buttons */}
         <div style={{ display: "flex", gap: 8 }}>
           <button
@@ -122,15 +109,26 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
             disabled={cooldown > 0}
             style={{
               flex: 1, padding: "13px 0", borderRadius: 12,
-              background: "rgba(245,158,11,0.05)",
-              border: "1px solid rgba(245,158,11,0.2)",
+              position: "relative", overflow: "hidden",
+              background: "rgba(245,158,11,0.04)",
+              border: `1px solid rgba(245,158,11,${cooldown > 0 ? 0.15 : 0.4})`,
               color: cooldown > 0 ? "#64748B" : "#FBBF24",
               fontWeight: 600, fontSize: 13,
               cursor: cooldown > 0 ? "not-allowed" : "pointer",
-              transition: "all 0.2s",
+              transition: "color 0.3s, border-color 0.3s",
             }}
           >
-            {cooldown > 0 ? "Take a breath." : "I understand — proceed"}
+            {/* Fill sweep */}
+            <div style={{
+              position: "absolute", left: 0, top: 0, bottom: 0,
+              width: `${((12 - cooldown) / 12) * 100}%`,
+              background: "linear-gradient(90deg, rgba(245,158,11,0.14), rgba(251,191,36,0.08))",
+              transition: "width 1s linear",
+              borderRadius: "inherit",
+            }} />
+            <span style={{ position: "relative", zIndex: 1 }}>
+              {cooldown > 0 ? "Take a breath." : "I understand — proceed"}
+            </span>
           </button>
         </div>
       </div>
