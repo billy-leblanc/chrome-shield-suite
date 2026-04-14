@@ -382,6 +382,18 @@ export default function Index() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#060C1A", color: "#E2E8F0", fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif', overflowX: "hidden" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .narrative-grid, .take-a-breath-grid, .cross-layer-grid {
+            grid-template-columns: 1fr !important;
+            gap: 32px !important;
+          }
+          .demo-container {
+            max-width: 100% !important;
+            width: 100%;
+          }
+        }
+      `}</style>
 
       {/* Ambient glow */}
       <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
@@ -447,7 +459,7 @@ export default function Index() {
       {/* ── The Narrative ── */}
       <section style={{ position: "relative", zIndex: 1, maxWidth: 860, margin: "0 auto", padding: "0 24px 140px" }}>
         <Reveal>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+          <div className="narrative-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
             <div>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#334155", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 24 }}>The threat pattern</div>
               <h2 style={{ fontSize: 28, fontWeight: 700, color: "#E2E8F0", letterSpacing: "-0.7px", lineHeight: 1.22, marginBottom: 24 }}>
@@ -460,7 +472,7 @@ export default function Index() {
                 We analyze every payment memo for scam patterns — and if a suspicious email arrived first, we connect them. That combination is what the best scams rely on. It's what we're built to catch.
               </p>
             </div>
-            <div style={{ maxWidth: 320 }}>
+            <div className="demo-container" style={{ maxWidth: 320, width: "100%" }}>
               <InterceptDemo />
             </div>
           </div>
@@ -471,7 +483,7 @@ export default function Index() {
       <section style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.04)", borderBottom: "1px solid rgba(255,255,255,0.04)", background: "rgba(255,255,255,0.01)" }}>
         <div style={{ maxWidth: 860, margin: "0 auto", padding: "88px 24px" }}>
           <Reveal>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+            <div className="take-a-breath-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
               <div>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", marginBottom: 24 }}>
                   <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#F59E0B" }} />
