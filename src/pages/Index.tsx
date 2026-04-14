@@ -550,30 +550,6 @@ export default function Index() {
         </Reveal>
       </section>
 
-      {/* ── Proof ── */}
-      <section style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.04)", background: "rgba(255,255,255,0.01)" }}>
-        <Reveal>
-          <div style={{ maxWidth: 1000, margin: "0 auto", padding: "72px 24px" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 32, textAlign: "center" }}>
-              {[
-                { value: "$15.9B", label: "Lost to fraud in the US in 2025" },
-                { value: "3",      label: "Platforms covered" },
-                { value: "24h",    label: "Memory window" },
-                { value: "Free",   label: "Always. No subscription." },
-              ].map(p => (
-                <div key={p.label}>
-                  <div style={{ fontSize: 36, fontWeight: 800, color: "#3B82F6", letterSpacing: "-1.5px", marginBottom: 8 }}>{p.value}</div>
-                  <div style={{ fontSize: 11, fontWeight: 500, color: "#334155", letterSpacing: "0.04em" }}>{p.label}</div>
-                </div>
-              ))}
-            </div>
-            <p style={{ textAlign: "center", fontSize: 11, fontWeight: 400, color: "#334155", marginTop: 40, letterSpacing: "0.04em" }}>
-              <a href="https://www.linkedin.com/in/billy-leblanc/" target="_blank" rel="noreferrer" style={{ color: "#334155", textDecoration: "underline" }}>Built at UC Berkeley</a> · Tested against r/Scams corpus
-            </p>
-          </div>
-        </Reveal>
-      </section>
-
       {/* ── Privacy ── */}
       <section style={{ position: "relative", zIndex: 1, maxWidth: 680, margin: "0 auto", padding: "80px 24px" }}>
         <Reveal>
