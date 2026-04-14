@@ -56,6 +56,8 @@ function PopupApp() {
     });
   }, []);
 
+  const [statsHovered, setStatsHovered] = useState(false);
+
   const toggleIntercept = useCallback(() => {
     const next = !interceptOn;
     setInterceptOn(next);
@@ -99,6 +101,25 @@ function PopupApp() {
     .shield-pulse {
       animation: shield-glow 4s ease-in-out infinite;
     }
+    @keyframes scan-line {
+      0%   { left: -100%; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { left: 100%; opacity: 0; }
+    }
+    @keyframes feed-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes dot-pop {
+      0%   { transform: scale(0); }
+      60%  { transform: scale(1.4); }
+      100% { transform: scale(1); }
+    }
+    @keyframes amber-breathe {
+      0%, 100% { box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+      50%      { box-shadow: 0 0 12px rgba(245,158,11,0.9), 0 0 20px rgba(245,158,11,0.3); }
+    }
   `;
 
   if (view === 'settings') {
@@ -125,7 +146,7 @@ function PopupApp() {
               background: telemetryEnabled ? '#38BDF8' : 'rgba(255,255,255,0.1)',
               position: 'relative', flexShrink: 0, transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
             }}>
-              <span style={{ position: 'absolute', top: 3, width: 14, height: 14, borderRadius: '50%', background: '#fff', transition: 'left 0.2s', left: telemetryEnabled ? 19 : 3 }} />
+              <span style={{ position: 'absolute', top: 3, width: 14, height: 14, borderRadius: '50%', background: '#fff', transition: 'left 0.35s cubic-bezier(0.34,1.56,0.64,1)', left: telemetryEnabled ? 19 : 3 }} />
             </button>
           </div>
 
@@ -193,7 +214,7 @@ function PopupApp() {
               background: interceptOn ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.05)',
               border: `1px solid ${interceptOn ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.08)'}`,
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: interceptOn ? '#F59E0B' : '#334155', boxShadow: interceptOn ? '0 0 6px rgba(245,158,11,0.6)' : 'none' }} />
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: interceptOn ? '#F59E0B' : '#334155', animation: interceptOn ? 'amber-breathe 2.5s ease-in-out infinite' : 'none' }} />
               <span style={{ fontSize: 9, fontWeight: 700, color: interceptOn ? '#F59E0B' : '#334155', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 {interceptOn ? 'Protection Active' : 'Paused'}
               </span>
@@ -207,13 +228,18 @@ function PopupApp() {
 
       <div style={{ flex: 1, padding: '0 22px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Unified Protection Card */}
-        <div 
+        <div
           onClick={toggleIntercept}
-          style={{ 
+          onMouseEnter={() => setStatsHovered(true)}
+          onMouseLeave={() => setStatsHovered(false)}
+          style={{
             padding: '24px', borderRadius: 24, cursor: 'pointer',
             background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
             display: 'flex', flexDirection: 'column', gap: 24,
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            transform: statsHovered ? 'translateY(-2px)' : 'translateY(0)',
+            boxShadow: statsHovered ? '0 8px 24px rgba(0,0,0,0.3)' : 'none',
+            position: 'relative', overflow: 'hidden'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -227,9 +253,10 @@ function PopupApp() {
             </div>
           </div>
           <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
             <div style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>Real-time scanning {interceptOn ? 'active' : 'paused'}</div>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: interceptOn ? '#3B82F6' : '#334155', boxShadow: interceptOn ? '0 0 10px rgba(59,130,246,0.7)' : 'none' }} />
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: interceptOn ? '#3B82F6' : '#334155' }} />
+            {interceptOn && <div style={{ position: 'absolute', top: 0, left: '-100%', height: '100%', width: '40%', background: 'linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent)', animation: 'scan-line 3s ease-in-out infinite' }} />}
           </div>
         </div>
 
@@ -239,13 +266,13 @@ function PopupApp() {
           <div style={{ background: 'rgba(15,23,42,0.4)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.03)', overflow: 'hidden' }}>
             {activities.length === 0 ? (
               <div style={{ padding: '32px 24px', textAlign: 'center' }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>Watching for threats</div>
-                <div style={{ fontSize: 11, color: '#334155', marginTop: 4 }}>No activity yet</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>All clear so far.</div>
+                <div style={{ fontSize: 11, color: '#334155', marginTop: 4 }}>We're watching PayPal, Zelle, and Gmail.</div>
               </div>
             ) : (
               activities.map((a, i) => (
-                <div key={i} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, borderBottom: i < activities.length - 1 ? '1px solid rgba(255,255,255,0.02)' : 'none' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.type === 'blocked' ? '#38BDF8' : '#64748B' }} />
+                <div key={i} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, borderBottom: i < activities.length - 1 ? '1px solid rgba(255,255,255,0.02)' : 'none', animation: `feed-in 0.4s ease-out ${i * 80}ms both` }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.type === 'blocked' ? '#38BDF8' : '#64748B', animation: `dot-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) ${i * 80 + 50}ms both` }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.4, fontWeight: 500 }}>{a.text}</div>
                     <div style={{ fontSize: 10, color: '#334155', marginTop: 4, textTransform: 'uppercase', fontWeight: 700 }}>{a.platform || 'System'} • {a.time}</div>
