@@ -1,650 +1,650 @@
-\documentclass[11pt, letterpaper]{article}
-\usepackage[margin=1in]{geometry}
-\usepackage{titlesec}
-\usepackage{enumitem}
-\usepackage{hyperref}
-\usepackage{xcolor}
-\usepackage{booktabs}
-\usepackage{longtable}
-\usepackage{fancyhdr}
-\usepackage{amsmath}
-
-\definecolor{darkblue}{HTML}{0D1526}
-\definecolor{citation}{HTML}{2563EB}
-\definecolor{withdrawn}{HTML}{DC2626}
-\definecolor{unvalidated}{HTML}{D97706}
-\definecolor{plausible}{HTML}{059669}
+  \documentclass[11pt, letterpaper]{article}
+  \usepackage[margin=1in]{geometry}
+  \usepackage{titlesec}
+  \usepackage{enumitem}
+  \usepackage{hyperref}
+  \usepackage{xcolor}
+  \usepackage{booktabs}
+  \usepackage{longtable}
+  \usepackage{fancyhdr}
+  \usepackage{amsmath}
+
+  \definecolor{darkblue}{HTML}{0D1526}
+  \definecolor{citation}{HTML}{2563EB}
+  \definecolor{withdrawn}{HTML}{DC2626}
+  \definecolor{unvalidated}{HTML}{D97706}
+  \definecolor{plausible}{HTML}{059669}
 
-\hypersetup{colorlinks=true, linkcolor=darkblue, urlcolor=citation}
+  \hypersetup{colorlinks=true, linkcolor=darkblue, urlcolor=citation}
 
-\pagestyle{fancy}
-\fancyhf{}
-\rhead{\footnotesize Safety Intercept --- POLLUX CORE LOAD}
-\lhead{\footnotesize \thepage}
-\renewcommand{\headrulewidth}{0.4pt}
-
-\titleformat{\section}{\Large\bfseries}{}{0em}{}
-\titleformat{\subsection}{\large\bfseries}{}{0em}{}
-\titleformat{\subsubsection}{\normalsize\bfseries}{}{0em}{}
+  \pagestyle{fancy}
+  \fancyhf{}
+  \rhead{\footnotesize Safety Intercept --- POLLUX CORE LOAD}
+  \lhead{\footnotesize \thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+
+  \titleformat{\section}{\Large\bfseries}{}{0em}{}
+  \titleformat{\subsection}{\large\bfseries}{}{0em}{}
+  \titleformat{\subsubsection}{\normalsize\bfseries}{}{0em}{}
 
-\newcommand{\source}[1]{\textcolor{citation}{[Source: #1]}}
-\newcommand{\verified}[1]{\textcolor{citation}{[Verified: #1]}}
-\newcommand{\withdrawn}[1]{\textcolor{withdrawn}{[CLAIM WITHDRAWN --- #1]}}
-\newcommand{\unvalidated}[1]{\textcolor{unvalidated}{[UNVALIDATED --- #1]}}
-\newcommand{\plausmark}[1]{\textcolor{plausible}{[PLAUSIBLE --- #1]}}
+  \newcommand{\source}[1]{\textcolor{citation}{[Source: #1]}}
+  \newcommand{\verified}[1]{\textcolor{citation}{[Verified: #1]}}
+  \newcommand{\withdrawn}[1]{\textcolor{withdrawn}{[CLAIM WITHDRAWN --- #1]}}
+  \newcommand{\unvalidated}[1]{\textcolor{unvalidated}{[UNVALIDATED --- #1]}}
+  \newcommand{\plausmark}[1]{\textcolor{plausible}{[PLAUSIBLE --- #1]}}
 
-\begin{document}
+  \begin{document}
 
-% ==================== TITLE ====================
-\begin{center}
-{\LARGE \textbf{Safety Intercept}}\\[6pt]
-{\large \textbf{POLLUX CORE LOAD: Audit Trail \& White Paper}}\\[12pt]
-{\normalsize Billy LeBlanc \& Pollux}\\
-{\small UC Berkeley | April 11, 2026}\\[6pt]
-{\footnotesize Citation protocol: every factual claim cites \textcolor{citation}{[Source: FileName]} or is marked \textcolor{withdrawn}{[CLAIM WITHDRAWN]}.}\\
-{\footnotesize No performance adjectives. Concrete nouns. Numbers with sources.}
-\end{center}
+  % ==================== TITLE ====================
+  \begin{center}
+  {\LARGE \textbf{Safety Intercept}}\\[6pt]
+  {\large \textbf{POLLUX CORE LOAD: Audit Trail \& White Paper}}\\[12pt]
+  {\normalsize Billy LeBlanc \& Pollux}\\
+  {\small UC Berkeley | April 11, 2026}\\[6pt]
+  {\footnotesize Citation protocol: every factual claim cites \textcolor{citation}{[Source: FileName]} or is marked \textcolor{withdrawn}{[CLAIM WITHDRAWN]}.}\\
+  {\footnotesize No performance adjectives. Concrete nouns. Numbers with sources.}
+  \end{center}
 
-\vspace{24pt}
-\hrule
-\vspace{12pt}
-
-\tableofcontents
-\newpage
-
-% ==================== PART I ====================
-\section*{Part I --- Visible Audit Trail}
-\addcontentsline{toc}{section}{Part I --- Visible Audit Trail}
-
-% ---------- 1.1 DATA INVENTORY ----------
-\subsection{Data Inventory --- Three Most Concrete Facts}
-
-\subsubsection{Fact 1: The Margaret Email Interception}
-
-A crafted grandparent scam email --- ``Margaret,'' fake church friend, mother in hospital, phone died, send \$200 via PayPal --- scores 92/critical from Claude Haiku. The email contains zero spam keywords. Heuristic score: 0.
-
-With Gmail's blend weights (20\% heuristic / 80\% LLM):
-\[
-0 \times 0.2 + 92 \times 0.8 = 73.6 \rightarrow \text{rounded to 74} \rightarrow \texttt{"high"} \rightarrow \text{banner fires}
-\]
-
-With the original default weights (60\% heuristic / 40\% LLM):
-\[
-0 \times 0.6 + 92 \times 0.4 = 36.8 \rightarrow \text{rounded to 37} \rightarrow \texttt{"medium"} \rightarrow \text{silent miss}
-\]
-
-The blend weight fix was the difference between catching and missing the exact attack this product exists to stop.
-
-\source{FOUNDERS\_BUILD\_LOG.md --- Bug 1}\\
-\source{session-3-problems-solved.md --- Problem 1}\\
-\verified{fraud\_detector.ts lines 41--62, SCAN\_PATTERNS array}
-
-\subsubsection{Fact 2: Cross-Layer Correlation}
-
-When a payment is intercepted on PayPal or Wells Fargo Zelle, the background worker checks \texttt{chrome.storage.local} for Gmail scam detections within a 24-hour window. If a match exists, the payment risk score increases by +30 and a human-readable note is attached:
-
-\begin{quote}
-``You received a scam email from [sender] 26 minutes ago. Combined with this payment, fraud risk is elevated.''
-\end{quote}
-
-Storage uses \texttt{chrome.storage.local} because MV3 service workers die after approximately 30 seconds idle and would lose in-memory state. The correlation check was originally wired into the \texttt{ANALYZE\_RISK} handler. This failed when the questionnaire path (user checks a box) bypassed AI analysis entirely. Fix: hooked into \texttt{LOG\_EVENT} handler for \texttt{intercepted} events, which always fires regardless of which path triggered the modal.
-
-\source{EXPORT\_CORE\_LOGIC.md --- Section 5}\\
-\source{FOUNDERS\_BUILD\_LOG.md --- Bug 4 fix}\\
-\verified{risk\_engine.ts, fraud\_detector.ts line 12 (correlationNote field)}
-
-\subsubsection{Fact 3: Confirmed Platform Coverage}
-
-The extension is confirmed working on exactly:
-\begin{itemize}[nosep]
-  \item 2 payment platforms: PayPal, Wells Fargo Zelle
-  \item 1 email platform: Gmail
-\end{itemize}
-
-The codebase contains selectors for Chase, Bank of America, Citi, and Venmo (\texttt{PORTAL\_CONFIGS} in \texttt{payment\_interceptor.tsx} lines 34--44). None of these have testing evidence in any session log, bug report, or demo record. Venmo is explicitly listed under ``What We Do NOT Have'' in \texttt{CLAUDE.md}.
-
-\source{payment\_interceptor.tsx lines 11--44}\\
-\source{CLAUDE.md --- ``What We Actually Support'' vs ``What We Do NOT Have''}\\
-\source{FOUNDERS\_BUILD\_LOG.md --- only PayPal and WF Zelle appear in verified demos}
-
-\vspace{12pt}
-\hrule
-\vspace{12pt}
-
-% ---------- 1.2 CRITICAL GAP ----------
-\subsection{Critical Gap --- The Most Important Unanswered Question}
-
-\textbf{Can Safety Intercept acquire 100 real users in 30 days?}
-
-The B2B flywheel thesis:
-\begin{enumerate}[nosep]
-  \item Free extension $\rightarrow$ users install
-  \item Users encounter scam attempts $\rightarrow$ extension collects labeled data (scam vs. not scam)
-  \item Proprietary dataset $\rightarrow$ ``The largest labeled scam-memo database''
-  \item B2B API pitch $\rightarrow$ licensed to fintechs and banks
-\end{enumerate}
-
-Step 1 has not started. The Chrome Web Store submission has been pending since April 2, 2026 (9 days as of this writing). Zero users outside of development testing. The battle plan projects 75--150 installs in 30 days with organic-only distribution, but this is projection based on channel estimates, not evidence.
-
-If CWS approval takes 2 more weeks, the 30-day distribution window compresses to 15 days. Every downstream milestone --- labeled corpus, API pitch, fundraising --- depends on this step completing.
-
-\source{battle\_plan.md Part IV --- ``Goal: 100 real installs in 30 days''}\\
-\source{FOUNDERS\_BUILD\_LOG.md --- ``Chrome Web Store: Submitted April 2, 2026''}
-
-\vspace{12pt}
-\hrule
-\vspace{12pt}
-
-% ---------- 1.3 UX STRESS TEST ----------
-\subsection{UX Stress Test --- Click Send to Interception}
-
-The exact sequence for a PayPal payment interception, traced through source code:
-
-\begin{enumerate}
-  \item User navigates to PayPal send page.
-  \item \texttt{payment\_interceptor.tsx} loads. \texttt{getActiveConfig()} matches \texttt{paypal.com} against \texttt{PORTAL\_CONFIGS}. A \texttt{MutationObserver} watches for buttons matching selectors: \texttt{button[data-testid="submit-button-confirm"]}, \texttt{button[data-testid="submit-button"]}, and 3 fallbacks.
-  \item User enters amount and memo text. Clicks the Send button.
-  \item Capture-phase event listener fires (\texttt{\{ capture: true \}}). Calls \texttt{preventDefault()} and \texttt{stopImmediatePropagation()}. The payment is halted before PayPal's scripts process it.
-  \item A questionnaire renders inside a closed Shadow DOM: 3 questions.
-    \begin{itemize}[nosep]
-      \item Did someone tell you to send this money?
-      \item Is this the first time you're sending to this person?
-      \item Were you told this is urgent or secret?
-    \end{itemize}
-  \item \textbf{Path A --- any ``yes'':} Immediate critical block. No AI call needed. Modal renders with warning.
-  \item \textbf{Path B --- all ``no'':} Content script sends \texttt{chrome.runtime.sendMessage(\{ type: 'ANALYZE\_RISK', memo, amount, platform \})} to the background service worker.
-  \item Background worker runs two analyses in parallel:
-    \begin{itemize}[nosep]
-      \item \texttt{FraudDetector.analyze(memo)} --- heuristic regex check against 18 \texttt{SCAN\_PATTERNS}. Instant.
-      \item \texttt{callRelayAPI(memo, token, url, 5000, amount, platform)} --- LLM analysis via Cloudflare relay to Claude Haiku. Median latency: $\sim$500ms. Timeout: 5 seconds.
-    \end{itemize}
-  \item \texttt{blendScores(heuristic, llm, 0.6)} with PayPal weights (60\% heuristic / 40\% LLM). \texttt{scoreToRiskLevel()}: $\geq$80 = critical, $\geq$50 = high, $\geq$20 = medium, $<$20 = low.
-  \item Cross-layer correlation check: \texttt{chrome.storage.local.get('gmailDetections')}. If any detection exists within 24 hours, score boosted by +30 and \texttt{correlationNote} attached.
-  \item Result returned to content script via \texttt{sendResponse}. Modal renders in Shadow DOM showing risk level, flag pills, recommendation, and (if applicable) the correlation note.
-  \item User chooses: ``Go back --- stay safe'' (triggers share screen with WhatsApp/SMS/Copy) or ``Proceed Anyway'' (payment continues).
-\end{enumerate}
-
-\source{payment\_interceptor.tsx --- PORTAL\_CONFIGS, event listener, questionnaire}\\
-\source{risk\_engine.ts --- ANALYZE\_RISK handler, analyzeMemoWithLLM, blendScores}\\
-\source{fraud\_detector.ts --- SCAN\_PATTERNS, callRelayAPI, scoreToRiskLevel}\\
-\source{EXPORT\_CORE\_LOGIC.md --- Section 5 (correlation engine)}
-
-\subsubsection{Identified Failure Points}
-
-\begin{longtable}{p{4cm} p{9cm}}
-\toprule
-\textbf{Failure Condition} & \textbf{Consequence} \\
-\midrule
-Relay down or latency $>$5s & LLM returns null. Score is heuristic-only. A crafted social engineering email with zero spam keywords scores 0. \textbf{Silent miss.} \\
-\midrule
-MV3 service worker killed ($\sim$30s idle) & \texttt{chrome.runtime.sendMessage} must handle worker restart. If it doesn't, message fails silently. \\
-\midrule
-PayPal SPA re-render & MutationObserver could detach if parent node is replaced entirely rather than child nodes mutated. \\
-\midrule
-Wells Fargo button text change & Two-step flow relies on \texttt{/\^{}Send\$/i} text match. If WF changes button text, interception fails. \\
-\midrule
-User on mobile & Extension is desktop Chrome only. No protection whatsoever. \\
-\midrule
-User not on Gmail & No email scanner for Yahoo, Outlook, ProtonMail. Cross-layer signal unavailable. Payment-only heuristic + LLM analysis still works. \\
-\midrule
-User on unsupported platform & Cash App, bank wire, gift cards, cryptocurrency --- no interception. \\
-\bottomrule
-\end{longtable}
-
-\vspace{12pt}
-\hrule
-\vspace{12pt}
-
-% ---------- 1.4 HALLUCINATION RISK ----------
-\subsection{Hallucination Risk Assessment}
-
-\begin{longtable}{p{3.5cm} p{2.5cm} p{7cm}}
-\toprule
-\textbf{Claim} & \textbf{Status} & \textbf{Evidence} \\
-\midrule
-``Venmo supported'' & \textcolor{withdrawn}{\textbf{WITHDRAWN}} & Selectors exist in code (line 25) but CLAUDE.md lists Venmo under ``What We Do NOT Have.'' No test evidence in any session log. \\
-\midrule
-``Chase, BofA, Citi supported'' & \textcolor{withdrawn}{\textbf{WITHDRAWN}} & Selectors in code (lines 34--44). Zero testing evidence. Added speculatively. \\
-\midrule
-``\$50K--\$500K/yr B2B pricing'' & \textcolor{unvalidated}{\textbf{UNVALIDATED}} & Zero B2B customers. Zero pilot conversations. Aspirational number from \texttt{FOUNDERS\_BUILD\_LOG.md}. \\
-\midrule
-``Cross-layer correlation is novel'' & \textcolor{plausible}{\textbf{PLAUSIBLE}} & No competitor in \texttt{competitive\_intelligence.md} has email $\rightarrow$ payment same-device 24h correlation. Scamnetic does recipient identity-proofing. Google does on-device scam detection. Neither correlates across channels in browser. \\
-\midrule
-``$<$200ms latency'' & \textcolor{withdrawn}{\textbf{PREVIOUSLY WITHDRAWN}} & Billy caught this claim. Actual measurement: $\sim$500ms median for LLM call. \\
-\midrule
-``Open source'' & \textcolor{withdrawn}{\textbf{PREVIOUSLY WITHDRAWN}} & Billy caught this claim. The project is not open source. \\
-\midrule
-``\$0.05--\$0.10/API call'' B2B pricing & \textcolor{unvalidated}{\textbf{UNVALIDATED}} & From \texttt{Safety\_Intercept\_Grand\_White\_Paper.tex}. No market validation. \\
-\midrule
-``7 scam types detected'' & \textcolor{plausible}{\textbf{VERIFIABLE}} & \texttt{SCAN\_PATTERNS} contains 18 regex patterns across $\sim$7 categories: Urgency, Social Engineering (Family), Lottery, Phishing, Advance Fee, Credential Phishing, Fake Shipping, plus family emergency subcategories. \\
-\bottomrule
-\end{longtable}
-
-\vspace{12pt}
-\hrule
-\vspace{12pt}
-
-% ---------- 1.5 AI INTEGRATION ----------
-\subsection{AI Integration Sanity Check}
-
-\subsubsection{API Key Security}
-The relay auth token is stored as a Vite environment variable (\texttt{VITE\_RELAY\_AUTH\_TOKEN}) in a gitignored \texttt{.env} file. At build time, Vite inlines the token into the background script. The Cloudflare Worker holds a matching secret. The Anthropic API key exists only inside the Cloudflare Worker environment --- never in extension code.
-
-\verified{risk\_engine.ts line 19: \texttt{import.meta.env.VITE\_RELAY\_AUTH\_TOKEN}}\\
-\source{session-3-problems-solved.md --- Problem 2}
-
-\subsubsection{Known Bug History}
-
-Three bugs in the AI integration pipeline, all resolved:
-
-\begin{enumerate}[nosep]
-  \item \textbf{Markdown fence bug.} Claude Haiku wrapped its JSON response in \texttt{```json ```} fences despite the system prompt instructing otherwise. \texttt{JSON.parse()} threw silently. Fix: regex strip \texttt{responseText.replace(/\^{}```json$\backslash$n?/, '').replace(/$\backslash$n?```\$/, '')}. \source{PARTNERSHIP\_ANALYSIS.md --- Problem 2}
-
-  \item \textbf{Escaped template literal bug.} After a code refactor, \texttt{relay-worker.js} contained escaped \texttt{\$\backslash$\{memo\}} instead of \texttt{\$\{memo\}}. The literal string \texttt{``\$\{memo\}''} was sent to Anthropic. Symptom: \texttt{riskScore: 0}. Fix: replace escaped characters with real template literals. \source{PARTNERSHIP\_ANALYSIS.md --- Problem 7}
-
-  \item \textbf{Blend weight bug.} Default 60/40 weights buried LLM signal for Gmail. A crafted email scoring 92 from LLM blended to 37 (medium) and was silently missed. Fix: Gmail uses 20/80 weights. \source{session-3-problems-solved.md --- Problem 1}
-\end{enumerate}
-
-\subsubsection{Cost at Scale}
-
-Claude Haiku pricing is low per call. Projected load at 10,000 daily active users: $\sim$30,000 API calls/day (assuming $\sim$3 interceptions or scans per user). The questionnaire bypass (any ``yes'' answer $\rightarrow$ critical block without AI call) reduces unnecessary API volume. Telemetry is fire-and-forget, opt-in only, and does not trigger additional LLM calls.
-
-\subsubsection{PII Handling}
-
-\texttt{stripPII()} in \texttt{risk\_engine.ts} (lines 27--33) removes phone numbers, email addresses, and URLs via regex before sending to the telemetry endpoint. Names are intentionally kept because they are part of scam scripts (e.g., ``nurse Margaret,'' ``Professor Chen'') and are training signal. Memo text is truncated to 800 characters.
-
-\verified{risk\_engine.ts lines 27--33}
-
-\subsubsection{Failure Mode}
-
-If the Anthropic API is unreachable or the Cloudflare relay is down, the \texttt{callRelayAPI} function returns null after a 5-second timeout. The extension falls back to heuristic-only scoring. No error is surfaced to the user. This is silent degradation. In this state, crafted social engineering emails with zero spam keywords will score 0 and be missed entirely. There is no mechanism to inform the user that AI analysis is unavailable.
-
-\newpage
-
-% ==================== PART II ====================
-\section*{Part II --- White Paper}
-\addcontentsline{toc}{section}{Part II --- White Paper}
-
-% ---------- 2.1 PRODUCT FLOOR ----------
-\subsection{Section 1: Product Floor}
-
-What exists and works, verified through testing and session logs. What does not exist.
-
-\subsubsection{Built and Confirmed Working}
-
-\begin{longtable}{p{5cm} p{8cm}}
-\toprule
-\textbf{Component} & \textbf{Evidence} \\
-\midrule
-PayPal payment interception & End-to-end demo verified. Send button captured, questionnaire shown, modal rendered. Amount tracked. \source{FOUNDERS\_BUILD\_LOG.md --- ``Attack chain demo (verified working)''} \\
-\midrule
-Wells Fargo Zelle interception & Two-step flow solved. \texttt{isButtonMatch} checks selector + text content. Billy navigated the full flow live to provide selectors. \source{PARTNERSHIP\_ANALYSIS.md --- Problem 3} \\
-\midrule
-Gmail scanner & MutationObserver with 100ms debounce. SPA navigation via hashchange + 500ms polling. Shadow DOM banner with flag pills. \source{FOUNDERS\_BUILD\_LOG.md --- Session 2} \\
-\midrule
-Cross-layer correlation & Gmail detection + payment attempt within 24h = +30 score boost. Verified: dashboard showed ``16 seconds later $\rightarrow$ PayPal payment blocked.'' \source{FOUNDERS\_BUILD\_LOG.md --- Session 2, Bug 4 fix} \\
-\midrule
-Heuristic + LLM blend & 18 regex patterns. Platform-aware weights. Verified: Margaret email scores 74/high on Gmail, 37/medium on old weights. \source{fraud\_detector.ts, session-3-problems-solved.md} \\
-\midrule
-Cloudflare relay & Proxies Claude Haiku calls. Stores events in KV. Auth token rotated to 64-char hex. \source{EXPORT\_CORE\_LOGIC.md --- Section 4} \\
-\midrule
-Live dashboard & Standalone HTML. Fetches KV via /dashboard route. Groups entries into attack chain cases. \source{FOUNDERS\_BUILD\_LOG.md --- Session 2} \\
-\midrule
-Scam checker & Public /check endpoint. Mobile-first web app at scam-checker.pages.dev. \source{session-4-soul-and-new-idea.md} \\
-\midrule
-Privacy policy & Deployed at /privacy. Discloses: memo text to Anthropic, detection events to Cloudflare KV, B2B data flywheel intent (opt-in telemetry). \source{Privacy.tsx} \\
-\midrule
-Viral loop share screen & Post-intercept: ``\$X protected'' + WhatsApp/SMS/Copy buttons. Triggers on ``Go back --- stay safe.'' \source{payment\_interceptor.tsx --- share screen implementation} \\
-\midrule
-Popup UI & Dark navy. Stats (Blocked/Warnings/Safe). Activity feed. iOS-style toggle. Telemetry opt-in toggle. \source{FOUNDERS\_BUILD\_LOG.md --- Session 1} \\
-\bottomrule
-\end{longtable}
+  \vspace{24pt}
+  \hrule
+  \vspace{12pt}
+
+  \tableofcontents
+  \newpage
+
+  % ==================== PART I ====================
+  \section*{Part I --- Visible Audit Trail}
+  \addcontentsline{toc}{section}{Part I --- Visible Audit Trail}
+
+  % ---------- 1.1 DATA INVENTORY ----------
+  \subsection{Data Inventory --- Three Most Concrete Facts}
+
+  \subsubsection{Fact 1: The Margaret Email Interception}
+
+  A crafted grandparent scam email --- ``Margaret,'' fake church friend, mother in hospital, phone died, send \$200 via PayPal --- scores 92/critical from Claude Haiku. The email contains zero spam keywords. Heuristic score: 0.
+
+  With Gmail's blend weights (20\% heuristic / 80\% LLM):
+  \[
+  0 \times 0.2 + 92 \times 0.8 = 73.6 \rightarrow \text{rounded to 74} \rightarrow \texttt{"high"} \rightarrow \text{banner fires}
+  \]
+
+  With the original default weights (60\% heuristic / 40\% LLM):
+  \[
+  0 \times 0.6 + 92 \times 0.4 = 36.8 \rightarrow \text{rounded to 37} \rightarrow \texttt{"medium"} \rightarrow \text{silent miss}
+  \]
+
+  The blend weight fix was the difference between catching and missing the exact attack this product exists to stop.
+
+  \source{FOUNDERS\_BUILD\_LOG.md --- Bug 1}\\
+  \source{session-3-problems-solved.md --- Problem 1}\\
+  \verified{fraud\_detector.ts lines 41--62, SCAN\_PATTERNS array}
+
+  \subsubsection{Fact 2: Cross-Layer Correlation}
+
+  When a payment is intercepted on PayPal or Wells Fargo Zelle, the background worker checks \texttt{chrome.storage.local} for Gmail scam detections within a 24-hour window. If a match exists, the payment risk score increases by +30 and a human-readable note is attached:
+
+  \begin{quote}
+  ``You received a scam email from [sender] 26 minutes ago. Combined with this payment, fraud risk is elevated.''
+  \end{quote}
+
+  Storage uses \texttt{chrome.storage.local} because MV3 service workers die after approximately 30 seconds idle and would lose in-memory state. The correlation check was originally wired into the \texttt{ANALYZE\_RISK} handler. This failed when the questionnaire path (user checks a box) bypassed AI analysis entirely. Fix: hooked into \texttt{LOG\_EVENT} handler for \texttt{intercepted} events, which always fires regardless of which path triggered the modal.
+
+  \source{EXPORT\_CORE\_LOGIC.md --- Section 5}\\
+  \source{FOUNDERS\_BUILD\_LOG.md --- Bug 4 fix}\\
+  \verified{risk\_engine.ts, fraud\_detector.ts line 12 (correlationNote field)}
+
+  \subsubsection{Fact 3: Confirmed Platform Coverage}
+
+  The extension is confirmed working on exactly:
+  \begin{itemize}[nosep]
+    \item 2 payment platforms: PayPal, Wells Fargo Zelle
+    \item 1 email platform: Gmail
+  \end{itemize}
+
+  The codebase contains selectors for Chase, Bank of America, Citi, and Venmo (\texttt{PORTAL\_CONFIGS} in \texttt{payment\_interceptor.tsx} lines 34--44). None of these have testing evidence in any session log, bug report, or demo record. Venmo is explicitly listed under ``What We Do NOT Have'' in \texttt{CLAUDE.md}.
+
+  \source{payment\_interceptor.tsx lines 11--44}\\
+  \source{CLAUDE.md --- ``What We Actually Support'' vs ``What We Do NOT Have''}\\
+  \source{FOUNDERS\_BUILD\_LOG.md --- only PayPal and WF Zelle appear in verified demos}
+
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
+
+  % ---------- 1.2 CRITICAL GAP ----------
+  \subsection{Critical Gap --- The Most Important Unanswered Question}
+
+  \textbf{Can Safety Intercept acquire 100 real users in 30 days?}
+
+  The B2B flywheel thesis:
+  \begin{enumerate}[nosep]
+    \item Free extension $\rightarrow$ users install
+    \item Users encounter scam attempts $\rightarrow$ extension collects labeled data (scam vs. not scam)
+    \item Proprietary dataset $\rightarrow$ ``The largest labeled scam-memo database''
+    \item B2B API pitch $\rightarrow$ licensed to fintechs and banks
+  \end{enumerate}
+
+  Step 1 has not started. The Chrome Web Store submission has been pending since April 2, 2026 (9 days as of this writing). Zero users outside of development testing. The battle plan projects 75--150 installs in 30 days with organic-only distribution, but this is projection based on channel estimates, not evidence.
+
+  If CWS approval takes 2 more weeks, the 30-day distribution window compresses to 15 days. Every downstream milestone --- labeled corpus, API pitch, fundraising --- depends on this step completing.
+
+  \source{battle\_plan.md Part IV --- ``Goal: 100 real installs in 30 days''}\\
+  \source{FOUNDERS\_BUILD\_LOG.md --- ``Chrome Web Store: Submitted April 2, 2026''}
+
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
+
+  % ---------- 1.3 UX STRESS TEST ----------
+  \subsection{UX Stress Test --- Click Send to Interception}
+
+  The exact sequence for a PayPal payment interception, traced through source code:
+
+  \begin{enumerate}
+    \item User navigates to PayPal send page.
+    \item \texttt{payment\_interceptor.tsx} loads. \texttt{getActiveConfig()} matches \texttt{paypal.com} against \texttt{PORTAL\_CONFIGS}. A \texttt{MutationObserver} watches for buttons matching selectors: \texttt{button[data-testid="submit-button-confirm"]}, \texttt{button[data-testid="submit-button"]}, and 3 fallbacks.
+    \item User enters amount and memo text. Clicks the Send button.
+    \item Capture-phase event listener fires (\texttt{\{ capture: true \}}). Calls \texttt{preventDefault()} and \texttt{stopImmediatePropagation()}. The payment is halted before PayPal's scripts process it.
+    \item A questionnaire renders inside a closed Shadow DOM: 3 questions.
+      \begin{itemize}[nosep]
+        \item Did someone tell you to send this money?
+        \item Is this the first time you're sending to this person?
+        \item Were you told this is urgent or secret?
+      \end{itemize}
+    \item \textbf{Path A --- any ``yes'':} Immediate critical block. No AI call needed. Modal renders with warning.
+    \item \textbf{Path B --- all ``no'':} Content script sends \texttt{chrome.runtime.sendMessage(\{ type: 'ANALYZE\_RISK', memo, amount, platform \})} to the background service worker.
+    \item Background worker runs two analyses in parallel:
+      \begin{itemize}[nosep]
+        \item \texttt{FraudDetector.analyze(memo)} --- heuristic regex check against 18 \texttt{SCAN\_PATTERNS}. Instant.
+        \item \texttt{callRelayAPI(memo, token, url, 5000, amount, platform)} --- LLM analysis via Cloudflare relay to Claude Haiku. Median latency: $\sim$500ms. Timeout: 5 seconds.
+      \end{itemize}
+    \item \texttt{blendScores(heuristic, llm, 0.6)} with PayPal weights (60\% heuristic / 40\% LLM). \texttt{scoreToRiskLevel()}: $\geq$80 = critical, $\geq$50 = high, $\geq$20 = medium, $<$20 = low.
+    \item Cross-layer correlation check: \texttt{chrome.storage.local.get('gmailDetections')}. If any detection exists within 24 hours, score boosted by +30 and \texttt{correlationNote} attached.
+    \item Result returned to content script via \texttt{sendResponse}. Modal renders in Shadow DOM showing risk level, flag pills, recommendation, and (if applicable) the correlation note.
+    \item User chooses: ``Go back --- stay safe'' (triggers share screen with WhatsApp/SMS/Copy) or ``Proceed Anyway'' (payment continues).
+  \end{enumerate}
+
+  \source{payment\_interceptor.tsx --- PORTAL\_CONFIGS, event listener, questionnaire}\\
+  \source{risk\_engine.ts --- ANALYZE\_RISK handler, analyzeMemoWithLLM, blendScores}\\
+  \source{fraud\_detector.ts --- SCAN\_PATTERNS, callRelayAPI, scoreToRiskLevel}\\
+  \source{EXPORT\_CORE\_LOGIC.md --- Section 5 (correlation engine)}
+
+  \subsubsection{Identified Failure Points}
+
+  \begin{longtable}{p{4cm} p{9cm}}
+  \toprule
+  \textbf{Failure Condition} & \textbf{Consequence} \\
+  \midrule
+  Relay down or latency $>$5s & LLM returns null. Score is heuristic-only. A crafted social engineering email with zero spam keywords scores 0. \textbf{Silent miss.} \\
+  \midrule
+  MV3 service worker killed ($\sim$30s idle) & \texttt{chrome.runtime.sendMessage} must handle worker restart. If it doesn't, message fails silently. \\
+  \midrule
+  PayPal SPA re-render & MutationObserver could detach if parent node is replaced entirely rather than child nodes mutated. \\
+  \midrule
+  Wells Fargo button text change & Two-step flow relies on \texttt{/\^{}Send\$/i} text match. If WF changes button text, interception fails. \\
+  \midrule
+  User on mobile & Extension is desktop Chrome only. No protection whatsoever. \\
+  \midrule
+  User not on Gmail & No email scanner for Yahoo, Outlook, ProtonMail. Cross-layer signal unavailable. Payment-only heuristic + LLM analysis still works. \\
+  \midrule
+  User on unsupported platform & Cash App, bank wire, gift cards, cryptocurrency --- no interception. \\
+  \bottomrule
+  \end{longtable}
+
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
+
+  % ---------- 1.4 HALLUCINATION RISK ----------
+  \subsection{Hallucination Risk Assessment}
+
+  \begin{longtable}{p{3.5cm} p{2.5cm} p{7cm}}
+  \toprule
+  \textbf{Claim} & \textbf{Status} & \textbf{Evidence} \\
+  \midrule
+  ``Venmo supported'' & \textcolor{withdrawn}{\textbf{WITHDRAWN}} & Selectors exist in code (line 25) but CLAUDE.md lists Venmo under ``What We Do NOT Have.'' No test evidence in any session log. \\
+  \midrule
+  ``Chase, BofA, Citi supported'' & \textcolor{withdrawn}{\textbf{WITHDRAWN}} & Selectors in code (lines 34--44). Zero testing evidence. Added speculatively. \\
+  \midrule
+  ``\$50K--\$500K/yr B2B pricing'' & \textcolor{unvalidated}{\textbf{UNVALIDATED}} & Zero B2B customers. Zero pilot conversations. Aspirational number from \texttt{FOUNDERS\_BUILD\_LOG.md}. \\
+  \midrule
+  ``Cross-layer correlation is novel'' & \textcolor{plausible}{\textbf{PLAUSIBLE}} & No competitor in \texttt{competitive\_intelligence.md} has email $\rightarrow$ payment same-device 24h correlation. Scamnetic does recipient identity-proofing. Google does on-device scam detection. Neither correlates across channels in browser. \\
+  \midrule
+  ``$<$200ms latency'' & \textcolor{withdrawn}{\textbf{PREVIOUSLY WITHDRAWN}} & Billy caught this claim. Actual measurement: $\sim$500ms median for LLM call. \\
+  \midrule
+  ``Open source'' & \textcolor{withdrawn}{\textbf{PREVIOUSLY WITHDRAWN}} & Billy caught this claim. The project is not open source. \\
+  \midrule
+  ``\$0.05--\$0.10/API call'' B2B pricing & \textcolor{unvalidated}{\textbf{UNVALIDATED}} & From \texttt{Safety\_Intercept\_Grand\_White\_Paper.tex}. No market validation. \\
+  \midrule
+  ``7 scam types detected'' & \textcolor{plausible}{\textbf{VERIFIABLE}} & \texttt{SCAN\_PATTERNS} contains 18 regex patterns across $\sim$7 categories: Urgency, Social Engineering (Family), Lottery, Phishing, Advance Fee, Credential Phishing, Fake Shipping, plus family emergency subcategories. \\
+  \bottomrule
+  \end{longtable}
+
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
+
+  % ---------- 1.5 AI INTEGRATION ----------
+  \subsection{AI Integration Sanity Check}
+
+  \subsubsection{API Key Security}
+  The relay auth token is stored as a Vite environment variable (\texttt{VITE\_RELAY\_AUTH\_TOKEN}) in a gitignored \texttt{.env} file. At build time, Vite inlines the token into the background script. The Cloudflare Worker holds a matching secret. The Anthropic API key exists only inside the Cloudflare Worker environment --- never in extension code.
+
+  \verified{risk\_engine.ts line 19: \texttt{import.meta.env.VITE\_RELAY\_AUTH\_TOKEN}}\\
+  \source{session-3-problems-solved.md --- Problem 2}
+
+  \subsubsection{Known Bug History}
+
+  Three bugs in the AI integration pipeline, all resolved:
+
+  \begin{enumerate}[nosep]
+    \item \textbf{Markdown fence bug.} Claude Haiku wrapped its JSON response in \texttt{```json ```} fences despite the system prompt instructing otherwise. \texttt{JSON.parse()} threw silently. Fix: regex strip \texttt{responseText.replace(/\^{}```json$\backslash$n?/, '').replace(/$\backslash$n?```\$/, '')}. \source{PARTNERSHIP\_ANALYSIS.md --- Problem 2}
+
+    \item \textbf{Escaped template literal bug.} After a code refactor, \texttt{relay-worker.js} contained escaped \texttt{\$\backslash$\{memo\}} instead of \texttt{\$\{memo\}}. The literal string \texttt{``\$\{memo\}''} was sent to Anthropic. Symptom: \texttt{riskScore: 0}. Fix: replace escaped characters with real template literals. \source{PARTNERSHIP\_ANALYSIS.md --- Problem 7}
+
+    \item \textbf{Blend weight bug.} Default 60/40 weights buried LLM signal for Gmail. A crafted email scoring 92 from LLM blended to 37 (medium) and was silently missed. Fix: Gmail uses 20/80 weights. \source{session-3-problems-solved.md --- Problem 1}
+  \end{enumerate}
+
+  \subsubsection{Cost at Scale}
+
+  Claude Haiku pricing is low per call. Projected load at 10,000 daily active users: $\sim$30,000 API calls/day (assuming $\sim$3 interceptions or scans per user). The questionnaire bypass (any ``yes'' answer $\rightarrow$ critical block without AI call) reduces unnecessary API volume. Telemetry is fire-and-forget, opt-in only, and does not trigger additional LLM calls.
+
+  \subsubsection{PII Handling}
+
+  \texttt{stripPII()} in \texttt{risk\_engine.ts} (lines 27--33) removes phone numbers, email addresses, and URLs via regex before sending to the telemetry endpoint. Names are intentionally kept because they are part of scam scripts (e.g., ``nurse Margaret,'' ``Professor Chen'') and are training signal. Memo text is truncated to 800 characters.
+
+  \verified{risk\_engine.ts lines 27--33}
+
+  \subsubsection{Failure Mode}
+
+  If the Anthropic API is unreachable or the Cloudflare relay is down, the \texttt{callRelayAPI} function returns null after a 5-second timeout. The extension falls back to heuristic-only scoring. No error is surfaced to the user. This is silent degradation. In this state, crafted social engineering emails with zero spam keywords will score 0 and be missed entirely. There is no mechanism to inform the user that AI analysis is unavailable.
+
+  \newpage
+
+  % ==================== PART II ====================
+  \section*{Part II --- White Paper}
+  \addcontentsline{toc}{section}{Part II --- White Paper}
+
+  % ---------- 2.1 PRODUCT FLOOR ----------
+  \subsection{Section 1: Product Floor}
+
+  What exists and works, verified through testing and session logs. What does not exist.
+
+  \subsubsection{Built and Confirmed Working}
+
+  \begin{longtable}{p{5cm} p{8cm}}
+  \toprule
+  \textbf{Component} & \textbf{Evidence} \\
+  \midrule
+  PayPal payment interception & End-to-end demo verified. Send button captured, questionnaire shown, modal rendered. Amount tracked. \source{FOUNDERS\_BUILD\_LOG.md --- ``Attack chain demo (verified working)''} \\
+  \midrule
+  Wells Fargo Zelle interception & Two-step flow solved. \texttt{isButtonMatch} checks selector + text content. Billy navigated the full flow live to provide selectors. \source{PARTNERSHIP\_ANALYSIS.md --- Problem 3} \\
+  \midrule
+  Gmail scanner & MutationObserver with 100ms debounce. SPA navigation via hashchange + 500ms polling. Shadow DOM banner with flag pills. \source{FOUNDERS\_BUILD\_LOG.md --- Session 2} \\
+  \midrule
+  Cross-layer correlation & Gmail detection + payment attempt within 24h = +30 score boost. Verified: dashboard showed ``16 seconds later $\rightarrow$ PayPal payment blocked.'' \source{FOUNDERS\_BUILD\_LOG.md --- Session 2, Bug 4 fix} \\
+  \midrule
+  Heuristic + LLM blend & 18 regex patterns. Platform-aware weights. Verified: Margaret email scores 74/high on Gmail, 37/medium on old weights. \source{fraud\_detector.ts, session-3-problems-solved.md} \\
+  \midrule
+  Cloudflare relay & Proxies Claude Haiku calls. Stores events in KV. Auth token rotated to 64-char hex. \source{EXPORT\_CORE\_LOGIC.md --- Section 4} \\
+  \midrule
+  Live dashboard & Standalone HTML. Fetches KV via /dashboard route. Groups entries into attack chain cases. \source{FOUNDERS\_BUILD\_LOG.md --- Session 2} \\
+  \midrule
+  Scam checker & Public /check endpoint. Mobile-first web app at scam-checker.pages.dev. \source{session-4-soul-and-new-idea.md} \\
+  \midrule
+  Privacy policy & Deployed at /privacy. Discloses: memo text to Anthropic, detection events to Cloudflare KV, B2B data flywheel intent (opt-in telemetry). \source{Privacy.tsx} \\
+  \midrule
+  Viral loop share screen & Post-intercept: ``\$X protected'' + WhatsApp/SMS/Copy buttons. Triggers on ``Go back --- stay safe.'' \source{payment\_interceptor.tsx --- share screen implementation} \\
+  \midrule
+  Popup UI & Dark navy. Stats (Blocked/Warnings/Safe). Activity feed. iOS-style toggle. Telemetry opt-in toggle. \source{FOUNDERS\_BUILD\_LOG.md --- Session 1} \\
+  \bottomrule
+  \end{longtable}
 
-\subsubsection{Not Built}
+  \subsubsection{Not Built}
 
-\begin{itemize}[nosep]
-  \item B2B fraud detection API --- no endpoint, no spec, no pilot
-  \item SMS interception --- not started
-  \item Crypto fraud detection --- not started
-  \item Mobile app --- desktop Chrome only
-  \item Venmo interception --- selectors exist, not confirmed working \withdrawn{No test evidence}
-  \item Chase, Bank of America, Citi --- selectors exist, not confirmed working \withdrawn{No test evidence}
-  \item UK banks (HSBC, Barclays, Revolut) --- listed in old CLAUDE.md as supported, explicitly removed as inaccurate
-  \item Automated regression testing for DOM selectors --- not started
-  \item Incoming payment scanner (Venmo refund scam) --- not started
-\end{itemize}
+  \begin{itemize}[nosep]
+    \item B2B fraud detection API --- no endpoint, no spec, no pilot
+    \item SMS interception --- not started
+    \item Crypto fraud detection --- not started
+    \item Mobile app --- desktop Chrome only
+    \item Venmo interception --- selectors exist, not confirmed working \withdrawn{No test evidence}
+    \item Chase, Bank of America, Citi --- selectors exist, not confirmed working \withdrawn{No test evidence}
+    \item UK banks (HSBC, Barclays, Revolut) --- listed in old CLAUDE.md as supported, explicitly removed as inaccurate
+    \item Automated regression testing for DOM selectors --- not started
+    \item Incoming payment scanner (Venmo refund scam) --- not started
+  \end{itemize}
 
-\vspace{12pt}
-\hrule
-\vspace{12pt}
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
 
-% ---------- 2.2 VULNERABLE USER FLOW ----------
-\subsection{Section 2: Vulnerable User Flow --- The Margaret Scenario}
+  % ---------- 2.2 VULNERABLE USER FLOW ----------
+  \subsection{Section 2: Vulnerable User Flow --- The Margaret Scenario}
 
-A grandmother in Ohio. Age 68. Uses Gmail on Chrome desktop. Has a PayPal account she uses to send money to family. She receives an email from someone claiming to be Margaret, a friend from church, saying her daughter is in the hospital, her phone died, and she needs \$200 via PayPal tonight.
+  A grandmother in Ohio. Age 68. Uses Gmail on Chrome desktop. Has a PayPal account she uses to send money to family. She receives an email from someone claiming to be Margaret, a friend from church, saying her daughter is in the hospital, her phone died, and she needs \$200 via PayPal tonight.
 
-\subsubsection{Step 1: Email Arrives}
+  \subsubsection{Step 1: Email Arrives}
 
-\texttt{gmail\_scanner.tsx} is active. The MutationObserver detects a new email body. The content is extracted and sent to the background worker via \texttt{chrome.runtime.sendMessage(\{ type: 'ANALYZE\_RISK', memo: emailBody, platform: 'Gmail' \})}.
+  \texttt{gmail\_scanner.tsx} is active. The MutationObserver detects a new email body. The content is extracted and sent to the background worker via \texttt{chrome.runtime.sendMessage(\{ type: 'ANALYZE\_RISK', memo: emailBody, platform: 'Gmail' \})}.
 
-The background worker runs the heuristic + LLM blend with Gmail weights (20\% heuristic / 80\% LLM). The email contains: ``phone died,'' ``hospital,'' ``friend from church,'' ``PayPal,'' ``tonight.'' Heuristic score: patterns match ``Excuse Pattern'' (weight 30), ``Medical Payment Urgency'' (weight 30), ``Third-Party Impersonation'' (weight 40), ``Payment Link in Email'' (weight 55). Multiple matches push heuristic above 0. LLM returns 92/critical.
+  The background worker runs the heuristic + LLM blend with Gmail weights (20\% heuristic / 80\% LLM). The email contains: ``phone died,'' ``hospital,'' ``friend from church,'' ``PayPal,'' ``tonight.'' Heuristic score: patterns match ``Excuse Pattern'' (weight 30), ``Medical Payment Urgency'' (weight 30), ``Third-Party Impersonation'' (weight 40), ``Payment Link in Email'' (weight 55). Multiple matches push heuristic above 0. LLM returns 92/critical.
 
-A red gradient banner appears in Gmail inside a Shadow DOM: ``Scam Email Detected.'' Flag pills: ``Family Emergency Scam,'' ``Emotional Manipulation,'' ``Urgency Pressure.''
+  A red gradient banner appears in Gmail inside a Shadow DOM: ``Scam Email Detected.'' Flag pills: ``Family Emergency Scam,'' ``Emotional Manipulation,'' ``Urgency Pressure.''
 
-\source{FOUNDERS\_BUILD\_LOG.md --- ``The Margaret email score (verified)''}\\
-\source{fraud\_detector.ts --- SCAN\_PATTERNS lines 56--62}
+  \source{FOUNDERS\_BUILD\_LOG.md --- ``The Margaret email score (verified)''}\\
+  \source{fraud\_detector.ts --- SCAN\_PATTERNS lines 56--62}
 
-\subsubsection{Step 2: She Clicks the PayPal Link Anyway}
+  \subsubsection{Step 2: She Clicks the PayPal Link Anyway}
 
-The email contains a PayPal link. She clicks it despite the banner. She has been told this is urgent --- Margaret's daughter needs help tonight. The banner is a warning. It is not a wall. She can dismiss it and proceed.
+  The email contains a PayPal link. She clicks it despite the banner. She has been told this is urgent --- Margaret's daughter needs help tonight. The banner is a warning. It is not a wall. She can dismiss it and proceed.
 
-This is the central design tension: a wall would prevent false positives from blocking legitimate payments. A warning respects autonomy but allows the scam to continue. The product chose warning.
+  This is the central design tension: a wall would prevent false positives from blocking legitimate payments. A warning respects autonomy but allows the scam to continue. The product chose warning.
 
-\subsubsection{Step 3: PayPal Opens}
+  \subsubsection{Step 3: PayPal Opens}
 
-\texttt{payment\_interceptor.tsx} activates. \texttt{getActiveConfig()} matches \texttt{paypal.com}. MutationObserver watches for Send buttons. She enters \$200 and a memo: ``Margaret church hospital payment.''
+  \texttt{payment\_interceptor.tsx} activates. \texttt{getActiveConfig()} matches \texttt{paypal.com}. MutationObserver watches for Send buttons. She enters \$200 and a memo: ``Margaret church hospital payment.''
 
-\subsubsection{Step 4: She Clicks Send}
+  \subsubsection{Step 4: She Clicks Send}
 
-Capture-phase listener fires. Payment halted. Questionnaire appears in Shadow DOM.
+  Capture-phase listener fires. Payment halted. Questionnaire appears in Shadow DOM.
 
-\begin{quote}
-Did someone tell you to send this money? --- \textbf{Yes.}
-\end{quote}
+  \begin{quote}
+  Did someone tell you to send this money? --- \textbf{Yes.}
+  \end{quote}
 
-Immediate critical block. No AI call needed. The modal renders.
+  Immediate critical block. No AI call needed. The modal renders.
 
-\subsubsection{Step 5: The Correlation Note}
+  \subsubsection{Step 5: The Correlation Note}
 
-Because a Gmail scam detection exists from minutes ago, the modal includes:
+  Because a Gmail scam detection exists from minutes ago, the modal includes:
 
-\begin{quote}
-``You received a scam email from [sender address] [X] minutes ago. Combined with this payment, fraud risk is elevated.''
-\end{quote}
+  \begin{quote}
+  ``You received a scam email from [sender address] [X] minutes ago. Combined with this payment, fraud risk is elevated.''
+  \end{quote}
 
-This is the cross-layer correlation. The email and the payment are linked as one attack chain. She sees both signals together. She stops.
+  This is the cross-layer correlation. The email and the payment are linked as one attack chain. She sees both signals together. She stops.
 
-\source{EXPORT\_CORE\_LOGIC.md --- Section 5}\\
-\source{FOUNDERS\_BUILD\_LOG.md --- Bug 7 fix (correlation note in modal)}
+  \source{EXPORT\_CORE\_LOGIC.md --- Section 5}\\
+  \source{FOUNDERS\_BUILD\_LOG.md --- Bug 7 fix (correlation note in modal)}
 
-\subsubsection{Where This Fails}
+  \subsubsection{Where This Fails}
 
-\begin{itemize}[nosep]
-  \item If she uses Yahoo Mail instead of Gmail: no email scanner. No cross-layer signal. The payment interception still works, but without the correlation note, the modal is less convincing.
-  \item If she is on her phone: no extension. No protection.
-  \item If she uses Cash App or Zelle outside Wells Fargo: no interception.
-  \item If she sends a bank wire or buys gift cards: no interception.
-  \item If the relay is down: heuristic-only. The memo ``Margaret church hospital payment'' may score nonzero (``Medical Payment Urgency'' pattern), but without LLM analysis, the nuance of the social engineering is lost.
-  \item If she answers ``no'' to all questionnaire questions (because the scammer coached her to deny being told): Path B activates. AI analysis runs. The memo scores high from the LLM, and the correlation note still fires. She is likely still protected --- but this depends on the LLM correctly scoring a short memo.
-\end{itemize}
+  \begin{itemize}[nosep]
+    \item If she uses Yahoo Mail instead of Gmail: no email scanner. No cross-layer signal. The payment interception still works, but without the correlation note, the modal is less convincing.
+    \item If she is on her phone: no extension. No protection.
+    \item If she uses Cash App or Zelle outside Wells Fargo: no interception.
+    \item If she sends a bank wire or buys gift cards: no interception.
+    \item If the relay is down: heuristic-only. The memo ``Margaret church hospital payment'' may score nonzero (``Medical Payment Urgency'' pattern), but without LLM analysis, the nuance of the social engineering is lost.
+    \item If she answers ``no'' to all questionnaire questions (because the scammer coached her to deny being told): Path B activates. AI analysis runs. The memo scores high from the LLM, and the correlation note still fires. She is likely still protected --- but this depends on the LLM correctly scoring a short memo.
+  \end{itemize}
 
-\vspace{12pt}
-\hrule
-\vspace{12pt}
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
 
-% ---------- 2.3 LIABILITY GAP ----------
-\subsection{Section 3: Liability Gap}
+  % ---------- 2.3 LIABILITY GAP ----------
+  \subsection{Section 3: Liability Gap}
 
-\subsubsection{False Positive Friction}
+  \subsubsection{False Positive Friction}
 
-A false positive blocks a legitimate payment. The user sees the modal, clicks ``Proceed Anyway,'' and the payment goes through. Cost: 5--10 seconds of friction. No financial loss. The extension does not permanently block any payment --- the user always retains the ability to proceed.
+  A false positive blocks a legitimate payment. The user sees the modal, clicks ``Proceed Anyway,'' and the payment goes through. Cost: 5--10 seconds of friction. No financial loss. The extension does not permanently block any payment --- the user always retains the ability to proceed.
 
-Risk: if false positives are frequent, users disable the extension or ignore warnings (``alarm fatigue''). No data exists on false positive rate because there are no real users.
+  Risk: if false positives are frequent, users disable the extension or ignore warnings (``alarm fatigue''). No data exists on false positive rate because there are no real users.
 
-\subsubsection{False Negative Liability}
+  \subsubsection{False Negative Liability}
 
-A false negative misses a scam. The user sends money believing the extension would have warned them if something were wrong. The extension provided a false sense of security.
+  A false negative misses a scam. The user sends money believing the extension would have warned them if something were wrong. The extension provided a false sense of security.
 
-The extension currently displays no disclaimer at interception time. There is no text stating ``this analysis may not catch all scams'' or ``use your own judgment.'' The privacy policy (\texttt{Privacy.tsx}) describes what data is collected but does not disclaim accuracy.
+  The extension currently displays no disclaimer at interception time. There is no text stating ``this analysis may not catch all scams'' or ``use your own judgment.'' The privacy policy (\texttt{Privacy.tsx}) describes what data is collected but does not disclaim accuracy.
 
-This is a gap. If a user loses money after the extension failed to flag a scam, and they argue they relied on the extension's implicit guarantee, there is no visible disclaimer to point to.
+  This is a gap. If a user loses money after the extension failed to flag a scam, and they argue they relied on the extension's implicit guarantee, there is no visible disclaimer to point to.
 
-\subsubsection{Data in Transit}
+  \subsubsection{Data in Transit}
 
-Payment memo text is sent to two third parties:
-\begin{enumerate}[nosep]
-  \item Cloudflare Workers (relay) --- processes the request, stores events in KV
-  \item Anthropic (Claude Haiku API) --- receives the memo text for analysis
-\end{enumerate}
+  Payment memo text is sent to two third parties:
+  \begin{enumerate}[nosep]
+    \item Cloudflare Workers (relay) --- processes the request, stores events in KV
+    \item Anthropic (Claude Haiku API) --- receives the memo text for analysis
+  \end{enumerate}
 
-If the memo contains sensitive information (medical details, legal matters, personal names), that information has been transmitted to both parties. The privacy policy discloses this. Anthropic's data handling is governed by their privacy policy. Cloudflare's by theirs.
+  If the memo contains sensitive information (medical details, legal matters, personal names), that information has been transmitted to both parties. The privacy policy discloses this. Anthropic's data handling is governed by their privacy policy. Cloudflare's by theirs.
 
-\source{Privacy.tsx --- ``Payment memo text'' and ``Third parties'' sections}
+  \source{Privacy.tsx --- ``Payment memo text'' and ``Third parties'' sections}
 
-\subsubsection{B2B Data Flywheel Disclosure}
+  \subsubsection{B2B Data Flywheel Disclosure}
 
-The privacy policy explicitly states: ``We are deliberately building a labeled fraud signal dataset. This dataset is the foundation of a fraud detection API we are developing for financial platforms and fintechs.'' Telemetry is opt-in only and off by default. \texttt{stripPII()} removes phone numbers, emails, URLs before storage. Names are retained.
+  The privacy policy explicitly states: ``We are deliberately building a labeled fraud signal dataset. This dataset is the foundation of a fraud detection API we are developing for financial platforms and fintechs.'' Telemetry is opt-in only and off by default. \texttt{stripPII()} removes phone numbers, emails, URLs before storage. Names are retained.
 
-This is honest. It is also a liability surface. If a user opts in and their anonymized data contributes to a commercial API that later fails (false negative at a bank), there are untested legal questions about the data chain.
+  This is honest. It is also a liability surface. If a user opts in and their anonymized data contributes to a commercial API that later fails (false negative at a bank), there are untested legal questions about the data chain.
 
-\source{Privacy.tsx --- ``Anonymized telemetry (opt-in only)'' section}\\
-\verified{risk\_engine.ts lines 27--33, stripPII function}
+  \source{Privacy.tsx --- ``Anonymized telemetry (opt-in only)'' section}\\
+  \verified{risk\_engine.ts lines 27--33, stripPII function}
 
-\subsubsection{Regulatory Gaps}
+  \subsubsection{Regulatory Gaps}
 
-\begin{itemize}[nosep]
-  \item \textbf{GDPR:} The extension processes email content and payment memos for EU users. There is no explicit consent mechanism beyond the Chrome extension install flow and the opt-in telemetry toggle. No data deletion mechanism exists for relay-side KV logs.
-  \item \textbf{CCPA:} California users have the right to know what data is collected and to request deletion. The privacy policy describes collection. No deletion mechanism is implemented.
-  \item \textbf{Chrome Web Store policies:} CWS requires disclosure of data collected. The privacy policy exists. The extension requests permissions for Gmail + PayPal/WF domains only.
-\end{itemize}
+  \begin{itemize}[nosep]
+    \item \textbf{GDPR:} The extension processes email content and payment memos for EU users. There is no explicit consent mechanism beyond the Chrome extension install flow and the opt-in telemetry toggle. No data deletion mechanism exists for relay-side KV logs.
+    \item \textbf{CCPA:} California users have the right to know what data is collected and to request deletion. The privacy policy describes collection. No deletion mechanism is implemented.
+    \item \textbf{Chrome Web Store policies:} CWS requires disclosure of data collected. The privacy policy exists. The extension requests permissions for Gmail + PayPal/WF domains only.
+  \end{itemize}
 
-\vspace{12pt}
-\hrule
-\vspace{12pt}
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
 
-% ---------- 2.4 COMPETITIVE COLLAPSE ----------
-\subsection{Section 4: Competitive Collapse Timeline}
+  % ---------- 2.4 COMPETITIVE COLLAPSE ----------
+  \subsection{Section 4: Competitive Collapse Timeline}
 
-All competitor data from \source{competitive\_intelligence.md --- 18 companies analyzed}.
+  All competitor data from \source{competitive\_intelligence.md --- 18 companies analyzed}.
 
-\subsubsection{Now --- April 2026}
+  \subsubsection{Now --- April 2026}
 
-The window is open. No company ships a free Chrome extension that intercepts at the Send button on PayPal and Wells Fargo Zelle, detects scam emails in Gmail, and correlates them in a 24-hour window. The specific combination is unclaimed.
+  The window is open. No company ships a free Chrome extension that intercepts at the Send button on PayPal and Wells Fargo Zelle, detects scam emails in Gmail, and correlates them in a 24-hour window. The specific combination is unclaimed.
 
-Individually, each piece exists:
-\begin{itemize}[nosep]
-  \item Scamnetic (\$16M raised, Tampa) --- mobile app, recipient identity-proofing, B2B API. Does not operate in the browser. Does not read Gmail. \source{competitive\_intelligence.md --- Scamnetic}
-  \item Google Chrome Gemini Nano --- on-device LLM scam detection since May 2025. Today: tech support scams only. \source{competitive\_intelligence.md --- Google Chrome}
-  \item Norton Genie --- AI scam detection across SMS, calls, email. Bundled into Norton 360. Consumer subscription. \source{competitive\_intelligence.md --- Norton Genie}
-  \item Trend Micro ScamCheck --- Chrome extension with phishing page ratings. Does not intercept payments. \source{competitive\_intelligence.md --- Trend Micro}
-\end{itemize}
+  Individually, each piece exists:
+  \begin{itemize}[nosep]
+    \item Scamnetic (\$16M raised, Tampa) --- mobile app, recipient identity-proofing, B2B API. Does not operate in the browser. Does not read Gmail. \source{competitive\_intelligence.md --- Scamnetic}
+    \item Google Chrome Gemini Nano --- on-device LLM scam detection since May 2025. Today: tech support scams only. \source{competitive\_intelligence.md --- Google Chrome}
+    \item Norton Genie --- AI scam detection across SMS, calls, email. Bundled into Norton 360. Consumer subscription. \source{competitive\_intelligence.md --- Norton Genie}
+    \item Trend Micro ScamCheck --- Chrome extension with phishing page ratings. Does not intercept payments. \source{competitive\_intelligence.md --- Trend Micro}
+  \end{itemize}
 
-\subsubsection{6 Months --- October 2026}
+  \subsubsection{6 Months --- October 2026}
 
-\textbf{Scamnetic} likely expands from mobile to browser or deepens FI integrations. Their \$13M Series A (April 2025) funds 12--18 months of runway. By October 2026 they will have been in market for 10 months with IDeveryone Payment Protection.
+  \textbf{Scamnetic} likely expands from mobile to browser or deepens FI integrations. Their \$13M Series A (April 2025) funds 12--18 months of runway. By October 2026 they will have been in market for 10 months with IDeveryone Payment Protection.
 
-\textbf{Google Gemini Nano} has publicly stated plans to expand to ``other types of scams, including package tracking and unpaid toll scams.'' Payment-authorization fraud is a natural next step. If Google ships this, the browser extension layer becomes a commodity feature built into Chrome itself.
+  \textbf{Google Gemini Nano} has publicly stated plans to expand to ``other types of scams, including package tracking and unpaid toll scams.'' Payment-authorization fraud is a natural next step. If Google ships this, the browser extension layer becomes a commodity feature built into Chrome itself.
 
-\textbf{Plaid} scheduled Q1 2026 real-time Fraud Insights. By October, this product will be deployed across their 12,000+ FI network. Plaid has bank data, fintech distribution, and transaction history that Safety Intercept cannot access.
+  \textbf{Plaid} scheduled Q1 2026 real-time Fraud Insights. By October, this product will be deployed across their 12,000+ FI network. Plaid has bank data, fintech distribution, and transaction history that Safety Intercept cannot access.
 
-\source{competitive\_intelligence.md --- Scamnetic, Google Chrome, Plaid}
+  \source{competitive\_intelligence.md --- Scamnetic, Google Chrome, Plaid}
 
-\subsubsection{12 Months --- April 2027}
+  \subsubsection{12 Months --- April 2027}
 
-\textbf{Sardine} (\$145M, a16z-led) is positioning around Nacha's June 2026 ACH credit fraud monitoring requirement. By April 2027, their DIBB SDK will be embedded in fintechs that Safety Intercept wants to sell to.
+  \textbf{Sardine} (\$145M, a16z-led) is positioning around Nacha's June 2026 ACH credit fraud monitoring requirement. By April 2027, their DIBB SDK will be embedded in fintechs that Safety Intercept wants to sell to.
 
-\textbf{Unit21} (\$92M, Tiger Global) relaunched as ``AI Risk Infrastructure'' with agentic AI in March 2026. CEO transition signals a strategic reset. By April 2027, their agentic fraud ops platform will be mature.
+  \textbf{Unit21} (\$92M, Tiger Global) relaunched as ``AI Risk Infrastructure'' with agentic AI in March 2026. CEO transition signals a strategic reset. By April 2027, their agentic fraud ops platform will be mature.
 
-\textbf{Critical threshold:} If Safety Intercept has not achieved 5,000+ users and at least 1 B2B pilot by April 2027, the labeled scam corpus is too small to differentiate against these incumbents. The data moat --- the core defensible asset --- never forms.
+  \textbf{Critical threshold:} If Safety Intercept has not achieved 5,000+ users and at least 1 B2B pilot by April 2027, the labeled scam corpus is too small to differentiate against these incumbents. The data moat --- the core defensible asset --- never forms.
 
-\source{competitive\_intelligence.md --- Sardine, Unit21}\\
-\source{battle\_plan.md Part IX --- Defensibility}
+  \source{competitive\_intelligence.md --- Sardine, Unit21}\\
+  \source{battle\_plan.md Part IX --- Defensibility}
 
-\subsubsection{18 Months --- October 2027}
+  \subsubsection{18 Months --- October 2027}
 
-\textbf{Google} likely has comprehensive scam protection built into Chrome. The free consumer extension layer is commoditized. The only defensible assets are:
-\begin{enumerate}[nosep]
-  \item The labeled scam corpus (if it exists at meaningful scale)
-  \item B2B relationships with fintechs (if any exist)
-  \item The provisional patent on contextual correlation (if filed)
-\end{enumerate}
+  \textbf{Google} likely has comprehensive scam protection built into Chrome. The free consumer extension layer is commoditized. The only defensible assets are:
+  \begin{enumerate}[nosep]
+    \item The labeled scam corpus (if it exists at meaningful scale)
+    \item B2B relationships with fintechs (if any exist)
+    \item The provisional patent on contextual correlation (if filed)
+  \end{enumerate}
 
-If none of these exist by October 2027, Safety Intercept is a Chrome extension competing against a native Chrome feature. That is not a business.
+  If none of these exist by October 2027, Safety Intercept is a Chrome extension competing against a native Chrome feature. That is not a business.
 
-\source{competitive\_intelligence.md --- Google Chrome (Gemini Nano)}\\
-\source{battle\_plan.md Part IX --- ``Defend the Extension moat aggressively''}
+  \source{competitive\_intelligence.md --- Google Chrome (Gemini Nano)}\\
+  \source{battle\_plan.md Part IX --- ``Defend the Extension moat aggressively''}
 
-\vspace{12pt}
-\hrule
-\vspace{12pt}
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
 
-% ---------- 2.5 PARALLEL ROADMAPS ----------
-\subsection{Section 5: Parallel Roadmaps}
+  % ---------- 2.5 PARALLEL ROADMAPS ----------
+  \subsection{Section 5: Parallel Roadmaps}
 
-Five tracks running simultaneously. Each depends on the others.
+  Five tracks running simultaneously. Each depends on the others.
 
-\subsubsection{Track 1: Consumer Distribution}
+  \subsubsection{Track 1: Consumer Distribution}
 
-\begin{tabular}{l l l}
-\toprule
-\textbf{Milestone} & \textbf{Dependency} & \textbf{Source} \\
-\midrule
-CWS approval & Pending since April 2 & \source{FOUNDERS\_BUILD\_LOG.md} \\
-100 installs & CWS approval + Reddit/campus push & \source{battle\_plan.md Part IV} \\
-1,000 installs & 100 + content + one lucky break & \source{battle\_plan.md --- projection} \\
-10,000 WAU & Viral loop + sustained distribution & \source{Grand White Paper --- fundraising trigger} \\
-\bottomrule
-\end{tabular}
+  \begin{tabular}{l l l}
+  \toprule
+  \textbf{Milestone} & \textbf{Dependency} & \textbf{Source} \\
+  \midrule
+  CWS approval & Pending since April 2 & \source{FOUNDERS\_BUILD\_LOG.md} \\
+  100 installs & CWS approval + Reddit/campus push & \source{battle\_plan.md Part IV} \\
+  1,000 installs & 100 + content + one lucky break & \source{battle\_plan.md --- projection} \\
+  10,000 WAU & Viral loop + sustained distribution & \source{Grand White Paper --- fundraising trigger} \\
+  \bottomrule
+  \end{tabular}
 
-\subsubsection{Track 2: B2B API}
+  \subsubsection{Track 2: B2B API}
 
-\begin{tabular}{l l}
-\toprule
-\textbf{Milestone} & \textbf{Dependency} \\
-\midrule
-Labeled corpus reaches statistical significance & 5,000+ user interceptions \\
-API spec published & Corpus exists + \texttt{/score\_memo} endpoint built \\
-3 pilot conversations & API spec + warm intros (Strawberry Creek Ventures) \\
-1 paying customer & Pilots succeed + pricing validated \\
-\bottomrule
-\end{tabular}
+  \begin{tabular}{l l}
+  \toprule
+  \textbf{Milestone} & \textbf{Dependency} \\
+  \midrule
+  Labeled corpus reaches statistical significance & 5,000+ user interceptions \\
+  API spec published & Corpus exists + \texttt{/score\_memo} endpoint built \\
+  3 pilot conversations & API spec + warm intros (Strawberry Creek Ventures) \\
+  1 paying customer & Pilots succeed + pricing validated \\
+  \bottomrule
+  \end{tabular}
 
-The B2B API concept: \texttt{POST /score\_memo} --- takes a payment memo string, returns scam probability. Stripe does not offer this as a standalone service.
+  The B2B API concept: \texttt{POST /score\_memo} --- takes a payment memo string, returns scam probability. Stripe does not offer this as a standalone service.
 
-\source{battle\_plan.md Part VIII --- ``The API concept''}
+  \source{battle\_plan.md Part VIII --- ``The API concept''}
 
-\subsubsection{Track 3: Fundraising}
+  \subsubsection{Track 3: Fundraising}
 
-Trigger: 10,000 WAU + 3 B2B pilots $\rightarrow$ \$1--2M seed at \$10M valuation.
+  Trigger: 10,000 WAU + 3 B2B pilots $\rightarrow$ \$1--2M seed at \$10M valuation.
 
-\source{Safety\_Intercept\_Grand\_White\_Paper.tex --- fundraising projections}\\
-\unvalidated{No investor conversations. Valuation is aspirational.}
+  \source{Safety\_Intercept\_Grand\_White\_Paper.tex --- fundraising projections}\\
+  \unvalidated{No investor conversations. Valuation is aspirational.}
 
-\subsubsection{Track 4: Intellectual Property}
+  \subsubsection{Track 4: Intellectual Property}
 
-Provisional patent: ``Systems and Methods for Correlating Email Threat Vectors with Peer-to-Peer Payment Memos.'' Filing cost: \$65 micro-entity fee. Timeline: within 7 days of CWS launch.
+  Provisional patent: ``Systems and Methods for Correlating Email Threat Vectors with Peer-to-Peer Payment Memos.'' Filing cost: \$65 micro-entity fee. Timeline: within 7 days of CWS launch.
 
-\source{battle\_plan.md Part IX --- ``Provisional patent: Contextual Correlation''}
+  \source{battle\_plan.md Part IX --- ``Provisional patent: Contextual Correlation''}
 
-\subsubsection{Track 5: Content \& SEO}
+  \subsubsection{Track 5: Content \& SEO}
 
-15 articles in 2 weeks targeting scam-search keywords. Clusters: ``Is this a scam?'' (highest ROI), payment memo behavior (category creation), platform-specific scam queries.
+  15 articles in 2 weeks targeting scam-search keywords. Clusters: ``Is this a scam?'' (highest ROI), payment memo behavior (category creation), platform-specific scam queries.
 
-\source{battle\_plan.md Part V --- Content Strategy}
+  \source{battle\_plan.md Part V --- Content Strategy}
 
-\subsubsection{Dependency Map}
+  \subsubsection{Dependency Map}
 
-\begin{verbatim}
-CWS Approval
-    |
-    v
-100 Users --> Labeled Corpus --> API Spec --> Pilots
-    |                                          |
-    v                                          v
-1K Users --> Content/SEO                   Fundraising
-    |                                      ($1-2M seed)
-    v
-10K WAU --> Patent Filed
-\end{verbatim}
+  \begin{verbatim}
+  CWS Approval
+      |
+      v
+  100 Users --> Labeled Corpus --> API Spec --> Pilots
+      |                                          |
+      v                                          v
+  1K Users --> Content/SEO                   Fundraising
+      |                                      ($1-2M seed)
+      v
+  10K WAU --> Patent Filed
+  \end{verbatim}
 
-Every track feeds into the others. The single point of failure is CWS approval. Nothing moves until users exist.
+  Every track feeds into the others. The single point of failure is CWS approval. Nothing moves until users exist.
 
-\vspace{12pt}
-\hrule
-\vspace{12pt}
+  \vspace{12pt}
+  \hrule
+  \vspace{12pt}
 
-% ---------- 2.6 UNCOMFORTABLE SYNTHESIS ----------
-\subsection{Section 6: Uncomfortable Synthesis}
+  % ---------- 2.6 UNCOMFORTABLE SYNTHESIS ----------
+  \subsection{Section 6: Uncomfortable Synthesis}
 
-\subsubsection{What Is True}
+  \subsubsection{What Is True}
 
-The product works for the specific flow it covers. PayPal and Wells Fargo Zelle payment interception, Gmail scam detection, cross-layer correlation --- these are verified, debugged, and functional. The Margaret email scenario runs end-to-end. Nine production bugs were found and fixed in a single session. The engineering is real.
+  The product works for the specific flow it covers. PayPal and Wells Fargo Zelle payment interception, Gmail scam detection, cross-layer correlation --- these are verified, debugged, and functional. The Margaret email scenario runs end-to-end. Nine production bugs were found and fixed in a single session. The engineering is real.
 
-\source{FOUNDERS\_BUILD\_LOG.md --- 5 sessions, 9 bugs, full demo verified}
+  \source{FOUNDERS\_BUILD\_LOG.md --- 5 sessions, 9 bugs, full demo verified}
 
-Cross-layer correlation is genuinely novel. No competitor in the 18-company analysis correlates email scam detection with payment interception in the same browser session within a time window. Scamnetic identity-proofs recipients. Google detects scams on-device. Plaid analyzes transaction history. Nobody connects the email that caused the payment to the payment itself. That combination is unclaimed.
+  Cross-layer correlation is genuinely novel. No competitor in the 18-company analysis correlates email scam detection with payment interception in the same browser session within a time window. Scamnetic identity-proofs recipients. Google detects scams on-device. Plaid analyzes transaction history. Nobody connects the email that caused the payment to the payment itself. That combination is unclaimed.
 
-\plausmark{Based on competitive\_intelligence.md --- 18 companies, none with this specific capability}
+  \plausmark{Based on competitive\_intelligence.md --- 18 companies, none with this specific capability}
 
-\subsubsection{What Is Narrow}
+  \subsubsection{What Is Narrow}
 
-The product protects users on desktop Chrome who use Gmail and pay via PayPal or Wells Fargo Zelle. That is a subset of a subset. Mobile users --- where most P2P payments happen --- have no protection. Yahoo and Outlook users have no email scanning. Cash App, Venmo (unconfirmed), bank wire, and gift card payments are uncovered.
+  The product protects users on desktop Chrome who use Gmail and pay via PayPal or Wells Fargo Zelle. That is a subset of a subset. Mobile users --- where most P2P payments happen --- have no protection. Yahoo and Outlook users have no email scanning. Cash App, Venmo (unconfirmed), bank wire, and gift card payments are uncovered.
 
-The grandmother in the Margaret scenario is protected \textit{only if} she uses the exact stack the extension covers. If she reads the scam email on her phone, or sends money via Cash App, or uses a Yahoo account --- the extension does nothing.
+  The grandmother in the Margaret scenario is protected \textit{only if} she uses the exact stack the extension covers. If she reads the scam email on her phone, or sends money via Cash App, or uses a Yahoo account --- the extension does nothing.
 
-\subsubsection{What Is Unproven}
+  \subsubsection{What Is Unproven}
 
-The B2B thesis requires a chain of events that has not started:
-\begin{enumerate}[nosep]
-  \item CWS approval (pending 9 days)
-  \item 100 installs (projected, not achieved)
-  \item 5,000+ interceptions (requires months of user activity)
-  \item API spec built (not started)
-  \item Pilot conversations with fintechs (not started)
-  \item Revenue (zero)
-\end{enumerate}
+  The B2B thesis requires a chain of events that has not started:
+  \begin{enumerate}[nosep]
+    \item CWS approval (pending 9 days)
+    \item 100 installs (projected, not achieved)
+    \item 5,000+ interceptions (requires months of user activity)
+    \item API spec built (not started)
+    \item Pilot conversations with fintechs (not started)
+    \item Revenue (zero)
+  \end{enumerate}
 
-The \$50K--\$500K/yr B2B pricing is aspirational. The \$10M seed valuation is aspirational. The ``500,000 scam memos'' in the B2B outreach email is a future state that requires significant scale. Today the corpus contains test data only.
+  The \$50K--\$500K/yr B2B pricing is aspirational. The \$10M seed valuation is aspirational. The ``500,000 scam memos'' in the B2B outreach email is a future state that requires significant scale. Today the corpus contains test data only.
 
-\unvalidated{All B2B projections. Zero customers, zero pilots, zero revenue.}
+  \unvalidated{All B2B projections. Zero customers, zero pilots, zero revenue.}
 
-\subsubsection{The Founder Question}
+  \subsubsection{The Founder Question}
 
-Billy LeBlanc is a solo non-technical founder at UC Berkeley building with AI tools (Claude Code, Anti Gravity with Gemini Fast). He has built a working Chrome extension from zero in 5 sessions totaling approximately 20 hours of engineering time.
+  Billy LeBlanc is a solo non-technical founder at UC Berkeley building with AI tools (Claude Code, Anti Gravity with Gemini Fast). He has built a working Chrome extension from zero in 5 sessions totaling approximately 20 hours of engineering time.
 
-This is either the strongest possible YC narrative --- ``one person with AI built what a team of 10 couldn't'' --- or a red flag: no technical co-founder, core IP depends on AI code generation, no one on the team who can debug a Cloudflare Worker at 2am during an outage without AI assistance.
+  This is either the strongest possible YC narrative --- ``one person with AI built what a team of 10 couldn't'' --- or a red flag: no technical co-founder, core IP depends on AI code generation, no one on the team who can debug a Cloudflare Worker at 2am during an outage without AI assistance.
 
-The partnership analysis documents both sides honestly. Billy's strengths: brutal product instinct, speed of decision-making, willingness to go get data directly (navigating Wells Fargo flow live to capture selectors). Billy's growth areas: verifying output before declaring done, scope creep by addition, trusting agent output without checking.
+  The partnership analysis documents both sides honestly. Billy's strengths: brutal product instinct, speed of decision-making, willingness to go get data directly (navigating Wells Fargo flow live to capture selectors). Billy's growth areas: verifying output before declaring done, scope creep by addition, trusting agent output without checking.
 
-\source{PARTNERSHIP\_ANALYSIS.md --- Sections 1--3}
+  \source{PARTNERSHIP\_ANALYSIS.md --- Sections 1--3}
 
-\subsubsection{The Real Risk}
+  \subsubsection{The Real Risk}
 
-The biggest risk is not competition. It is apathy. If the Chrome Web Store approval takes 3 more weeks, if the Reddit posts get 3 upvotes, if the campus flyers get ignored, if the senior centers say no --- then 100 users in 30 days becomes 12 users in 60 days and the flywheel never starts.
+  The biggest risk is not competition. It is apathy. If the Chrome Web Store approval takes 3 more weeks, if the Reddit posts get 3 upvotes, if the campus flyers get ignored, if the senior centers say no --- then 100 users in 30 days becomes 12 users in 60 days and the flywheel never starts.
 
-Competition will compress the timeline. Google will ship payment scam protection in Chrome. Scamnetic will expand. Plaid will deepen. But competition arrives on a schedule measured in months and years. Apathy --- users simply not caring enough to install a Chrome extension they've never heard of --- is the risk measured in days and weeks.
+  Competition will compress the timeline. Google will ship payment scam protection in Chrome. Scamnetic will expand. Plaid will deepen. But competition arrives on a schedule measured in months and years. Apathy --- users simply not caring enough to install a Chrome extension they've never heard of --- is the risk measured in days and weeks.
 
-The battle plan addresses this with 30 days of specific actions. The actions are concrete and realistic. Whether they produce 100 installs is unknown.
+  The battle plan addresses this with 30 days of specific actions. The actions are concrete and realistic. Whether they produce 100 installs is unknown.
 
-\source{battle\_plan.md Part IV --- 30-day tactical plan}
+  \source{battle\_plan.md Part IV --- 30-day tactical plan}
 
-\subsubsection{The Soul Question}
+  \subsubsection{The Soul Question}
 
-The soul documents (\texttt{POLLUX\_SOUL.md}, \texttt{CORE\_PHILOSOPHY.md}) are not marketing material. They are a genuine articulation of why this product exists: to protect people who cannot protect themselves, to be completely on their side, to tell them the truth. The closing statement --- ``We build for them. Only for them. Always for them'' --- is the founding commitment.
+  The soul documents (\texttt{POLLUX\_SOUL.md}, \texttt{CORE\_PHILOSOPHY.md}) are not marketing material. They are a genuine articulation of why this product exists: to protect people who cannot protect themselves, to be completely on their side, to tell them the truth. The closing statement --- ``We build for them. Only for them. Always for them'' --- is the founding commitment.
 
-\source{POLLUX\_SOUL.md --- closing statement}\\
-\source{CORE\_PHILOSOPHY.md --- ``Why This Exists''}
+  \source{POLLUX\_SOUL.md --- closing statement}\\
+  \source{CORE\_PHILOSOPHY.md --- ``Why This Exists''}
 
-The question is whether a soul translates to traction. A product with genuine values and zero users protects no one. The grandmother in Ohio is only protected if she installs the extension. She will only install it if she hears about it. She will only hear about it if distribution works. Distribution is the gap between the soul and the impact.
+  The question is whether a soul translates to traction. A product with genuine values and zero users protects no one. The grandmother in Ohio is only protected if she installs the extension. She will only install it if she hears about it. She will only hear about it if distribution works. Distribution is the gap between the soul and the impact.
 
-Billy named this directly: ``All of my time is worth it if I can give one person that feeling.'' The one person requires the distribution to reach her.
+  Billy named this directly: ``All of my time is worth it if I can give one person that feeling.'' The one person requires the distribution to reach her.
 
-\source{session-5-sallust-and-character.md --- ``All of my time is worth it if I can give one person that feeling''}
+  \source{session-5-sallust-and-character.md --- ``All of my time is worth it if I can give one person that feeling''}
 
-\subsubsection{The Bottom Line}
+  \subsubsection{The Bottom Line}
 
-Safety Intercept has a working product, a genuine insight (cross-layer correlation), an honest soul, and a clear B2B thesis. It has zero users, zero revenue, and a pending CWS approval. The competitive window is 6--12 months. The distribution plan is realistic but unproven. The founder is capable but solo.
+  Safety Intercept has a working product, a genuine insight (cross-layer correlation), an honest soul, and a clear B2B thesis. It has zero users, zero revenue, and a pending CWS approval. The competitive window is 6--12 months. The distribution plan is realistic but unproven. The founder is capable but solo.
 
-The next 30 days determine whether this becomes a company or an engineering project. The variable is not the product. The product works. The variable is whether anyone finds out it exists.
+  The next 30 days determine whether this becomes a company or an engineering project. The variable is not the product. The product works. The variable is whether anyone finds out it exists.
 
-\vspace{24pt}
-\hrule
-\vspace{12pt}
+  \vspace{24pt}
+  \hrule
+  \vspace{12pt}
 
-\begin{center}
-\textit{Compiled by Pollux from 16 source documents, 5 session logs, and direct code verification.}\\
-\textit{April 11, 2026.}\\[6pt]
-\textit{``We build for them. Only for them. Always for them.''}
-\end{center}
+  \begin{center}
+  \textit{Compiled by Pollux from 16 source documents, 5 session logs, and direct code verification.}\\
+  \textit{April 11, 2026.}\\[6pt]
+  \textit{``We build for them. Only for them. Always for them.''}
+  \end{center}
 
-\end{document}
+  \end{document}

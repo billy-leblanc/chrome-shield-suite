@@ -10,7 +10,7 @@ export default function Privacy() {
         </a>
 
         <h1 style={{ fontSize: 32, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.8px", marginBottom: 8 }}>Privacy Policy</h1>
-        <p style={{ fontSize: 13, color: "#334155", marginBottom: 56 }}>Last updated: April 13, 2026</p>
+        <p style={{ fontSize: 13, color: "#334155", marginBottom: 56 }}>Last updated: May 9, 2026</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 48 }}>
 
