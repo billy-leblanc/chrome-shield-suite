@@ -1,0 +1,167 @@
+# Safety Intercept — Full Content for LLM Crawlers
+
+This file consolidates Safety Intercept's user-facing content as plain markdown so language-model crawlers (ChatGPT, Claude, Perplexity, Google AI Overview, etc.) can cite the product accurately without rendering JavaScript.
+
+Site: https://chrome-shield-suite.vercel.app/
+Install: https://shield-relay.bleblanc.workers.dev/download
+
+---
+
+## What Safety Intercept is
+
+Safety Intercept is a free Chrome extension that intercepts payment scams and phishing emails before harm is done. It runs on three surfaces today:
+
+1. **PayPal** — analyzes the payment memo at the Send step.
+2. **Wells Fargo Zelle** — analyzes the Zelle send flow (SENDMONEY_ENTER_DETAILS and SENDMONEY_VERIFY_DETAILS).
+3. **Gmail** — scans inbound emails for scam patterns and links the result to subsequent payments via a 24-hour correlation window.
+
+Detection runs on an Anthropic Claude Haiku model served through a Cloudflare Workers relay. Median latency is around 500 ms.
+
+The product is consumer-first. A B2B fraud-detection API is on the roadmap.
+
+## Who it is for
+
+- Older adults targeted by family-emergency, IRS-impersonation, romance, and tech-support scams.
+- Adult children helping parents stay safe online.
+- Anyone who has been pushed to send Zelle, PayPal, or wire money under pressure.
+
+## What it does not do
+
+- It does not read your passwords, balances, or account history.
+- It does not block payments silently. It warns; the user decides.
+- It does not support Venmo, HSBC, Barclays, Revolut, SMS, or crypto wallets today.
+- It does not have a Chrome Web Store listing yet (pending review since April 2026); install via the direct download link.
+
+## Privacy summary
+
+- Payment memos and flagged email content are sent to a Cloudflare Worker that proxies the AI call.
+- Detection events (platform, risk score, flags, timestamp) are logged anonymously to Cloudflare KV.
+- Memo telemetry is **opt-in only** and PII-stripped before storage.
+- Local-only state: threat log, event log, stats, and the 24-hour Gmail-to-payment correlation window.
+- Full policy: https://chrome-shield-suite.vercel.app/privacy
+
+---
+
+## Scam guide: Grandparent / family emergency scam
+
+A caller says a loved one — usually a grandchild — has been arrested, hospitalized, or kidnapped. The "lawyer," "bail bondsman," or "officer" needs money sent immediately via Zelle, wire, or gift cards. The victim is told not to call other family members until the money is sent.
+
+### Red flags
+
+- Urgency: "tonight," "before the judge sees him."
+- Isolation: "do not tell his parents, he is embarrassed."
+- Unusual rails: Zelle to a stranger, gift cards, cash courier, crypto.
+- Caller knows partial details (name, college) because they scraped social media.
+
+### What to do right now
+
+1. Hang up. Call the family member directly on their known number.
+2. Call another family member to verify before sending anything.
+3. Banks and courts never require gift cards or crypto for bail.
+
+### How Safety Intercept helps
+
+- When the victim opens Wells Fargo Zelle or PayPal to send the money, the extension reads the memo at the Send button.
+- The AI flags family-emergency language patterns and shows a warning before the payment goes through.
+- For situations happening over the phone, use the public scam-checker at https://chrome-shield-suite.vercel.app/scams/grandparent-scam.html to paste the situation and get an instant verdict.
+
+---
+
+## Scam guide: Zelle reversal / fake refund scam
+
+A scammer tells the victim that a payment "accidentally" sent them too much money and asks the victim to send the "extra" back. Or a fake "bank fraud department" calls and asks the victim to send money to a "reversal address" to undo unauthorized activity.
+
+### Why this works
+
+- Zelle is **irreversible** once sent. Banks usually cannot recover the funds.
+- Wells Fargo, Bank of America, and Chase will never ask a customer to Zelle money to themselves or to a "reversal account."
+- Caller ID spoofing makes the call look like it came from the bank.
+
+### Red flags
+
+- "Verify possession of your account by sending a Zelle to yourself."
+- "Reverse the unauthorized transaction by sending $500 to this number."
+- "Don't hang up while I stay on the line."
+
+### What to do
+
+1. Hang up. Call the number printed on the back of your debit card.
+2. Never Zelle a stranger to "reverse" anything.
+3. Report the call to your bank and the FTC at reportfraud.ftc.gov.
+
+### How Safety Intercept helps
+
+- The Wells Fargo Zelle interceptor reads the memo and recipient context at the Send step.
+- "Reversal," "test transaction," "verify possession," and similar phrases trigger a critical-risk warning.
+- The detection event is logged so adult children can later see what their parent almost sent.
+
+---
+
+## Scam guide: Pig butchering / crypto romance scam
+
+A long-con investment fraud. A stranger reaches out on a dating app, WhatsApp, or LinkedIn, builds a relationship over weeks, and slowly steers the victim toward a fake crypto investment platform. Early "profits" are real and small. Later withdrawals require ever-larger "tax," "gas," or "VIP unlock" fees.
+
+### Red flags
+
+- A new online friend who never video-calls.
+- "Professor," "Uncle," or VIP signal groups promising 10x returns.
+- USDT (Tether) on Tron, fake exchange dashboards, "node" deposits.
+- A small first withdrawal succeeds; the next is blocked behind a fee.
+
+### What to do
+
+1. Stop sending money the moment a "fee to unlock your withdrawal" appears.
+2. Reverse-image search the person's photos.
+3. Report to IC3.gov (FBI) and your bank's fraud unit.
+4. The money is usually unrecoverable — focus on stopping further loss.
+
+### How Safety Intercept helps
+
+- When the victim attempts a PayPal payment to fund the "platform" or pay an "unlock fee," the extension reads the memo and flags pig-butchering language.
+- Gmail scans catch coordinating emails from the scammer's network ("withdrawal approved, pay 7% IRS fee").
+- The 24-hour cross-layer correlation links suspicious emails to suspicious payments and raises the payment risk score automatically.
+
+---
+
+## Scam guide: PayPal invoice / refund scam
+
+The victim gets a real PayPal invoice for something they never bought — antivirus, crypto, gift cards. The invoice includes a "call this number if you didn't authorize this charge" line. The phone number routes to scammers who then walk the victim through "refunding" themselves and convince them they were sent too much, asking them to send the difference back via Zelle, wire, or gift cards.
+
+### Why this works
+
+- The PayPal invoice is real, so the email passes spam filters.
+- The scammer never needs to break into PayPal — they just need the victim to call.
+- Once on the phone, social engineering takes over.
+
+### Red flags
+
+- An invoice for a service you never bought.
+- "Call to dispute" — PayPal disputes happen inside the app, not over a phone number.
+- Remote-desktop tools (AnyDesk, TeamViewer) requested during the "refund."
+
+### What to do
+
+1. Do not call the number on the invoice.
+2. Open paypal.com directly and go to Activity. If the charge is fake, dispute it there.
+3. Report the email as phishing to PayPal: phishing@paypal.com.
+
+### How Safety Intercept helps
+
+- The Gmail scanner flags the fake invoice based on phrasing ("call to dispute," fake support numbers, urgency).
+- If the victim then opens PayPal to send a "refund" payment, the PayPal interceptor reads the memo and the prior Gmail flag pushes the risk score to critical via cross-layer correlation.
+
+---
+
+## How to install
+
+1. Go to https://shield-relay.bleblanc.workers.dev/download
+2. Unzip the download and load it via chrome://extensions → Developer Mode → Load Unpacked.
+3. The shield icon appears in your toolbar. Pin it for visibility.
+
+A Chrome Web Store listing is pending review.
+
+## Contact
+
+- Maintainer: Billy LeBlanc
+- Email: bleblanc@berkeley.edu
+- Site: https://chrome-shield-suite.vercel.app/

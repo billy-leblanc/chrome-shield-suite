@@ -3,19 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Safety Intercept — Fraud Protection for PayPal &amp; Zelle</title>
-    <meta name="description" content="The invisible security layer for your digital wallet. Real-time fraud protection for PayPal, Zelle, and Gmail — active PayPal security and Zelle scam prevention without the noise." />
+    <title>Safety Intercept — Stop Payment Scams on PayPal, Zelle &amp; Gmail</title>
+    <meta name="description" content="Free Chrome extension that flags scam payments and phishing emails before you send. AI checks each payment memo and email in real time on PayPal, Wells Fargo Zelle, and Gmail." />
     <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="canonical" href="https://chrome-shield-suite.vercel.app/" />
 
-    <meta property="og:title" content="Safety Intercept — Fraud Protection for PayPal &amp; Zelle" />
-    <meta property="og:description" content="The invisible security layer for your digital wallet. Real-time fraud protection for PayPal, Zelle, and Gmail — active PayPal security and Zelle scam prevention without the noise." />
+    <meta property="og:title" content="Safety Intercept — Stop Payment Scams Before You Send" />
+    <meta property="og:description" content="Free Chrome extension that flags scam payments and phishing emails in real time on PayPal, Zelle, and Gmail." />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://chrome-shield-suite.vercel.app/" />
+    <meta property="og:image" content="https://chrome-shield-suite.vercel.app/hero-shield.png" />
+    <meta property="og:site_name" content="Safety Intercept" />
 
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Safety Intercept — Fraud Protection for PayPal &amp; Zelle" />
-    <meta name="twitter:description" content="The invisible security layer for your digital wallet. Real-time fraud protection for PayPal, Zelle, and Gmail — active PayPal security and Zelle scam prevention without the noise." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Safety Intercept — Stop Payment Scams Before You Send" />
+    <meta name="twitter:description" content="Free Chrome extension that flags scam payments and phishing emails in real time on PayPal, Zelle, and Gmail." />
+    <meta name="twitter:image" content="https://chrome-shield-suite.vercel.app/hero-shield.png" />
 
-    <meta name="keywords" content="fraud protection extension, PayPal security, Zelle scam prevention, payment interceptor, anti-phishing AI, Zelle fraud refund, PayPal scam email, payment request scam, zelle memo fraud" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Safety Intercept",
+      "operatingSystem": "Chrome",
+      "applicationCategory": "BrowserApplication",
+      "description": "Chrome extension that intercepts payment scams on PayPal and Wells Fargo Zelle and detects phishing emails in Gmail, using real-time AI analysis before money is sent.",
+      "url": "https://chrome-shield-suite.vercel.app/",
+      "image": "https://chrome-shield-suite.vercel.app/hero-shield.png",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": [
+        "Real-time payment memo analysis on PayPal",
+        "Wells Fargo Zelle send-flow interception",
+        "Gmail scam email detection",
+        "Cross-layer correlation between scam emails and outgoing payments",
+        "Public scam-checker for phone calls and texts"
+      ]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What does Safety Intercept do?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Safety Intercept is a free Chrome extension that runs on PayPal, Wells Fargo Zelle, and Gmail. Before you send a payment or act on a suspicious email, it sends the memo or content to an AI risk engine and warns you if it matches scam patterns like fake refunds, family-emergency calls, pig butchering, or business email compromise." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Safety Intercept free?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The extension is free to install and use. Telemetry is opt-in only." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Safety Intercept see my payment data?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Payment memos and flagged email content are sent to a Cloudflare Worker that proxies the AI analysis. Detection events are logged anonymously. Memo telemetry is opt-in and PII-stripped. See the privacy policy for full detail." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which platforms are supported today?",
+          "acceptedAnswer": { "@type": "Answer", "text": "PayPal payments, Wells Fargo Zelle transfers, and Gmail. More banks and platforms are planned but not yet shipped." }
+        }
+      ]
+    }
+    </script>
   </head>
 
   <body>

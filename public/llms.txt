@@ -1,0 +1,35 @@
+# Safety Intercept
+
+> Free Chrome extension that intercepts payment scams on PayPal and Wells Fargo Zelle and detects phishing emails in Gmail. An AI risk engine reads each outgoing payment memo and inbound email in real time and warns the user before money moves.
+
+Safety Intercept is built for everyday people — especially older adults and family members helping them — who are targeted by social-engineering scams. The product is consumer-first, with a future B2B fraud-detection API. Detection is powered by Anthropic's Claude (Haiku) running on a Cloudflare Workers relay.
+
+## Core pages
+
+- [Homepage](https://chrome-shield-suite.vercel.app/): What Safety Intercept is, how it works, install link.
+- [Privacy policy](https://chrome-shield-suite.vercel.app/privacy): Data handling, telemetry opt-in, what stays on-device.
+
+## Scam guides
+
+- [Grandparent / family emergency scam](https://chrome-shield-suite.vercel.app/scams/grandparent-scam.html): How the scam works, scripts callers use, how to verify, how Safety Intercept blocks the payment leg.
+- [Zelle reversal / fake refund scam](https://chrome-shield-suite.vercel.app/scams/zelle-reversal-scam.html): The "we overpaid you, send it back" pattern, why Zelle is irreversible, and how the Wells Fargo Zelle interceptor catches it.
+- [Pig butchering / crypto romance scam](https://chrome-shield-suite.vercel.app/scams/pig-butchering-scam.html): Long-con investment fraud, USDT node tells, withdrawal-fee escalation, and what the extension flags.
+- [PayPal invoice / refund scam](https://chrome-shield-suite.vercel.app/scams/paypal-invoice-scam.html): Fake PayPal invoices, the "call this number" trick, and how the PayPal interceptor sees the memo.
+
+## Tools
+
+- Install (Chrome): https://shield-relay.bleblanc.workers.dev/download
+- Public scam-checker API (no auth): POST https://shield-relay.bleblanc.workers.dev/check with `{ "description": "<situation text>" }`. Returns `verdict`, `confidence`, `tactics`, `headline`, `what_to_do`.
+
+## Facts about the product
+
+- Supported surfaces: PayPal payments, Wells Fargo Zelle send flow, Gmail.
+- Manifest V3 Chrome extension. React 18 + Vite. Open source: not yet.
+- Detection model: Anthropic Claude Haiku via Cloudflare Workers relay (~500ms latency).
+- Telemetry is opt-in and PII-stripped. Detection events are logged anonymously to Cloudflare KV.
+- The extension does not see passwords, balances, or account details — it only reads the payment memo / email content that the user is about to act on.
+
+## Contact
+
+- Maintainer: Billy LeBlanc
+- Email: bleblanc@berkeley.edu
