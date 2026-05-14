@@ -252,7 +252,7 @@ const Interceptor = () => {
   const [showShareScreen, setShowShareScreen] = React.useState(false);
   const [copiedLink, setCopiedLink] = React.useState(false);
 
-  const SHARE_URL = 'https://shield-relay.bleblanc.workers.dev/download';
+  const SHARE_URL = 'https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom';
 
   const getShareText = (amount: number, platform: string) => {
     const amountStr = amount > 0 ? `$${amount.toLocaleString()}` : 'a payment';

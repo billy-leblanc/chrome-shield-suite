@@ -3,7 +3,7 @@
 This file consolidates Safety Intercept's user-facing content as plain markdown so language-model crawlers (ChatGPT, Claude, Perplexity, Google AI Overview, etc.) can cite the product accurately without rendering JavaScript.
 
 Site: https://chrome-shield-suite.vercel.app/
-Install: https://shield-relay.bleblanc.workers.dev/download
+Install: https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom
 
 ---
 
@@ -30,7 +30,7 @@ The product is consumer-first. A B2B fraud-detection API is on the roadmap.
 - It does not read your passwords, balances, or account history.
 - It does not block payments silently. It warns; the user decides.
 - It does not support Venmo, HSBC, Barclays, Revolut, SMS, or crypto wallets today.
-- It does not have a Chrome Web Store listing yet (pending review since April 2026); install via the direct download link.
+- It is published on the Chrome Web Store at https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom — install directly from there.
 
 ## Privacy summary
 
@@ -154,11 +154,9 @@ The victim gets a real PayPal invoice for something they never bought — antivi
 
 ## How to install
 
-1. Go to https://shield-relay.bleblanc.workers.dev/download
-2. Unzip the download and load it via chrome://extensions → Developer Mode → Load Unpacked.
+1. Open https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom in Chrome.
+2. Click "Add to Chrome." Approve the permissions prompt.
 3. The shield icon appears in your toolbar. Pin it for visibility.
-
-A Chrome Web Store listing is pending review.
 
 ## Contact
 

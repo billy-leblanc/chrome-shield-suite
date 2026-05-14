@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import SafetyInterceptModal from "@/components/SafetyInterceptModal";
 
-const DOWNLOAD_URL = "https://shield-relay.bleblanc.workers.dev/download";
+const DOWNLOAD_URL = "https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom";
 
 // ─── Easter Eggs ─────────────────────────────────────────────────────────────
 const KONAMI = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
@@ -602,6 +602,34 @@ export default function Index() {
             )}
           </Reveal>
         </div>
+      </section>
+
+      {/* ── Scam Guides ── */}
+      <section style={{ position: "relative", zIndex: 1, borderTop: "1px solid rgba(255,255,255,0.04)", maxWidth: 980, margin: "0 auto", padding: "96px 24px" }}>
+        <Reveal>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: "#3B82F6", textTransform: "uppercase", marginBottom: 14, textAlign: "center" }}>Scam Guides</div>
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: "#F1F5F9", letterSpacing: "-0.8px", marginBottom: 14, lineHeight: 1.18, textAlign: "center" }}>
+            Recognize the scam before it costs you.
+          </h2>
+          <p style={{ fontSize: 14, fontWeight: 400, color: "#475569", lineHeight: 1.85, maxWidth: 540, margin: "0 auto 48px", textAlign: "center" }}>
+            Plain-English explanations of the scams Safety Intercept catches, with the exact phrases callers use and what to do mid-call. Each guide includes a free instant scam-check.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
+            {[
+              { href: "/scams/grandparent-scam.html", title: "Grandparent scam", desc: "\"Your grandson is in jail.\" The family-emergency phone con." },
+              { href: "/scams/zelle-reversal-scam.html", title: "Zelle reversal scam", desc: "Fake bank fraud calls asking you to Zelle money to \"reverse\" a transaction." },
+              { href: "/scams/pig-butchering-scam.html", title: "Pig butchering scam", desc: "The long-con crypto romance fraud and the \"unlock fee\" trap." },
+              { href: "/scams/paypal-invoice-scam.html", title: "PayPal invoice scam", desc: "Real-looking invoice for something you never bought." },
+            ].map((g) => (
+              <a key={g.href} href={g.href} style={{ display: "block", padding: "20px 22px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", textDecoration: "none", transition: "all 0.2s ease" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(59,130,246,0.35)"; e.currentTarget.style.background = "rgba(59,130,246,0.04)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#F1F5F9", marginBottom: 6, letterSpacing: "-0.2px" }}>{g.title}</div>
+                <div style={{ fontSize: 13, fontWeight: 400, color: "#64748B", lineHeight: 1.55 }}>{g.desc}</div>
+              </a>
+            ))}
+          </div>
+        </Reveal>
       </section>
 
       {/* ── Footer ── */}

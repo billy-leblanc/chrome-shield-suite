@@ -18,7 +18,7 @@ Safety Intercept is built for everyday people — especially older adults and fa
 
 ## Tools
 
-- Install (Chrome): https://shield-relay.bleblanc.workers.dev/download
+- Install (Chrome): https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom
 - Public scam-checker API (no auth): POST https://shield-relay.bleblanc.workers.dev/check with `{ "description": "<situation text>" }`. Returns `verdict`, `confidence`, `tactics`, `headline`, `what_to_do`.
 
 ## Facts about the product
