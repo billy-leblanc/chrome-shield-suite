@@ -109,7 +109,7 @@ export default {
     const { auth_token } = body ?? {};
     
     // Auth-required paths
-    const requiresAuth = ['/event', '/analyze', '/dashboard', '/downloads', '/telemetry'].includes(url.pathname);
+    const requiresAuth = ['/event', '/analyze', '/dashboard', '/downloads', '/checks', '/telemetry'].includes(url.pathname);
 
     // Validate auth token
     if (requiresAuth && (!auth_token || auth_token !== env.RELAY_AUTH_TOKEN)) {
@@ -350,6 +350,42 @@ export default {
         status: 200,
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       });
+    }
+
+    // --- CASE 8: Scam-Checker Usage Count (requires auth) ---
+    if (url.pathname === '/checks') {
+      if (!env.SHIELD_LOGS) {
+        return new Response(JSON.stringify({ checks: 0, latest: null }), {
+          status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
+      try {
+        // List all keys starting with `check:` — paginate to handle >1000.
+        let total = 0;
+        let cursor = undefined;
+        let latestKey = null;
+        do {
+          const page = await env.SHIELD_LOGS.list({ prefix: 'check:', cursor, limit: 1000 });
+          total += page.keys.length;
+          if (page.keys.length > 0) latestKey = page.keys[page.keys.length - 1].name;
+          cursor = page.list_complete ? undefined : page.cursor;
+        } while (cursor);
+
+        let latest = null;
+        if (latestKey) {
+          try { latest = JSON.parse(await env.SHIELD_LOGS.get(latestKey)); } catch {}
+        }
+        return new Response(JSON.stringify({ checks: total, latest }), {
+          status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: 'KV list failed', details: err.message }), {
+          status: 500,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     return new Response(JSON.stringify({ error: 'Not found' }), {

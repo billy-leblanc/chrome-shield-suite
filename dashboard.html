@@ -28,7 +28,7 @@
   .container{max-width:1200px;margin:0 auto;padding:24px 40px 60px}
 
   /* stats */
-  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:36px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:14px;margin-bottom:36px}
   .stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:12px;padding:20px 22px}
   .stat-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--text-dim);margin-bottom:6px}
   .stat-value{font-size:28px;font-weight:700;letter-spacing:-0.5px}
@@ -263,6 +263,7 @@ async function loadDashboard() {
     const correlations = [];
     const gmailEvents = [];
     const otherEvents = [];
+    const checks = [];     // check:* entries from the public scam-checker
 
     for (const e of entries) {
       if (!e.value) continue;
@@ -274,8 +275,11 @@ async function loadDashboard() {
         if (ev.event === 'cross_layer_correlation') correlations.push(ev);
         else if (ev.event === 'gmail_scam_detected') gmailEvents.push(ev);
         else otherEvents.push(ev);
+      } else if (e.key.startsWith('check:')) {
+        checks.push({ ...e.value, _key: e.key });
       }
     }
+    checks.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
 
     // Build cases
     const matchedKeys = new Set();
@@ -342,6 +346,7 @@ async function loadDashboard() {
       <div class="stat-card"><div class="stat-label">Critical</div><div class="stat-value critical">${criticalCount}</div></div>
       <div class="stat-card"><div class="stat-label">High</div><div class="stat-value" style="color:#fb923c">${highCount}</div></div>
       <div class="stat-card"><div class="stat-label">Platforms</div><div class="stat-value accent">${platforms.size}</div></div>
+      <div class="stat-card"><div class="stat-label">Scam Checks</div><div class="stat-value" style="color:#a78bfa">${checks.length}</div></div>
       <div class="stat-card"><div class="stat-label">Amount Protected</div><div class="stat-value" style="color:#34d399">${totalProtected > 0 ? '$' + totalProtected.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '--'}</div></div>
     `;
 
@@ -462,6 +467,35 @@ async function loadDashboard() {
       html += '</div>';
     }
     html += '</div>';
+
+    // Scam Checks (public /check endpoint usage)
+    if (checks.length) {
+      html += `<div class="section">
+        <div class="section-title">Scam Checker — Public Tool <span class="badge" style="background:#a78bfa">${checks.length}</span></div>
+        <div class="det-grid">`;
+      for (const c of checks.slice(0, 24)) {
+        const verdict = (c.verdict || 'likely_scam').toLowerCase();
+        const vColor = verdict === 'scam' ? 'var(--critical)' : verdict === 'safe' ? '#34d399' : '#fb923c';
+        const vLabel = verdict === 'likely_scam' ? 'likely scam' : verdict;
+        const confidence = typeof c.confidence === 'number' ? c.confidence : 0;
+        const tacticsHTML = Array.isArray(c.tactics) && c.tactics.length
+          ? '<div class="flags">' + c.tactics.slice(0,3).map(t => `<span class="flag-pill" style="background:rgba(167,139,250,0.1);color:#a78bfa;border-color:rgba(167,139,250,0.2)">${t}</span>`).join('') + '</div>'
+          : '';
+        html += `<div class="det-card">
+          <div class="det-top">
+            <span class="det-platform" style="color:${vColor}">${vLabel}</span>
+            <span class="det-time">${fmtShortTime(c.timestamp)}</span>
+          </div>
+          <div class="det-score" style="color:${vColor}">${confidence}</div>
+          <div class="det-level" style="color:${vColor}">confidence</div>
+          ${tacticsHTML}
+        </div>`;
+      }
+      if (checks.length > 24) {
+        html += `<div class="det-card" style="display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:13px">+ ${checks.length - 24} more</div>`;
+      }
+      html += '</div></div>';
+    }
 
     content.innerHTML = html;
 
