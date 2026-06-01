@@ -620,6 +620,7 @@ export default function Index() {
               { href: "/scams/zelle-reversal-scam.html", title: "Zelle reversal scam", desc: "Fake bank fraud calls asking you to Zelle money to \"reverse\" a transaction." },
               { href: "/scams/pig-butchering-scam.html", title: "Pig butchering scam", desc: "The long-con crypto romance fraud and the \"unlock fee\" trap." },
               { href: "/scams/paypal-invoice-scam.html", title: "PayPal invoice scam", desc: "Real-looking invoice for something you never bought." },
+              { href: "/guides/get-money-back-after-a-scam.html", title: "Get your money back", desc: "Already scammed? The step-by-step US recovery playbook and who to call." },
             ].map((g) => (
               <a key={g.href} href={g.href} style={{ display: "block", padding: "20px 22px", borderRadius: 12, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", textDecoration: "none", transition: "all 0.2s ease" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(59,130,246,0.35)"; e.currentTarget.style.background = "rgba(59,130,246,0.04)"; }}
