@@ -6,15 +6,15 @@ Safety Intercept is built for everyday people — especially older adults and fa
 
 ## Core pages
 
-- [Homepage](https://chrome-shield-suite.vercel.app/): What Safety Intercept is, how it works, install link.
-- [Privacy policy](https://chrome-shield-suite.vercel.app/privacy): Data handling, telemetry opt-in, what stays on-device.
+- [Homepage](https://safetyintercept.com/): What Safety Intercept is, how it works, install link.
+- [Privacy policy](https://safetyintercept.com/privacy): Data handling, telemetry opt-in, what stays on-device.
 
 ## Scam guides
 
-- [Grandparent / family emergency scam](https://chrome-shield-suite.vercel.app/scams/grandparent-scam.html): How the scam works, scripts callers use, how to verify, how Safety Intercept blocks the payment leg.
-- [Zelle reversal / fake refund scam](https://chrome-shield-suite.vercel.app/scams/zelle-reversal-scam.html): The "we overpaid you, send it back" pattern, why Zelle is irreversible, and how the Wells Fargo Zelle interceptor catches it.
-- [Pig butchering / crypto romance scam](https://chrome-shield-suite.vercel.app/scams/pig-butchering-scam.html): Long-con investment fraud, USDT node tells, withdrawal-fee escalation, and what the extension flags.
-- [PayPal invoice / refund scam](https://chrome-shield-suite.vercel.app/scams/paypal-invoice-scam.html): Fake PayPal invoices, the "call this number" trick, and how the PayPal interceptor sees the memo.
+- [Grandparent / family emergency scam](https://safetyintercept.com/scams/grandparent-scam.html): How the scam works, scripts callers use, how to verify, how Safety Intercept blocks the payment leg.
+- [Zelle reversal / fake refund scam](https://safetyintercept.com/scams/zelle-reversal-scam.html): The "we overpaid you, send it back" pattern, why Zelle is irreversible, and how the Wells Fargo Zelle interceptor catches it.
+- [Pig butchering / crypto romance scam](https://safetyintercept.com/scams/pig-butchering-scam.html): Long-con investment fraud, USDT node tells, withdrawal-fee escalation, and what the extension flags.
+- [PayPal invoice / refund scam](https://safetyintercept.com/scams/paypal-invoice-scam.html): Fake PayPal invoices, the "call this number" trick, and how the PayPal interceptor sees the memo.
 
 ## Tools
 

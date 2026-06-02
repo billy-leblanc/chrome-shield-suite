@@ -2,7 +2,7 @@
 
 This file consolidates Safety Intercept's user-facing content as plain markdown so language-model crawlers (ChatGPT, Claude, Perplexity, Google AI Overview, etc.) can cite the product accurately without rendering JavaScript.
 
-Site: https://chrome-shield-suite.vercel.app/
+Site: https://safetyintercept.com/
 Install: https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom
 
 ---
@@ -38,7 +38,7 @@ The product is consumer-first. A B2B fraud-detection API is on the roadmap.
 - Detection events (platform, risk score, flags, timestamp) are logged anonymously to Cloudflare KV.
 - Memo telemetry is **opt-in only** and PII-stripped before storage.
 - Local-only state: threat log, event log, stats, and the 24-hour Gmail-to-payment correlation window.
-- Full policy: https://chrome-shield-suite.vercel.app/privacy
+- Full policy: https://safetyintercept.com/privacy
 
 ---
 
@@ -63,7 +63,7 @@ A caller says a loved one — usually a grandchild — has been arrested, hospit
 
 - When the victim opens Wells Fargo Zelle or PayPal to send the money, the extension reads the memo at the Send button.
 - The AI flags family-emergency language patterns and shows a warning before the payment goes through.
-- For situations happening over the phone, use the public scam-checker at https://chrome-shield-suite.vercel.app/scams/grandparent-scam.html to paste the situation and get an instant verdict.
+- For situations happening over the phone, use the public scam-checker at https://safetyintercept.com/scams/grandparent-scam.html to paste the situation and get an instant verdict.
 
 ---
 
@@ -162,4 +162,4 @@ The victim gets a real PayPal invoice for something they never bought — antivi
 
 - Maintainer: Billy LeBlanc
 - Email: bleblanc@berkeley.edu
-- Site: https://chrome-shield-suite.vercel.app/
+- Site: https://safetyintercept.com/
