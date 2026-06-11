@@ -89,7 +89,14 @@ async function analyzeMemoWithLLM(memo: string, amount?: number, platform?: stri
 // Keep victim-side PII off the wire and out of KV: drop threadId + raw memo/body
 // text, convert free-text flags to canonical taxonomy slugs, and stamp `env` so
 // test-harness traffic stays filterable from real detections.
-const RAW_TEXT_FIELDS = ['threadId', 'memo', 'message', 'body', 'bodyText', 'description'];
+// 2026-06-11 PII audit: subject joins the strip list (victim-inbox content,
+// can embed the user's name), and exact amounts bucket to ranges.
+const RAW_TEXT_FIELDS = ['threadId', 'memo', 'message', 'body', 'bodyText', 'description', 'subject'];
+
+function amountToRange(amount: unknown): string {
+  const a = typeof amount === 'number' && isFinite(amount) ? amount : 0;
+  return a > 500 ? 'high' : a > 100 ? 'medium' : a > 0 ? 'low' : 'unknown';
+}
 
 // Fail-closed taxonomy governance: a flag either maps to a canonical slug or
 // buckets as 'uncategorized' — invented labels never enter the pipeline. The
@@ -131,6 +138,17 @@ function sanitizeEvent(eventData: Record<string, unknown>): Record<string, unkno
     r.uncategorized.forEach((u) => review.add(u));
   }
   if (review.size) clean.uncategorizedFlags = [...review]; // weekly taxonomy-review feed
+  // Exact amounts are user-side: transmit the bucket only.
+  if ('amount' in clean) {
+    clean.amountRange = amountToRange(clean.amount);
+    delete clean.amount;
+  }
+  // Nested correlation detections: keep sender + score, never the subject line.
+  if (Array.isArray(clean.gmailDetections)) {
+    clean.gmailDetections = (clean.gmailDetections as Array<Record<string, unknown>>).map((d) => ({
+      senderEmail: d.senderEmail, score: d.score, detectedAt: d.detectedAt,
+    }));
+  }
   if (!('env' in clean)) clean.env = 'prod';
   return clean;
 }

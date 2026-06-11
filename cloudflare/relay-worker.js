@@ -105,20 +105,16 @@ export default {
       return new Response(null, { status: 204, headers: cors });
     }
 
-    // Client IP + geo, surfaced by Cloudflare on every request. Attached to all
-    // logged records so distinct users / locations can be told apart (and real
-    // traffic distinguished from self-test). cf is absent in local dev.
+    // PII policy (2026-06-11 audit): country ONLY, edge-derived, no raw IP,
+    // no precise geo. Install dedup uses installId, not IP. Anything finer
+    // than country is user-side PII an acquirer's lawyer reads as liability.
     const cf = request.cf || {};
-    const geo = {
-      ip: request.headers.get('CF-Connecting-IP') || null,
-      country: cf.country || null,
-      region: cf.region || null,
-      city: cf.city || null,
-      lat: cf.latitude || null,
-      lon: cf.longitude || null,
-      asn: cf.asOrganization || null,
-      timezone: cf.timezone || null,
-    };
+    const geo = { country: cf.country || null };
+
+    // 90-day retention for user-behavior analytics rows (events, downloads,
+    // checks, telemetry). Scam-side analysis rows (log:) and install records
+    // (no PII) are retained — they're the dataset.
+    const RETENTION_TTL = 90 * 24 * 60 * 60;
 
     // --- CASE 5: Download Counter & Redirect (no auth required, GET request) ---
     if (url.pathname === '/download') {
@@ -131,7 +127,7 @@ export default {
             event: 'download',
             timestamp: new Date().toISOString(),
             geo,
-          }));
+          }), { expirationTtl: 90 * 24 * 60 * 60 });
         }
       } catch { /* don't block the redirect if KV fails */ }
       return Response.redirect(DOWNLOAD_URL, 302);
@@ -175,7 +171,7 @@ export default {
       try {
         if (env.SHIELD_LOGS) {
           const logKey = `event:${timestamp || Date.now()}`;
-          await env.SHIELD_LOGS.put(logKey, JSON.stringify({ ...eventFields, geo }));
+          await env.SHIELD_LOGS.put(logKey, JSON.stringify({ ...eventFields, geo }), { expirationTtl: RETENTION_TTL });
           // Fan out to the registry ingestion queue (normalize.ts strips victim-side
           // fields before D1). Fire-and-forget — never block or fail the beacon.
           if (env.EVENTS) {
@@ -362,7 +358,7 @@ export default {
             confidence: result.confidence,
             tactics: result.tactics,
             timestamp: new Date().toISOString(),
-          }));
+          }), { expirationTtl: RETENTION_TTL });
         }
 
         return new Response(JSON.stringify(result), {
@@ -398,12 +394,13 @@ export default {
           riskScore: typeof riskScore === 'number' ? riskScore : null,
           riskLevel: typeof riskLevel === 'string' ? riskLevel : null,
           flags: Array.isArray(flags) ? flags : [],
-          memo: typeof memo === 'string' ? memo.substring(0, 800) : '',
+          // memo dropped (2026-06-11 PII audit): raw victim message content never persists.
+          memoLength: typeof memo === 'string' ? memo.length : 0,
           confirmed: confirmed === true ? true : confirmed === false ? false : null,
           version: typeof version === 'string' ? version : null,
           storedAt: new Date().toISOString(),
           geo,
-        }));
+        }), { expirationTtl: RETENTION_TTL });
         return new Response(JSON.stringify({ ok: true }), {
           status: 200,
           headers: { ...cors, 'Content-Type': 'application/json' },
