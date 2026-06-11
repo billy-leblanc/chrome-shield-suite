@@ -1,0 +1,259 @@
+# Distinct event:* field-shapes: 10
+============================================================
+// key: event:2026-04-13T10:25:54.953Z
+{
+  "event": "gmail_scam_detected",
+  "platform": "Gmail",
+  "score": 100,
+  "riskLevel": "critical",
+  "flags": [
+    "Payment Link in Email",
+    "Excuse Pattern",
+    "Advance Payment Framing",
+    "Medical Payment Urgency",
+    "Third-Party Impersonation",
+    "Temporary Payment Hook"
+  ],
+  "senderEmail": "safetyintercept@gmail.com",
+  "senderDomain": "gmail.com",
+  "subject": "Subject: Billy, I need your help please",
+  "bodyLength": 936,
+  "linkCount": 1,
+  "hasExternalLinks": true,
+  "threadId": "KtbxLthdmXZHhWVthHdJdlXpwFLztjqlkL",
+  "timestamp": "2026-04-13T10:25:54.953Z"
+}
+
+// key: event:2026-05-09T19:02:46.138Z
+{
+  "event": "cross_layer_correlation",
+  "correlationId": "corr_1778353366138_1sar35",
+  "timestamp": "2026-05-09T19:02:46.138Z",
+  "platform": "Wells Fargo Zelle",
+  "amount": 3000,
+  "paymentScore": 96,
+  "score": 96,
+  "riskLevel": "critical",
+  "paymentFlags": [
+    "memo: bail money for grandson urgent",
+    "large transfer: $3000",
+    "recipient: first-time",
+    "correlation: matches gmail scam from attorney.michaelross"
+  ],
+  "flags": [
+    "memo: bail money for grandson urgent",
+    "large transfer: $3000",
+    "recipient: first-time",
+    "correlation: matches gmail scam from attorney.michaelross"
+  ],
+  "gmailDetections": [
+    {
+      "senderEmail": "attorney.michaelross@legal-aid-services.com",
+      "subject": "URGENT: Your grandson needs bail money tonight",
+      "score": 92,
+      "detectedAt": "2026-05-09T18:58:46.138Z"
+    }
+  ],
+  "event_outcome": "intercepted"
+}
+
+// key: event:2026-05-09T13:02:46.138Z
+{
+  "event": "gmail_scam_detected",
+  "timestamp": "2026-05-09T13:02:46.138Z",
+  "platform": "Gmail",
+  "senderEmail": "support@paypa1-security.com",
+  "subject": "Your account has been locked \u2014 verify now",
+  "score": 81,
+  "riskScore": 81,
+  "riskLevel": "critical",
+  "flags": [
+    "smishing: account locked",
+    "lookalike domain"
+  ]
+}
+
+// key: event:2026-04-14T01:46:41.213Z
+{
+  "event": "cross_layer_correlation",
+  "platform": "PayPal",
+  "correlationId": "gmail-pay-1776131201213",
+  "gmailDetections": [
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-14T00:15:17.104Z"
+    }
+  ],
+  "paymentScore": 30,
+  "paymentFlags": [
+    "Cross-Layer: Recent Gmail Scam"
+  ],
+  "amount": 0,
+  "timestamp": "2026-04-14T01:46:41.213Z"
+}
+
+// key: event:2026-05-09T17:32:46.138Z
+{
+  "event": "intercepted",
+  "timestamp": "2026-05-09T17:32:46.138Z",
+  "platform": "PayPal",
+  "amount": 450,
+  "riskScore": 72,
+  "score": 72,
+  "riskLevel": "high",
+  "flags": [
+    "memo: refund overpayment",
+    "overpayment scam pattern"
+  ]
+}
+
+// key: event:2026-04-12T04:29:42.969Z
+{
+  "event": "intercepted",
+  "platform": "Wells Fargo",
+  "score": 90,
+  "riskLevel": "critical",
+  "flags": [
+    "Unsolicited contact requested payment",
+    "First-time recipient",
+    "Urgency or secrecy pressure"
+  ],
+  "amount": 1,
+  "timestamp": "2026-04-12T04:29:42.969Z"
+}
+
+// key: event:2026-04-13T21:45:23.567Z
+{
+  "event": "cross_layer_correlation",
+  "platform": "PayPal",
+  "correlationId": "gmail-pay-1776116723567",
+  "gmailDetections": [
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-13T20:35:55.727Z"
+    },
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-13T20:35:55.803Z"
+    },
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-13T20:36:26.035Z"
+    },
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-13T20:43:51.771Z"
+    },
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-13T20:44:15.791Z"
+    },
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-13T20:44:16.585Z"
+    },
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-13T21:27:13.315Z"
+    },
+    {
+      "senderEmail": "safetyintercept@gmail.com",
+      "subject": "Subject: Billy, I need your help please",
+      "score": 100,
+      "detectedAt": "2026-04-13T21:27:13.467Z"
+    }
+  ],
+  "paymentScore": 90,
+  "paymentFlags": [
+    "Unsolicited contact requested payment",
+    "First-time recipient",
+    "Urgency or secrecy pressure"
+  ],
+  "timestamp": "2026-04-13T21:45:23.567Z"
+}
+
+// key: event:2026-04-12T04:29:50.308Z
+{
+  "event": "cancelled",
+  "platform": "Wells Fargo",
+  "score": 90,
+  "riskLevel": "critical",
+  "flags": [
+    "Unsolicited contact requested payment",
+    "First-time recipient",
+    "Urgency or secrecy pressure"
+  ],
+  "timestamp": "2026-04-12T04:29:50.308Z"
+}
+
+// key: event:2026-04-13T10:29:32.413Z
+{
+  "event": "gmail_warning_dismissed",
+  "platform": "Gmail",
+  "score": 100,
+  "riskLevel": "critical",
+  "senderEmail": "safetyintercept@gmail.com",
+  "timestamp": "2026-04-13T10:29:32.413Z"
+}
+
+// key: event:2026-05-14T03:46:18Z
+{
+  "event": "end_to_end_health_check",
+  "platform": "diagnostic",
+  "riskScore": 0,
+  "timestamp": "2026-05-14T03:46:18Z"
+}
+
+// log: sample
+{
+  "riskScore": 92,
+  "riskLevel": "critical",
+  "flags": [
+    "Family emergency impersonation \u2014 third party claims to represent unreachable family member",
+    "Urgency + emotional manipulation \u2014 mother injured, can't contact directly, insurance delays",
+    "Payment pressure \u2014 specific small amount ($200) to seem believable, 'tonight' creates time pressure",
+    "Unusual payment method \u2014 PayPal.me link provided rather than asking Billy to contact his mother directly",
+    "Pretexting narrative \u2014 plausible story (hospital, insurance hold) designed to bypass skepticism",
+    "Red flag: 'She asked me to reach out' \u2014 legitimate hospitals contact family directly; real mother would use hospital phone if needed"
+  ],
+  "platform": "Gmail",
+  "amountRange": "unknown",
+  "timestamp": "2026-05-15T00:06:15.763Z"
+}
+
+// check: sample
+{
+  "event": "scam_check",
+  "verdict": "scam",
+  "confidence": 99,
+  "tactics": [
+    "Family emergency (grandchild in jail)",
+    "Urgency (before midnight)",
+    "Unusual payment (gift cards)",
+    "Impersonation (posing as authority figure)"
+  ],
+  "timestamp": "2026-05-14T02:19:17.037Z"
+}
+
+// download: sample
+{
+  "event": "download",
+  "timestamp": "2026-05-28T11:20:59.275Z"
+}
+

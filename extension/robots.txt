@@ -3,4 +3,4 @@ Allow: /
 Disallow: /dashboard.html
 Disallow: /scam-checker-deploy/
 
-Sitemap: https://chrome-shield-suite.vercel.app/sitemap.xml
+Sitemap: https://safetyintercept.com/sitemap.xml

@@ -13,6 +13,8 @@ import {
 // Re-export so content scripts don't need import path changes.
 export type { RiskAnalysis } from '../core/fraud_detector';
 
+import { mapLegacyFlag, TAXONOMY_BY_SLUG } from '../shared/taxonomy';
+
 const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
 const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
 const TELEMETRY_URL = 'https://shield-relay.bleblanc.workers.dev/telemetry';
@@ -75,12 +77,65 @@ async function analyzeMemoWithLLM(memo: string, amount?: number, platform?: stri
  * Sends an analytics event to the Cloudflare relay.
  * Accepts arbitrary extra fields so platform-specific data (Gmail metadata, etc.) is forwarded.
  */
+// --- Beacon hardening (Phase 0.5) ---
+// Keep victim-side PII off the wire and out of KV: drop threadId + raw memo/body
+// text, convert free-text flags to canonical taxonomy slugs, and stamp `env` so
+// test-harness traffic stays filterable from real detections.
+const RAW_TEXT_FIELDS = ['threadId', 'memo', 'message', 'body', 'bodyText', 'description'];
+
+// Fail-closed taxonomy governance: a flag either maps to a canonical slug or
+// buckets as 'uncategorized' — invented labels never enter the pipeline. The
+// unmapped engine-generated label is preserved separately for taxonomy review
+// (it's engine output, not user content, so transmitting it is PII-safe).
+function flagsToSlugs(flags: unknown): { slugs: string[]; uncategorized: string[] } {
+  if (!Array.isArray(flags)) return { slugs: [], uncategorized: [] };
+  const slugs = new Set<string>();
+  const uncategorized = new Set<string>();
+  for (const f of flags) {
+    const s = String(f);
+    const lower = s.toLowerCase();
+    // Raw user content that leaks into flag/paymentFlag arrays — never transmit.
+    if (lower.startsWith('memo:') || lower.startsWith('recipient:')) continue;
+    const direct = TAXONOMY_BY_SLUG.has(lower.trim()) ? lower.trim() : null;
+    const slug = direct ?? mapLegacyFlag(s);
+    if (slug) {
+      slugs.add(slug);
+    } else {
+      slugs.add('uncategorized');
+      uncategorized.add(s.split('—')[0].trim().slice(0, 80));
+    }
+  }
+  return { slugs: [...slugs], uncategorized: [...uncategorized] };
+}
+
+function sanitizeEvent(eventData: Record<string, unknown>): Record<string, unknown> {
+  const clean: Record<string, unknown> = { ...eventData };
+  for (const k of RAW_TEXT_FIELDS) delete clean[k];
+  const review = new Set<string>();
+  if (Array.isArray(clean.flags)) {
+    const r = flagsToSlugs(clean.flags);
+    clean.flags = r.slugs;
+    r.uncategorized.forEach((u) => review.add(u));
+  }
+  if (Array.isArray(clean.paymentFlags)) {
+    const r = flagsToSlugs(clean.paymentFlags);
+    clean.paymentFlags = r.slugs;
+    r.uncategorized.forEach((u) => review.add(u));
+  }
+  if (review.size) clean.uncategorizedFlags = [...review]; // weekly taxonomy-review feed
+  if (!('env' in clean)) clean.env = 'prod';
+  return clean;
+}
+
 async function shipEventToRelay(eventData: Record<string, unknown>) {
   try {
     await fetch(EVENT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...eventData, auth_token: RELAY_AUTH_TOKEN })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RELAY_AUTH_TOKEN}`,
+      },
+      body: JSON.stringify(sanitizeEvent(eventData))
     });
   } catch (err) {
     console.error('[Shield] Event sync failed', err);
@@ -182,7 +237,29 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     stats: { blocked: 0, warnings: 0, safe: 0 },
   });
   if (reason === 'install') {
+    const installId = crypto.randomUUID();
+    chrome.storage.local.set({ installId });
+    shipEventToRelay({
+      type: 'install',
+      installId,
+      version: chrome.runtime.getManifest().version,
+      timestamp: Date.now(),
+    });
     chrome.tabs.create({ url: chrome.runtime.getURL('welcome.html') });
+  } else if (reason === 'update') {
+    // Sweep up pre-existing installs that never sent an install beacon.
+    // Deduped server-side by installId, so this counts each existing user once.
+    chrome.storage.local.get('installId', ({ installId }) => {
+      const id = installId || crypto.randomUUID();
+      if (!installId) chrome.storage.local.set({ installId: id });
+      shipEventToRelay({
+        type: 'install',
+        installId: id,
+        version: chrome.runtime.getManifest().version,
+        timestamp: Date.now(),
+        backfill: true,
+      });
+    });
   }
   console.log("Chrome Shield Suite: Initialized");
 });

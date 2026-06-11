@@ -28,3 +28,11 @@ dist-ssr
 *.zip
 yc/
 .claude/
+
+# Built bundle embeds VITE_RELAY_AUTH_TOKEN — never publish to the public repo.
+# (Old token leaked via this file in history; rotated 2026-06-11.)
+extension/background.js
+# wrangler local state + eval LLM cache
+cloudflare/.wrangler/
+.wrangler/
+.eval-cache/

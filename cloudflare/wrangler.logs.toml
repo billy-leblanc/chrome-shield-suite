@@ -3,6 +3,7 @@ main = "log-viewer.js"
 compatibility_date = "2024-01-01"
 
 # Same KV namespace used by the main shield-relay worker.
+# Real shield-logs namespace (the old c0532a48… id pointed at a deleted namespace).
 [[kv_namespaces]]
 binding = "SHIELD_LOGS"
-id = "c0532a48ef81423ba9d9fbaa40b55cde"
+id = "0d545e8dc10841328b1bc284d9e04e3d"

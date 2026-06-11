@@ -228,7 +228,11 @@ function flagPillsHTML(flags, riskLevel, max = 3) {
 async function fetchAllEntries() {
   const res = await fetch(`${WORKER_URL}/dashboard`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      // Header auth (new worker). Body token kept for the pre-deploy worker.
+      'Authorization': `Bearer ${RELAY_AUTH_TOKEN}`,
+    },
     body: JSON.stringify({ auth_token: RELAY_AUTH_TOKEN }),
   });
   if (!res.ok) throw new Error(`Worker returned ${res.status}`);

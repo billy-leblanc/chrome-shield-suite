@@ -22,7 +22,15 @@ export default {
       });
     }
 
-    const auth_token = url.searchParams.get('auth_token') || request.headers.get('Authorization');
+    // Header-only auth. Query-param tokens leak into request logs / browser
+    // history, so a token in the URL is rejected outright (not silently accepted).
+    if (url.searchParams.has('auth_token')) {
+      return new Response(JSON.stringify({ error: 'Token must be sent in the Authorization header, not the URL' }), {
+        status: 400,
+        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+      });
+    }
+    const auth_token = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
     if (!auth_token || auth_token !== env.RELAY_AUTH_TOKEN) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,

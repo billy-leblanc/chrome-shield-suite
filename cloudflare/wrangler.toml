@@ -1,6 +1,7 @@
 name = "shield-relay"
 main = "relay-worker.js"
 compatibility_date = "2024-01-01"
+account_id = "92ddbe4d2678d8f1f7e2708bf7574c3a"
 
 # KV namespace for anonymized analysis logs.
 # Replace the placeholder id with the real ID from the Cloudflare dashboard
@@ -14,3 +15,9 @@ id = "0d545e8dc10841328b1bc284d9e04e3d"
 [[kv_namespaces]]
 binding = "TELEMETRY_LOGS"
 id = "cc449161efb44df2b38a5cf05163628c"
+
+# Registry ingestion: /event beacons fan out to the registry-events queue
+# (consumed by registry-ingest → normalize.ts → D1). Fire-and-forget.
+[[queues.producers]]
+queue = "registry-events"
+binding = "EVENTS"

@@ -1,0 +1,22 @@
+# Registry ingestion pipeline — queue consumer + feed-poller crons.
+# Bindings per ingest-worker.ts header.
+name = "registry-ingest"
+main = "ingest-worker.ts"
+compatibility_date = "2024-11-01"
+account_id = "92ddbe4d2678d8f1f7e2708bf7574c3a"
+
+[[queues.producers]]
+queue = "registry-events"
+binding = "EVENTS"
+
+[[queues.consumers]]
+queue = "registry-events"
+max_batch_size = 50
+
+[[d1_databases]]
+binding = "DB"
+database_name = "registry"
+database_id = "1f44cd07-a433-4f7c-a5ac-0b721f6cc24e"
+
+[triggers]
+crons = ["*/30 * * * *"]
