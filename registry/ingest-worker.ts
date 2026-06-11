@@ -16,6 +16,7 @@
  */
 
 import { normalizeEvent, type PublishableDetection } from './normalize';
+import { enrichDomain } from './enrich';
 
 interface Env {
   DB: D1Database;
@@ -49,6 +50,31 @@ export default {
   // ─── Feed pollers (cron) ───────────────────────────────────────────────────
   async scheduled(_ctrl: ScheduledController, env: Env): Promise<void> {
     await Promise.allSettled([pollOpenPhish(env), pollURLhaus(env)]);
+    // Sweeps run after pollers; each is capped per tick to stay polite to RDAP/DoH.
+    await enrichSweep(env).catch(e => console.error('enrich sweep', e));
+    await lifecycleSweep(env).catch(e => console.error('lifecycle sweep', e));
+  },
+
+  // ─── HTTP layer: STAGING page renderer + dispute intake + sitemap ──────────
+  // Registry pages in shadow mode (Phase 3.3): rendered from publishable_entities
+  // only, X-Robots-Tag: noindex until Phase 4 (LLC/ToS) clears. No 'scam' wording —
+  // probabilistic verdict tiers only (legal §9).
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+
+    if (url.pathname === '/sitemap.xml') return sitemap(env);
+
+    const pageMatch = url.pathname.match(/^\/check\/([a-z0-9.-]{4,253})$/i);
+    if (pageMatch && request.method === 'GET') return renderPage(pageMatch[1].toLowerCase(), env);
+
+    if (url.pathname === '/dispute' && request.method === 'POST') return openDispute(request, env);
+
+    if (url.pathname === '/') {
+      return new Response('Safety Intercept Registry — staging (shadow mode)', {
+        headers: { 'X-Robots-Tag': 'noindex' },
+      });
+    }
+    return new Response('Not found', { status: 404, headers: { 'X-Robots-Tag': 'noindex' } });
   },
 };
 
@@ -164,3 +190,190 @@ const sha256Hex = async (s: string): Promise<string> => {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 };
+
+// ─── Enrichment sweep (Phase 2.1) ────────────────────────────────────────────
+// Every cron tick: enrich up to 25 domain entities that lack an enrichments row.
+// RDAP + DoH + brand matching — all free APIs, sequential to stay polite.
+
+async function enrichSweep(env: Env): Promise<void> {
+  const { results } = await env.DB.prepare(
+    `SELECT e.id, e.entity_value FROM entities e
+     LEFT JOIN enrichments x ON x.entity_id = e.id
+     WHERE e.entity_type = 'domain' AND x.entity_id IS NULL
+     ORDER BY e.last_seen DESC LIMIT 25`,
+  ).all<{ id: number; entity_value: string }>();
+
+  for (const row of results ?? []) {
+    try {
+      const en = await enrichDomain(row.entity_value);
+      await env.DB.prepare(
+        `INSERT OR REPLACE INTO enrichments
+           (entity_id, registrar, registered_at, domain_age_days, nameservers,
+            a_records, impersonates, payment_rails, content_sha256, enriched_at)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)`,
+      ).bind(
+        row.id, en.registrar ?? null, en.registered_at ?? null, en.domain_age_days ?? null,
+        JSON.stringify(en.nameservers ?? []), JSON.stringify(en.a_records ?? []),
+        en.impersonates ?? null, en.payment_rails ? JSON.stringify(en.payment_rails) : null,
+        en.content_sha256 ?? null, en.enriched_at,
+      ).run();
+    } catch (e) {
+      console.error('enrich failed', row.entity_value, e);
+    }
+  }
+}
+
+// ─── Lifecycle tracker (Phase 2.3) ───────────────────────────────────────────
+// Re-checks recently-seen entities (max 25/tick, once per ~24h each): does DNS
+// still resolve, does the page still answer? Time-alive/takedown metrics accrue
+// from these rows — this data cannot be backfilled.
+
+async function lifecycleSweep(env: Env): Promise<void> {
+  const { results } = await env.DB.prepare(
+    `SELECT e.id, e.entity_value FROM entities e
+     WHERE e.entity_type = 'domain'
+       AND e.last_seen >= datetime('now', '-30 days')
+       AND NOT EXISTS (
+         SELECT 1 FROM lifecycle_checks lc
+         WHERE lc.entity_id = e.id AND lc.checked_at >= datetime('now', '-1 day'))
+     ORDER BY e.last_seen DESC LIMIT 25`,
+  ).all<{ id: number; entity_value: string }>();
+
+  for (const row of results ?? []) {
+    let dns = 0, http = 0;
+    try {
+      const r = await fetch(
+        `https://cloudflare-dns.com/dns-query?name=${row.entity_value}&type=A`,
+        { headers: { accept: 'application/dns-json' } },
+      );
+      const j: any = r.ok ? await r.json() : {};
+      dns = (j.Answer ?? []).length > 0 ? 1 : 0;
+    } catch { /* dns stays 0 */ }
+    if (dns) {
+      try {
+        const r = await fetch(`http://${row.entity_value}/`, {
+          method: 'HEAD', redirect: 'follow', signal: AbortSignal.timeout(5000),
+        });
+        http = r.status < 400 ? 1 : 0;
+      } catch { /* http stays 0 */ }
+    }
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO lifecycle_checks (entity_id, dns_alive, http_alive) VALUES (?1, ?2, ?3)`,
+    ).bind(row.id, dns, http).run();
+  }
+}
+
+// ─── Page renderer (Phase 3.3, staging) ──────────────────────────────────────
+
+const TIER_LABEL: Record<string, string> = {
+  'high-risk-indicators': 'High-risk indicators reported',
+  'suspicious-indicators': 'Suspicious indicators reported',
+  'under-review': 'Under review',
+};
+
+function tierFor(maxScore: number): string {
+  return maxScore >= 85 ? 'high-risk-indicators'
+    : maxScore >= 70 ? 'suspicious-indicators' : 'under-review';
+}
+
+const esc = (s: string) => s.replace(/[&<>"']/g, c => (
+  { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+
+async function renderPage(domain: string, env: Env): Promise<Response> {
+  // publishable_entities view = the gate: prod-corroborated, not allowlisted, score floor.
+  const ent = await env.DB.prepare(
+    `SELECT * FROM publishable_entities WHERE entity_type = 'domain' AND entity_value = ?1`,
+  ).bind(domain).first<any>();
+  if (!ent) return new Response('No entry', { status: 404, headers: { 'X-Robots-Tag': 'noindex' } });
+
+  const en = await env.DB.prepare(
+    `SELECT * FROM enrichments WHERE entity_id = ?1`).bind(ent.id).first<any>();
+  const det = await env.DB.prepare(
+    `SELECT techniques FROM detections WHERE entity_id = ?1 AND env = 'prod'`).bind(ent.id).all<any>();
+  const dispute = await env.DB.prepare(
+    `SELECT 1 FROM disputes WHERE entity_id = ?1 AND status = 'open' LIMIT 1`).bind(ent.id).first();
+
+  const slugs = [...new Set((det.results ?? []).flatMap((d: any) => JSON.parse(d.techniques)))];
+  const tech = slugs.length
+    ? (await env.DB.prepare(
+        `SELECT slug, display_name, description FROM techniques
+         WHERE slug IN (${slugs.map(() => '?').join(',')})`,
+      ).bind(...slugs).all<any>()).results ?? []
+    : [];
+
+  const tier = tierFor(ent.max_score);
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>${esc(domain)} — Safety Intercept Registry</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{font:16px/1.5 system-ui;max-width:680px;margin:2rem auto;padding:0 1rem;color:#1a1a2e}
+.tier{padding:.75rem 1rem;border-radius:8px;font-weight:600;background:${tier === 'high-risk-indicators' ? '#fee2e2;color:#991b1b' : '#fef3c7;color:#92400e'}}
+.fact{color:#555}.tech{margin:.75rem 0;padding:.75rem;background:#f5f5f7;border-radius:8px}
+.dispute{margin-top:2rem;font-size:.9rem;color:#666}.banner{background:#dbeafe;color:#1e40af;padding:.5rem 1rem;border-radius:8px;margin-bottom:1rem}</style>
+</head><body>
+${dispute ? '<div class="banner">⚖️ This listing is currently disputed and under review.</div>' : ''}
+<h1>${esc(domain)}</h1>
+<div class="tier">${TIER_LABEL[tier]}</div>
+<p class="fact">Reported by ${ent.corroborations} independent sources.
+First observed ${esc(String(ent.first_seen).slice(0, 10))} · last ${esc(String(ent.last_seen).slice(0, 10))}.</p>
+${en ? `<p class="fact">${en.domain_age_days != null ? `Domain registered ${en.domain_age_days} days before first report.` : ''}
+${en.registrar ? ` Registrar: ${esc(en.registrar)}.` : ''}
+${en.impersonates ? ` Appears to imitate <strong>${esc(en.impersonates)}</strong>.` : ''}</p>` : ''}
+${tech.length ? '<h2>Reported techniques</h2>' + tech.map((t: any) =>
+  `<div class="tech"><strong>${esc(t.display_name)}</strong><br>${esc(t.description)}</div>`).join('') : ''}
+<div class="dispute">Indicators are reports, not legal findings. Own this domain?
+<a href="/dispute?entity=${encodeURIComponent(domain)}">Submit a dispute</a> — reviewed within 72 hours.</div>
+</body></html>`;
+
+  return new Response(html, {
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'X-Robots-Tag': 'noindex',  // STAGING: remove only when Phase 4 (LLC/ToS) clears
+      'Cache-Control': 'public, max-age=3600',
+    },
+  });
+}
+
+// ─── Dispute intake (Phase 3.4) ──────────────────────────────────────────────
+
+async function openDispute(request: Request, env: Env): Promise<Response> {
+  let body: any;
+  try { body = await request.json(); } catch { return json({ error: 'invalid JSON' }, 400); }
+  const { entity, contact_email, claim_text } = body ?? {};
+  if (typeof entity !== 'string' || typeof contact_email !== 'string' || typeof claim_text !== 'string'
+      || !contact_email.includes('@') || claim_text.length < 10 || claim_text.length > 5000) {
+    return json({ error: 'entity, contact_email, claim_text (10–5000 chars) required' }, 400);
+  }
+  const ent = await env.DB.prepare(
+    `SELECT id FROM entities WHERE entity_type = 'domain' AND entity_value = ?1`,
+  ).bind(entity.toLowerCase()).first<{ id: number }>();
+  if (!ent) return json({ error: 'no such entity' }, 404);
+
+  await env.DB.prepare(
+    `INSERT INTO disputes (entity_id, contact_email, claim_text, sla_due)
+     VALUES (?1, ?2, ?3, datetime('now', '+72 hours'))`,
+  ).bind(ent.id, contact_email.slice(0, 200), claim_text).run();
+  console.log(JSON.stringify({ event: 'dispute_opened', entity })); // tail-visible; email hookup later
+  return json({ ok: true, sla: '72h' });
+}
+
+const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), {
+  status, headers: { 'Content-Type': 'application/json', 'X-Robots-Tag': 'noindex' },
+});
+
+// ─── Sitemap (Phase 3.5, staging) ────────────────────────────────────────────
+
+async function sitemap(env: Env): Promise<Response> {
+  const { results } = await env.DB.prepare(
+    `SELECT entity_value, last_seen FROM publishable_entities
+     WHERE entity_type = 'domain' ORDER BY last_seen DESC LIMIT 5000`,
+  ).all<any>();
+  const base = 'https://registry-ingest.bleblanc.workers.dev';
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${(results ?? []).map((r: any) =>
+  `<url><loc>${base}/check/${r.entity_value}</loc><lastmod>${String(r.last_seen).slice(0, 10)}</lastmod></url>`).join('\n')}
+</urlset>`;
+  return new Response(xml, {
+    headers: { 'Content-Type': 'application/xml', 'X-Robots-Tag': 'noindex' },
+  });
+}

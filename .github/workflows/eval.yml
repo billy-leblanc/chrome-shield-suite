@@ -1,0 +1,30 @@
+# Engine eval gate: MODE=local on every push/PR. Free, deterministic, no secrets.
+# The harness exits nonzero if precision < 0.95 — the registry-publishing floor.
+# (MODE=hybrid runs locally before deploys; it needs the relay token, so not in CI.)
+name: engine-eval
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/engine/**'
+      - 'src/core/**'
+      - 'src/shared/**'
+      - 'eval/**'
+  pull_request:
+    paths:
+      - 'packages/engine/**'
+      - 'src/core/**'
+      - 'src/shared/**'
+      - 'eval/**'
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: MODE=local eval (precision floor 0.95)
+        run: MODE=local npx tsx eval/harness.ts eval/groundtruth.seed.jsonl

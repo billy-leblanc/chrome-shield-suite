@@ -68,7 +68,9 @@ const DROP_EVENTS = new Set(['end_to_end_health_check', 'download']);
 
 // Events with no scam-side entity (user actions on victim side) — useful for
 // product analytics, but they carry no registry-publishable subject.
-const VICTIM_SIDE_EVENTS = new Set(['gmail_warning_dismissed', 'intercepted', 'cancelled', 'proceeded']);
+const VICTIM_SIDE_EVENTS = new Set(['gmail_warning_dismissed', 'intercepted', 'cancelled', 'proceeded',
+  // user said 'Not a scam' — a labeled LEGIT sample; its sender must never become a registry entity
+  'gmail_false_positive']);
 
 // ---------- Helpers ----------
 

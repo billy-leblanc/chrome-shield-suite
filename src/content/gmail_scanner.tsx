@@ -309,6 +309,24 @@ const GmailScanner = () => {
       }}>
         Dismiss
       </button>
+      <button className="btn-dismiss" onClick={() => {
+        setVisible(false);
+        if (chrome.runtime?.id) {
+          // Phase 1.5: explicit user disagreement = a labeled legit sample.
+          // Each of these grows the ground-truth eval set (and surfaces FPs weekly).
+          chrome.runtime.sendMessage({
+            type: 'LOG_EVENT', event: 'gmail_false_positive',
+            platform: 'Gmail',
+            score: analysis.score,
+            riskLevel: analysis.riskLevel,
+            flags: analysis.flags,
+            senderEmail: sender,
+            senderDomain: sender.includes('@') ? sender.split('@')[1] : '',
+          });
+        }
+      }}>
+        Not a scam
+      </button>
     </div>
   );
 };
