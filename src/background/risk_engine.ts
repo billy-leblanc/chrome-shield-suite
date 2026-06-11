@@ -14,6 +14,14 @@ import {
 export type { RiskAnalysis } from '../core/fraud_detector';
 
 import { mapLegacyFlag, TAXONOMY_BY_SLUG } from '../shared/taxonomy';
+import { isAllowlistedSender } from '../shared/sender_allowlist';
+
+// Auth gate (Phase 1.2 — the cash@square.com fix): mail rendered in Gmail's UI
+// from an allowlisted financial sender has passed DMARC (all listed domains
+// enforce p=reject), so legitimacy evidence dominates content evidence and the
+// score caps at 40 — below the alert threshold. Spoofed mail claiming these
+// senders never reaches the Gmail inbox UI with this sender attribute set.
+const AUTH_GATE_CAP = 40;
 
 const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
 const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
@@ -374,6 +382,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             timestamp: new Date().toISOString(),
           });
         }
+      }
+
+      // Auth gate — applied LAST so it dominates blending and correlation boosts.
+      const senderDomain = typeof data.senderDomain === 'string' ? data.senderDomain
+        : (typeof data.senderEmail === 'string' && data.senderEmail.includes('@') ? data.senderEmail.split('@')[1] : undefined);
+      if (platform === 'Gmail' && isAllowlistedSender(senderDomain) && analysis.score > AUTH_GATE_CAP) {
+        analysis.score = AUTH_GATE_CAP;
+        analysis.riskLevel = scoreToRiskLevel(AUTH_GATE_CAP);
+        analysis.recommendation = FraudDetector.getRecommendation(analysis.riskLevel);
+        analysis.flags = Array.from(new Set([...analysis.flags, 'Auth Gate: authenticated allowlisted sender']));
       }
 
       if (analysis.riskLevel === 'high' || analysis.riskLevel === 'critical') {

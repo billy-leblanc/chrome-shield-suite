@@ -120,7 +120,7 @@ const GmailScanner = () => {
 
       const sendAnalysis = (retriesLeft: number) => {
         chrome.runtime.sendMessage(
-          { type: 'ANALYZE_RISK', data: { message: analysisText.substring(0, 3000), amount: 0, platform: 'Gmail' } },
+          { type: 'ANALYZE_RISK', data: { message: analysisText.substring(0, 3000), amount: 0, platform: 'Gmail', senderEmail, senderDomain } },
           (report: RiskAnalysis | undefined) => {
             if (chrome.runtime.lastError) {
               // Service worker was dead — retry after a short delay to let it wake

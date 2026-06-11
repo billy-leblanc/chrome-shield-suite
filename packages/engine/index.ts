@@ -19,9 +19,40 @@ import {
   type RiskAnalysis,
 } from '../../src/core/fraud_detector';
 import { mapLegacyFlag, TAXONOMY_BY_SLUG } from '../../src/shared/taxonomy';
+import { isAllowlistedSender } from '../../src/shared/sender_allowlist';
 
-export { blendScores, scoreToRiskLevel, clampScore };
+export { blendScores, scoreToRiskLevel, clampScore, isAllowlistedSender };
 export type { TransactionData, RiskAnalysis };
+
+/**
+ * Auth gate (Phase 1.2, the cash@square.com fix): an email that authenticates
+ * (SPF pass + DKIM pass) from an allowlisted financial sender is capped at
+ * AUTH_GATE_CAP regardless of content patterns — legitimacy evidence dominates
+ * content evidence. Cap is 40: below the high/alert threshold (50), still
+ * visible in logs as "elevated content, authenticated sender".
+ */
+export const AUTH_GATE_CAP = 40;
+
+export interface AuthEvidence {
+  spf?: string;
+  dkim?: string;
+  senderDomain?: string;
+  senderEmail?: string;
+}
+
+export function authGateApplies(e: AuthEvidence): boolean {
+  const domain = e.senderDomain
+    ?? (e.senderEmail?.includes('@') ? e.senderEmail.split('@')[1] : undefined);
+  if (!isAllowlistedSender(domain)) return false;
+  return e.spf === 'pass' && e.dkim === 'pass';
+}
+
+export function applyAuthGate(e: AuthEvidence, score: number): { score: number; gated: boolean } {
+  if (authGateApplies(e) && score > AUTH_GATE_CAP) {
+    return { score: AUTH_GATE_CAP, gated: true };
+  }
+  return { score, gated: false };
+}
 
 export interface EngineInput {
   // email channel
@@ -71,12 +102,13 @@ export function toTransactionData(input: EngineInput): TransactionData {
   return { message, amount: input.amount, platform };
 }
 
-/** The deterministic local scoring path. */
+/** The deterministic local scoring path. Auth gate applied last — it dominates. */
 export function analyzeLocal(input: EngineInput): EngineVerdict {
   const det = FraudDetector.analyze(toTransactionData(input));
+  const gate = applyAuthGate(input, det.score);
   return {
-    score: det.score,
+    score: gate.score,
     techniques: flagsToTechniques(det.flags),
-    rawFlags: det.flags,
+    rawFlags: gate.gated ? [...det.flags, 'Auth Gate: authenticated allowlisted sender'] : det.flags,
   };
 }
