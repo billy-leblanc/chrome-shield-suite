@@ -72,6 +72,14 @@ const injectStyles = (shadow: ShadowRoot) => {
       transition: opacity 0.15s ease;
     }
     .btn-dismiss:hover { opacity: 0.7; }
+    .consent { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; max-width: 260px; }
+    .consent-q { font-size: 11px; color: #94A3B8; line-height: 1.4; }
+    .btn-share {
+      padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; background: #2563EB; border: 1px solid #2563EB;
+      color: #fff; font-family: inherit; transition: opacity 0.15s ease;
+    }
+    .btn-share:hover { opacity: 0.85; }
   `;
   shadow.appendChild(style);
 };
@@ -81,9 +89,13 @@ const GmailScanner = () => {
   const [analysis, setAnalysis] = React.useState<RiskAnalysis | null>(null);
   const [visible, setVisible] = React.useState(false);
   const [sender, setSender] = React.useState('');
+  // Retained ONLY in memory for the active warning, so a "Not a scam" correction
+  // can optionally share this email's content with explicit consent. Never auto-sent.
+  const [flaggedContent, setFlaggedContent] = React.useState<{ subject: string; body: string }>({ subject: '', body: '' });
+  const [showConsent, setShowConsent] = React.useState(false);
   const analyzedRef = React.useRef<Set<string>>(new Set());
   const inFlightRef = React.useRef<Set<string>>(new Set());
-  const flaggedRef = React.useRef<Map<string, { report: RiskAnalysis; senderEmail: string }>>(new Map());
+  const flaggedRef = React.useRef<Map<string, { report: RiskAnalysis; senderEmail: string; subject: string; body: string }>>(new Map());
 
   React.useEffect(() => {
     if (!window.location.hostname.endsWith('mail.google.com')) return;
@@ -131,9 +143,10 @@ const GmailScanner = () => {
           inFlightRef.current.delete(threadId);
           if (report && typeof report === 'object' && typeof report.riskLevel === 'string') {
             if (report.riskLevel === 'high' || report.riskLevel === 'critical') {
-              flaggedRef.current.set(threadId, { report, senderEmail });
+              flaggedRef.current.set(threadId, { report, senderEmail, subject, body: bodyText });
               setAnalysis(report);
               setSender(senderEmail);
+              setFlaggedContent({ subject, body: bodyText });
               setVisible(true);
               chrome.runtime.sendMessage({
                 type: 'LOG_EVENT', event: 'gmail_scam_detected',
@@ -222,6 +235,7 @@ const GmailScanner = () => {
       if (analyzedRef.current.has(threadId)) {
         // Already analyzed — re-show banner if it was flagged
         const cached = flaggedRef.current.get(threadId);
+        if (cached) setFlaggedContent({ subject: cached.subject, body: cached.body });
         if (cached) {
           setAnalysis(cached.report);
           setSender(cached.senderEmail);
@@ -309,24 +323,52 @@ const GmailScanner = () => {
       }}>
         Dismiss
       </button>
-      <button className="btn-dismiss" onClick={() => {
-        setVisible(false);
-        if (chrome.runtime?.id) {
-          // Phase 1.5: explicit user disagreement = a labeled legit sample.
-          // Each of these grows the ground-truth eval set (and surfaces FPs weekly).
-          chrome.runtime.sendMessage({
-            type: 'LOG_EVENT', event: 'gmail_false_positive',
-            platform: 'Gmail',
-            score: analysis.score,
-            riskLevel: analysis.riskLevel,
-            flags: analysis.flags,
-            senderEmail: sender,
-            senderDomain: sender.includes('@') ? sender.split('@')[1] : '',
-          });
-        }
-      }}>
-        Not a scam
-      </button>
+      {!showConsent && (
+        <button className="btn-dismiss" onClick={() => {
+          // Always log the signal-only correction (no content): a labeled legit
+          // sender/flag combo for heuristic tuning. Then offer opt-in sharing.
+          if (chrome.runtime?.id) {
+            chrome.runtime.sendMessage({
+              type: 'LOG_EVENT', event: 'gmail_false_positive',
+              platform: 'Gmail',
+              score: analysis.score,
+              riskLevel: analysis.riskLevel,
+              flags: analysis.flags,
+              senderEmail: sender,
+              senderDomain: sender.includes('@') ? sender.split('@')[1] : '',
+            });
+          }
+          setShowConsent(true);
+        }}>
+          Not a scam
+        </button>
+      )}
+      {showConsent && (
+        <div className="consent">
+          <div className="consent-q">Help us fix this? We can store this email's
+            subject &amp; text to stop flagging messages like it. Only shared if you tap below.</div>
+          <button className="btn-share" onClick={() => {
+            if (chrome.runtime?.id) {
+              chrome.runtime.sendMessage({
+                type: 'SHARE_GROUNDTRUTH',
+                label: 'legit',
+                subject: flaggedContent.subject,
+                body: flaggedContent.body,
+                senderDomain: sender.includes('@') ? sender.split('@')[1] : '',
+                flags: analysis.flags,
+                score: analysis.score,
+              });
+            }
+            setShowConsent(false);
+            setVisible(false);
+          }}>
+            Share &amp; dismiss
+          </button>
+          <button className="btn-dismiss" onClick={() => { setShowConsent(false); setVisible(false); }}>
+            Just dismiss
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -16,6 +16,12 @@ id = "0d545e8dc10841328b1bc284d9e04e3d"
 binding = "TELEMETRY_LOGS"
 id = "cc449161efb44df2b38a5cf05163628c"
 
+# Consented ground-truth samples (opt-in only): subject+body a user EXPLICITLY
+# chose to share when correcting a false positive. The one path content may flow.
+[[kv_namespaces]]
+binding = "GROUNDTRUTH"
+id = "a3216a9600e04399a6dbf0a4486b0d76"
+
 # Registry ingestion: /event beacons fan out to the registry-events queue
 # (consumed by registry-ingest → normalize.ts → D1). Fire-and-forget.
 [[queues.producers]]

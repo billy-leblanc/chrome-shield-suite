@@ -26,6 +26,7 @@ const AUTH_GATE_CAP = 40;
 const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
 const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
 const TELEMETRY_URL = 'https://shield-relay.bleblanc.workers.dev/telemetry';
+const GROUNDTRUTH_URL = 'https://shield-relay.bleblanc.workers.dev/groundtruth';
 const RELAY_AUTH_TOKEN = import.meta.env.VITE_RELAY_AUTH_TOKEN as string;
 
 /**
@@ -336,6 +337,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // 4. Cloudflare Relay Sync
     shipEventToRelay(entry);
     return false; // Sync-and-forget
+  }
+
+  // Consented ground-truth sharing: the ONLY path email content leaves the
+  // browser, and only because the user tapped "Share" on a false-positive
+  // correction. Posts subject+body to the dedicated /groundtruth store.
+  if (message.type === 'SHARE_GROUNDTRUTH') {
+    const { subject, body, senderDomain, flags, score, label } = message;
+    fetch(GROUNDTRUTH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RELAY_AUTH_TOKEN}` },
+      body: JSON.stringify({ subject, body, senderDomain, flags, score, label, consent: true }),
+    }).catch(() => {}); // never surface errors for a best-effort contribution
+    return false;
   }
 
   if (message.type === 'ANALYZE_RISK') {

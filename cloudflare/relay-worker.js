@@ -5,7 +5,7 @@
 // Endpoints intentionally reachable cross-origin: the public marketing site
 // (/check, /download) and the extension background worker (/analyze, /event,
 // /telemetry). These keep a wildcard ACAO — the bearer token is their gate.
-const OPEN_CORS_PATHS = new Set(['/check', '/download', '/analyze', '/event', '/telemetry']);
+const OPEN_CORS_PATHS = new Set(['/check', '/download', '/analyze', '/event', '/telemetry', '/groundtruth']);
 
 // Per-request CORS. Open paths get '*'; browser-dashboard paths (/dashboard,
 // /downloads, /checks) are restricted to the ALLOWED_ORIGINS allowlist
@@ -154,7 +154,7 @@ export default {
     const auth_token = extractToken(request, body);
 
     // Auth-required paths
-    const requiresAuth = ['/event', '/analyze', '/dashboard', '/downloads', '/checks', '/telemetry'].includes(url.pathname);
+    const requiresAuth = ['/event', '/analyze', '/dashboard', '/downloads', '/checks', '/telemetry', '/groundtruth'].includes(url.pathname);
 
     // Validate auth token
     if (requiresAuth && (!auth_token || auth_token !== env.RELAY_AUTH_TOKEN)) {
@@ -196,6 +196,46 @@ export default {
         return new Response(JSON.stringify({ error: 'KV write failed', details: kvErr.message }), {
           status: 500,
           headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // --- CASE: Consented ground-truth sample (opt-in only) ---
+    // The ONE path email content may flow, and only when the user explicitly
+    // taps "share" while correcting a false positive. Stored separately from all
+    // telemetry, clearly labeled with consent + provenance. Used to grow the eval
+    // set with real-world legit emails that tripped the detector.
+    if (url.pathname === '/groundtruth') {
+      const { subject, body: emailBody, senderDomain, flags, score, consent, label } = body ?? {};
+      if (consent !== true) {
+        return new Response(JSON.stringify({ error: 'consent required' }), {
+          status: 400, headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      }
+      if (!env.GROUNDTRUTH) {
+        return new Response(JSON.stringify({ ok: true, stored: false }), {
+          status: 200, headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      }
+      try {
+        const key = `gt:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+        await env.GROUNDTRUTH.put(key, JSON.stringify({
+          label: label === 'scam' ? 'scam' : 'legit',  // FP corrections are legit by definition
+          subject: typeof subject === 'string' ? subject.slice(0, 300) : '',
+          body: typeof emailBody === 'string' ? emailBody.slice(0, 5000) : '',
+          senderDomain: typeof senderDomain === 'string' ? senderDomain : '',
+          engineFlags: Array.isArray(flags) ? flags.slice(0, 12) : [],
+          engineScore: typeof score === 'number' ? score : null,
+          consent: true,
+          source: 'not-a-scam-button',
+          collectedAt: new Date().toISOString(),
+        }));
+        return new Response(JSON.stringify({ ok: true, stored: true }), {
+          status: 200, headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      } catch (kvErr) {
+        return new Response(JSON.stringify({ error: 'store failed', details: kvErr.message }), {
+          status: 500, headers: { ...cors, 'Content-Type': 'application/json' },
         });
       }
     }
