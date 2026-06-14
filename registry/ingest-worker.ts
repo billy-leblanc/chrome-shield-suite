@@ -22,6 +22,7 @@ import { clusterEntities, type EntityInfra } from './campaigns';
 interface Env {
   DB: D1Database;
   EVENTS: Queue;
+  PREVIEW_TOKEN?: string;   // gates /preview/:domain staging route
 }
 
 type QueueMsg =
@@ -68,6 +69,18 @@ export default {
 
     const pageMatch = url.pathname.match(/^\/check\/([a-z0-9.-]{4,253})$/i);
     if (pageMatch && request.method === 'GET') return renderPage(pageMatch[1].toLowerCase(), env);
+
+    // Auth-gated staging preview: render ANY known entity (pre-publish) to review
+    // what pages look like with live enrichment + campaign data.
+    const previewMatch = url.pathname.match(/^\/preview\/([a-z0-9.-]{4,253})$/i);
+    if (previewMatch && request.method === 'GET') {
+      const tok = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim()
+        || url.searchParams.get('token') || '';
+      if (!env.PREVIEW_TOKEN || tok !== env.PREVIEW_TOKEN) {
+        return new Response('Unauthorized', { status: 401, headers: { 'X-Robots-Tag': 'noindex' } });
+      }
+      return renderPage(previewMatch[1].toLowerCase(), env, true);
+    }
 
     if (url.pathname === '/dispute' && request.method === 'POST') return openDispute(request, env);
 
@@ -385,11 +398,17 @@ function tierFor(maxScore: number): string {
 const esc = (s: string) => s.replace(/[&<>"']/g, c => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 
-async function renderPage(domain: string, env: Env): Promise<Response> {
-  // publishable_entities view = the gate: prod-corroborated, not allowlisted, score floor.
-  const ent = await env.DB.prepare(
-    `SELECT * FROM publishable_entities WHERE entity_type = 'domain' AND entity_value = ?1`,
-  ).bind(domain).first<any>();
+async function renderPage(domain: string, env: Env, preview = false): Promise<Response> {
+  // Live pages render ONLY from the publishable gate (prod-corroborated, not
+  // allowlisted, score floor). Preview mode (auth-gated) renders any known
+  // entity so we can see pages before they cross the gate — clearly watermarked.
+  const ent = preview
+    ? await env.DB.prepare(
+        `SELECT * FROM entities WHERE entity_type = 'domain' AND entity_value = ?1`,
+      ).bind(domain).first<any>()
+    : await env.DB.prepare(
+        `SELECT * FROM publishable_entities WHERE entity_type = 'domain' AND entity_value = ?1`,
+      ).bind(domain).first<any>();
   if (!ent) return new Response('No entry', { status: 404, headers: { 'X-Robots-Tag': 'noindex' } });
 
   const en = await env.DB.prepare(
@@ -398,6 +417,16 @@ async function renderPage(domain: string, env: Env): Promise<Response> {
     `SELECT techniques FROM detections WHERE entity_id = ?1 AND env = 'prod'`).bind(ent.id).all<any>();
   const dispute = await env.DB.prepare(
     `SELECT 1 FROM disputes WHERE entity_id = ?1 AND status = 'open' LIMIT 1`).bind(ent.id).first();
+
+  // Campaign context: how many sibling domains share this actor's infrastructure.
+  const campaign = ent.campaign_id
+    ? await env.DB.prepare(
+        `SELECT c.size, c.top_brand,
+                (SELECT GROUP_CONCAT(entity_value, ', ') FROM
+                  (SELECT entity_value FROM entities WHERE campaign_id = c.id AND id != ?2 LIMIT 6)) AS siblings
+         FROM campaigns c WHERE c.id = ?1`,
+      ).bind(ent.campaign_id, ent.id).first<any>()
+    : null;
 
   const slugs = [...new Set((det.results ?? []).flatMap((d: any) => JSON.parse(d.techniques)))];
   const tech = slugs.length
@@ -414,16 +443,18 @@ async function renderPage(domain: string, env: Env): Promise<Response> {
 <style>body{font:16px/1.5 system-ui;max-width:680px;margin:2rem auto;padding:0 1rem;color:#1a1a2e}
 .tier{padding:.75rem 1rem;border-radius:8px;font-weight:600;background:${tier === 'high-risk-indicators' ? '#fee2e2;color:#991b1b' : '#fef3c7;color:#92400e'}}
 .fact{color:#555}.tech{margin:.75rem 0;padding:.75rem;background:#f5f5f7;border-radius:8px}
-.dispute{margin-top:2rem;font-size:.9rem;color:#666}.banner{background:#dbeafe;color:#1e40af;padding:.5rem 1rem;border-radius:8px;margin-bottom:1rem}</style>
+.dispute{margin-top:2rem;font-size:.9rem;color:#666}.banner{background:#dbeafe;color:#1e40af;padding:.5rem 1rem;border-radius:8px;margin-bottom:1rem}
+.preview{background:#1a1a2e;color:#fbbf24;padding:.4rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem}
+.campaign{margin:.75rem 0;padding:.75rem;background:#fef2f2;border:1px solid #fecaca;border-radius:8px}</style>
 </head><body>
+${preview ? '<div class="preview">🔒 STAGING PREVIEW — not crossing the publish gate yet; not publicly visible.</div>' : ''}
 ${dispute ? '<div class="banner">⚖️ This listing is currently disputed and under review.</div>' : ''}
 <h1>${esc(domain)}</h1>
 <div class="tier">${TIER_LABEL[tier]}</div>
-<p class="fact">Reported by ${ent.corroborations} independent sources.
+<p class="fact">Reported by ${ent.corroborations} independent source${ent.corroborations === 1 ? '' : 's'}.
 First observed ${esc(String(ent.first_seen).slice(0, 10))} · last ${esc(String(ent.last_seen).slice(0, 10))}.</p>
-${en ? `<p class="fact">${en.domain_age_days != null ? `Domain registered ${en.domain_age_days} days before first report.` : ''}
-${en.registrar ? ` Registrar: ${esc(en.registrar)}.` : ''}
-${en.impersonates ? ` Appears to imitate <strong>${esc(en.impersonates)}</strong>.` : ''}</p>` : ''}
+${en ? `<p class="fact">${en.domain_age_days != null ? `Domain registered ${en.domain_age_days} days before first report. ` : ''}${en.registrar ? `Registrar: ${esc(en.registrar)}. ` : ''}${en.asn ? `Hosted on ${esc(en.asn)}. ` : ''}${en.impersonates ? `Appears to imitate <strong>${esc(en.impersonates)}</strong>. ` : ''}</p>` : ''}
+${campaign && campaign.size > 1 ? `<div class="campaign">🕸️ <strong>Part of a ${campaign.size}-domain campaign</strong>${campaign.top_brand ? ` targeting ${esc(campaign.top_brand)}` : ''}.${campaign.siblings ? ` Related domains: ${esc(campaign.siblings)}.` : ''}</div>` : ''}
 ${tech.length ? '<h2>Reported techniques</h2>' + tech.map((t: any) =>
   `<div class="tech"><strong>${esc(t.display_name)}</strong><br>${esc(t.description)}</div>`).join('') : ''}
 <div class="dispute">Indicators are reports, not legal findings. Own this domain?
