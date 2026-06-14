@@ -83,4 +83,6 @@ WHERE e.status NOT IN ('delisted','allowlisted')
   AND e.corroborations >= 2
   AND e.max_score >= 70
   AND NOT EXISTS (SELECT 1 FROM allowlist a WHERE a.pattern = e.entity_value)
+  AND NOT EXISTS (SELECT 1 FROM shared_infra s
+                  WHERE e.entity_value = s.suffix OR e.entity_value LIKE '%.' || s.suffix)
   AND EXISTS (SELECT 1 FROM detections d WHERE d.entity_id = e.id AND d.env = 'prod');
