@@ -27,7 +27,10 @@ const RELAY_URL = 'https://shield-relay.bleblanc.workers.dev/analyze';
 const EVENT_URL = 'https://shield-relay.bleblanc.workers.dev/event';
 const TELEMETRY_URL = 'https://shield-relay.bleblanc.workers.dev/telemetry';
 const GROUNDTRUTH_URL = 'https://shield-relay.bleblanc.workers.dev/groundtruth';
-const RELAY_AUTH_TOKEN = import.meta.env.VITE_RELAY_AUTH_TOKEN as string;
+// Token-free by design: the relay's extension endpoints (/analyze, /event,
+// /telemetry, /groundtruth) authenticate nobody — a secret baked into a public
+// extension bundle is extractable and breaks every install on rotation. The
+// relay protects itself with per-IP rate limiting instead. No secret ships here.
 
 /**
  * Strips common PII patterns from memo text before sending to telemetry.
@@ -59,7 +62,6 @@ function sendTelemetry(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        auth_token: RELAY_AUTH_TOKEN,
         platform: platform ?? 'unknown',
         riskScore: analysis.score,
         riskLevel: analysis.riskLevel,
@@ -79,7 +81,7 @@ function sendTelemetry(
  */
 async function analyzeMemoWithLLM(memo: string, amount?: number, platform?: string) {
   if (!memo || !memo.trim()) return null;
-  return callRelayAPI(memo, RELAY_AUTH_TOKEN, RELAY_URL, 5000, amount, platform);
+  return callRelayAPI(memo, '', RELAY_URL, 5000, amount, platform);
 }
 
 /**
@@ -158,10 +160,7 @@ async function shipEventToRelay(eventData: Record<string, unknown>) {
   try {
     await fetch(EVENT_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${RELAY_AUTH_TOKEN}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(sanitizeEvent(eventData))
     });
   } catch (err) {
@@ -346,7 +345,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const { subject, body, senderDomain, flags, score, label } = message;
     fetch(GROUNDTRUTH_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RELAY_AUTH_TOKEN}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subject, body, senderDomain, flags, score, label, consent: true }),
     }).catch(() => {}); // never surface errors for a best-effort contribution
     return false;

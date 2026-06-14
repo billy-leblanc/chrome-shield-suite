@@ -28,12 +28,41 @@ function corsHeaders(request, env, pathname) {
 
 // Token from Authorization: Bearer header (preferred) or JSON body. Never from
 // the URL — query-param tokens leak into request logs and browser history.
+// Only the ADMIN endpoints (/dashboard, /downloads, /checks) still use this;
+// extension endpoints are token-free (the baked-in secret was extractable and
+// broke every install on rotation — replaced by per-IP rate limiting).
 function extractToken(request, body) {
   const header = request.headers.get('Authorization') || '';
   const bearer = header.replace(/^Bearer\s+/i, '').trim();
   if (bearer) return bearer;
   return (body && typeof body.auth_token === 'string') ? body.auth_token : '';
 }
+
+// Coarse per-IP rate limiting via KV. Protects the Anthropic budget and KV from
+// abuse now that extension endpoints are token-free. IP is used TRANSIENTLY for
+// throttling only — never stored (consistent with the no-PII policy).
+async function rateLimited(env, ip, bucket, limit, windowSec) {
+  if (!env.SHIELD_LOGS || !ip) return false;
+  const win = Math.floor(Date.now() / 1000 / windowSec);
+  const key = `rl:${bucket}:${ip}:${win}`;
+  const cur = parseInt((await env.SHIELD_LOGS.get(key)) || '0', 10);
+  if (cur >= limit) return true;
+  await env.SHIELD_LOGS.put(key, String(cur + 1), { expirationTtl: windowSec * 2 });
+  return false;
+}
+const tooMany = (cors) => new Response(JSON.stringify({ error: 'rate limited' }), {
+  status: 429, headers: { ...cors, 'Content-Type': 'application/json' },
+});
+
+// Per-endpoint limits: [requests, windowSeconds]. /analyze + /check cost
+// Anthropic money, so they're tightest; the rest just guard KV from spam.
+const RATE_LIMITS = {
+  '/analyze': [30, 60],
+  '/check': [15, 60],
+  '/event': [60, 60],
+  '/telemetry': [60, 60],
+  '/groundtruth': [10, 60],
+};
 
 const SYSTEM_PROMPT = `You are the fraud detection engine for Safety Intercept — a product built to protect real people from real harm.
 
@@ -153,15 +182,21 @@ export default {
 
     const auth_token = extractToken(request, body);
 
-    // Auth-required paths
-    const requiresAuth = ['/event', '/analyze', '/dashboard', '/downloads', '/checks', '/telemetry', '/groundtruth'].includes(url.pathname);
-
-    // Validate auth token
+    // Admin endpoints keep the shared secret (only the operator hits these).
+    // Extension + public endpoints are token-free, guarded by rate limiting.
+    const requiresAuth = ['/dashboard', '/downloads', '/checks'].includes(url.pathname);
     if (requiresAuth && (!auth_token || auth_token !== env.RELAY_AUTH_TOKEN)) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
+    }
+
+    // Per-IP rate limit on the token-free endpoints (IP transient, never stored).
+    const clientIp = request.headers.get('CF-Connecting-IP') || '';
+    const limit = RATE_LIMITS[url.pathname];
+    if (limit && await rateLimited(env, clientIp, url.pathname, limit[0], limit[1])) {
+      return tooMany(cors);
     }
 
     // --- CASE 1: Analytics Logging ---

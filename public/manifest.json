@@ -1,9 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Safety Intercept",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "The real-time intent layer. Intercepts payment scams on PayPal & Zelle before you send. Detects scam emails in Gmail.",
-  "permissions": ["storage", "alarms"],
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
   "host_permissions": [
     "*://*.paypal.com/*",
     "*://*.wellsfargo.com/*",
@@ -30,14 +33,20 @@
         "*://*.paypal.com/*",
         "*://*.wellsfargo.com/*"
       ],
-      "js": ["content.js"],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle",
       "all_frames": true,
       "match_about_blank": true
     },
     {
-      "matches": ["*://mail.google.com/*"],
-      "js": ["gmail-content.js"],
+      "matches": [
+        "*://mail.google.com/*"
+      ],
+      "js": [
+        "gmail-content.js"
+      ],
       "run_at": "document_idle",
       "all_frames": false
     }
