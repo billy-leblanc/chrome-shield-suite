@@ -184,7 +184,7 @@ export default {
 
     // Admin endpoints keep the shared secret (only the operator hits these).
     // Extension + public endpoints are token-free, guarded by rate limiting.
-    const requiresAuth = ['/dashboard', '/downloads', '/checks'].includes(url.pathname);
+    const requiresAuth = ['/dashboard', '/downloads', '/checks', '/users'].includes(url.pathname);
     if (requiresAuth && (!auth_token || auth_token !== env.RELAY_AUTH_TOKEN)) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
@@ -241,7 +241,7 @@ export default {
     // telemetry, clearly labeled with consent + provenance. Used to grow the eval
     // set with real-world legit emails that tripped the detector.
     if (url.pathname === '/groundtruth') {
-      const { subject, body: emailBody, senderDomain, flags, score, consent, label } = body ?? {};
+      const { subject, body: emailBody, senderDomain, flags, score, consent, label, installId: gtInstallId } = body ?? {};
       if (consent !== true) {
         return new Response(JSON.stringify({ error: 'consent required' }), {
           status: 400, headers: { ...cors, 'Content-Type': 'application/json' },
@@ -259,6 +259,7 @@ export default {
           subject: typeof subject === 'string' ? subject.slice(0, 300) : '',
           body: typeof emailBody === 'string' ? emailBody.slice(0, 5000) : '',
           senderDomain: typeof senderDomain === 'string' ? senderDomain : '',
+          installId: typeof gtInstallId === 'string' ? gtInstallId : null,
           engineFlags: Array.isArray(flags) ? flags.slice(0, 12) : [],
           engineScore: typeof score === 'number' ? score : null,
           consent: true,
@@ -346,6 +347,53 @@ export default {
         return new Response(JSON.stringify(FALLBACK_RESULT), {
           status: 200,
           headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // --- Distinct user count (admin) ---
+    // Counts unique installIds across install beacons + events + telemetry, with
+    // per-install activity. The answer to "how many real users do I have."
+    if (url.pathname === '/users') {
+      if (!env.SHIELD_LOGS) {
+        return new Response(JSON.stringify({ users: 0, installs: [] }), {
+          status: 200, headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      }
+      try {
+        const seen = new Map(); // installId -> {events, firstSeen, lastSeen, versions:Set}
+        let cursor;
+        do {
+          const list = await env.SHIELD_LOGS.list({ limit: 1000, cursor });
+          for (const k of list.keys) {
+            if (!/^(event:|install:)/.test(k.name)) continue;
+            const val = await env.SHIELD_LOGS.get(k.name);
+            if (!val) continue;
+            let d; try { d = JSON.parse(val); } catch { continue; }
+            const id = d.installId;
+            if (!id) continue;
+            const ts = d.timestamp || d.storedAt || '';
+            const rec = seen.get(id) || { events: 0, firstSeen: ts, lastSeen: ts, versions: new Set() };
+            rec.events++;
+            if (ts && (!rec.firstSeen || ts < rec.firstSeen)) rec.firstSeen = ts;
+            if (ts && (!rec.lastSeen || ts > rec.lastSeen)) rec.lastSeen = ts;
+            if (d.version) rec.versions.add(d.version);
+            seen.set(id, rec);
+          }
+          cursor = list.list_complete ? undefined : list.cursor;
+        } while (cursor);
+
+        const installs = [...seen.entries()].map(([id, r]) => ({
+          installId: id, events: r.events, firstSeen: r.firstSeen,
+          lastSeen: r.lastSeen, versions: [...r.versions],
+        })).sort((a, b) => (b.lastSeen || '').localeCompare(a.lastSeen || ''));
+
+        return new Response(JSON.stringify({ users: installs.length, installs }), {
+          status: 200, headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ error: 'count failed', details: err.message }), {
+          status: 500, headers: { ...cors, 'Content-Type': 'application/json' },
         });
       }
     }
@@ -452,7 +500,7 @@ export default {
 
     // --- CASE 7: Training Telemetry ---
     if (url.pathname === '/telemetry') {
-      const { auth_token: _auth, platform, riskScore, riskLevel, flags, memo, confirmed, version, timestamp } = body;
+      const { auth_token: _auth, installId, platform, riskScore, riskLevel, flags, memoLength, confirmed, version, timestamp } = body;
 
       // Gracefully accept even if namespace isn't provisioned yet
       if (!env.TELEMETRY_LOGS) {
@@ -465,12 +513,13 @@ export default {
       try {
         const key = `telemetry:${timestamp || Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
         await env.TELEMETRY_LOGS.put(key, JSON.stringify({
+          installId: typeof installId === 'string' ? installId : null,
           platform: typeof platform === 'string' ? platform : 'unknown',
           riskScore: typeof riskScore === 'number' ? riskScore : null,
           riskLevel: typeof riskLevel === 'string' ? riskLevel : null,
           flags: Array.isArray(flags) ? flags : [],
           // memo dropped (2026-06-11 PII audit): raw victim message content never persists.
-          memoLength: typeof memo === 'string' ? memo.length : 0,
+          memoLength: typeof memoLength === 'number' ? memoLength : 0,
           confirmed: confirmed === true ? true : confirmed === false ? false : null,
           version: typeof version === 'string' ? version : null,
           storedAt: new Date().toISOString(),

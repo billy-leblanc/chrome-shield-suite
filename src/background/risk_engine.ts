@@ -56,19 +56,22 @@ function sendTelemetry(
   platform: string | undefined,
   analysis: { score: number; riskLevel: string; flags: string[] }
 ): void {
-  chrome.storage.local.get('telemetryEnabled', ({ telemetryEnabled }) => {
+  chrome.storage.local.get('telemetryEnabled', async ({ telemetryEnabled }) => {
     if (!telemetryEnabled) return;
+    const installId = await getInstallId();
     fetch(TELEMETRY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        installId,
         platform: platform ?? 'unknown',
         riskScore: analysis.score,
         riskLevel: analysis.riskLevel,
         flags: analysis.flags,
-        memo: stripPII(memo),
+        // PII purge: never transmit message content, only its length.
+        memoLength: memo.length,
         confirmed: null,
-        version: '1.0.0-beta',
+        version: chrome.runtime.getManifest().version,
         timestamp: Date.now(),
       }),
     }).catch(() => {}); // intentionally silent — never surface telemetry errors to the user
@@ -156,12 +159,36 @@ function sanitizeEvent(eventData: Record<string, unknown>): Record<string, unkno
   return clean;
 }
 
+// Persistent per-install id (random UUID, not PII) cached for the worker's life.
+// Attached to every event so distinct users can finally be counted/deduped —
+// the gap that made "how many users do I have" unanswerable. Generated once,
+// stored in chrome.storage, survives restarts.
+let installIdPromise: Promise<string> | null = null;
+function getInstallId(): Promise<string> {
+  if (!installIdPromise) {
+    installIdPromise = new Promise((resolve) => {
+      try {
+        chrome.storage.local.get('installId', ({ installId }) => {
+          if (installId) return resolve(installId as string);
+          const id = crypto.randomUUID();
+          chrome.storage.local.set({ installId: id });
+          resolve(id);
+        });
+      } catch { resolve(''); }
+    });
+  }
+  return installIdPromise;
+}
+
 async function shipEventToRelay(eventData: Record<string, unknown>) {
   try {
+    const installId = await getInstallId();
+    const payload = sanitizeEvent(eventData);
+    if (installId && !('installId' in payload)) payload.installId = installId;
     await fetch(EVENT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(sanitizeEvent(eventData))
+      body: JSON.stringify(payload)
     });
   } catch (err) {
     console.error('[Shield] Event sync failed', err);
@@ -343,11 +370,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // correction. Posts subject+body to the dedicated /groundtruth store.
   if (message.type === 'SHARE_GROUNDTRUTH') {
     const { subject, body, senderDomain, flags, score, label } = message;
-    fetch(GROUNDTRUTH_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subject, body, senderDomain, flags, score, label, consent: true }),
-    }).catch(() => {}); // never surface errors for a best-effort contribution
+    getInstallId().then((installId) => {
+      fetch(GROUNDTRUTH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ installId, subject, body, senderDomain, flags, score, label, consent: true }),
+      }).catch(() => {}); // never surface errors for a best-effort contribution
+    });
     return false;
   }
 
