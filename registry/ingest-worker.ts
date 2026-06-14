@@ -17,6 +17,7 @@
 
 import { normalizeEvent, type PublishableDetection } from './normalize';
 import { enrichDomain } from './enrich';
+import { clusterEntities, type EntityInfra } from './campaigns';
 
 interface Env {
   DB: D1Database;
@@ -53,6 +54,7 @@ export default {
     // Sweeps run after pollers; each is capped per tick to stay polite to RDAP/DoH.
     await enrichSweep(env).catch(e => console.error('enrich sweep', e));
     await lifecycleSweep(env).catch(e => console.error('lifecycle sweep', e));
+    await reclusterSweep(env).catch(e => console.error('recluster sweep', e));
   },
 
   // ─── HTTP layer: STAGING page renderer + dispute intake + sitemap ──────────
@@ -81,13 +83,15 @@ export default {
 // ─── Core ingest ─────────────────────────────────────────────────────────────
 
 async function ingestOne(d: PublishableDetection, env: Env): Promise<void> {
-  // 1. Upsert entity
+  // 1. Upsert entity. first_detected_at is stamped on insert and never moved by
+  //    ON CONFLICT — it's our earliest sighting, the freshness baseline (Step 4).
   await env.DB.prepare(
-    `INSERT INTO entities (entity_type, entity_value, first_seen, last_seen, max_score)
-     VALUES (?1, ?2, ?3, ?3, ?4)
+    `INSERT INTO entities (entity_type, entity_value, first_seen, last_seen, max_score, first_detected_at)
+     VALUES (?1, ?2, ?3, ?3, ?4, ?3)
      ON CONFLICT (entity_type, entity_value) DO UPDATE SET
        last_seen = MAX(last_seen, excluded.last_seen),
-       max_score = MAX(max_score, excluded.max_score)`,
+       max_score = MAX(max_score, excluded.max_score),
+       first_detected_at = COALESCE(entities.first_detected_at, excluded.first_detected_at)`,
   ).bind(d.entity_type, d.entity_value, d.occurred_hour, d.score).run();
 
   const { id: entityId } = (await env.DB.prepare(
@@ -104,6 +108,20 @@ async function ingestOne(d: PublishableDetection, env: Env): Promise<void> {
     JSON.stringify(d.techniques), d.platform_cat, d.occurred_hour,
   ).run();
   if (ins.meta.changes === 0) return; // duplicate — nothing else to update
+
+  // 2b. Freshness (Step 4): when an entity first appears on a PUBLIC feed, stamp
+  // public_feed_at and compute our lead time over it. Positive lead = we saw it
+  // before OpenPhish/URLhaus — the premium-feed headline metric.
+  if (d.source === 'openphish' || d.source === 'urlhaus') {
+    await env.DB.prepare(
+      `UPDATE entities SET
+         public_feed_at = COALESCE(public_feed_at, ?2),
+         lead_hours_feed = COALESCE(
+           lead_hours_feed,
+           ROUND((julianday(?2) - julianday(first_detected_at)) * 24.0, 2))
+       WHERE id = ?1 AND public_feed_at IS NULL`,
+    ).bind(entityId, d.occurred_hour).run();
+  }
 
   // 3. Corroboration = count of DISTINCT prod sources (not raw event count)
   const wasPublishable = await isPublishable(entityId, env);
@@ -200,7 +218,7 @@ async function enrichSweep(env: Env): Promise<void> {
     `SELECT e.id, e.entity_value FROM entities e
      LEFT JOIN enrichments x ON x.entity_id = e.id
      WHERE e.entity_type = 'domain' AND x.entity_id IS NULL
-     ORDER BY e.last_seen DESC LIMIT 25`,
+     ORDER BY e.last_seen DESC LIMIT 50`,
   ).all<{ id: number; entity_value: string }>();
 
   for (const row of results ?? []) {
@@ -209,11 +227,13 @@ async function enrichSweep(env: Env): Promise<void> {
       await env.DB.prepare(
         `INSERT OR REPLACE INTO enrichments
            (entity_id, registrar, registered_at, domain_age_days, nameservers,
-            a_records, impersonates, payment_rails, content_sha256, enriched_at)
-         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)`,
+            a_records, asn, tls_cert_sha256, impersonates, payment_rails,
+            content_sha256, enriched_at)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)`,
       ).bind(
         row.id, en.registrar ?? null, en.registered_at ?? null, en.domain_age_days ?? null,
         JSON.stringify(en.nameservers ?? []), JSON.stringify(en.a_records ?? []),
+        en.asn ?? null, en.tls_cert_sha256 ?? null,
         en.impersonates ?? null, en.payment_rails ? JSON.stringify(en.payment_rails) : null,
         en.content_sha256 ?? null, en.enriched_at,
       ).run();
@@ -260,7 +280,93 @@ async function lifecycleSweep(env: Env): Promise<void> {
     await env.DB.prepare(
       `INSERT OR IGNORE INTO lifecycle_checks (entity_id, dns_alive, http_alive) VALUES (?1, ?2, ?3)`,
     ).bind(row.id, dns, http).run();
+
+    // Freshness (Step 4): first time an entity goes fully dark (no DNS, no HTTP),
+    // stamp takedown + how many hours it stayed alive from first detection.
+    if (!dns && !http) {
+      await env.DB.prepare(
+        `UPDATE entities SET
+           taken_down_at = COALESCE(taken_down_at, datetime('now')),
+           alive_hours = COALESCE(
+             alive_hours,
+             ROUND((julianday('now') - julianday(first_detected_at)) * 24.0, 2))
+         WHERE id = ?1 AND taken_down_at IS NULL`,
+      ).bind(row.id).run();
+    }
   }
+}
+
+// ─── Campaign attribution (Step 3) ───────────────────────────────────────────
+// Cluster entities sharing non-commodity infrastructure into campaigns. Only
+// entities carrying a clusterable signal are loaded, keeping the pairwise pass
+// bounded (commodity-only-ASN entities can never link, per campaigns.ts).
+
+async function reclusterSweep(env: Env): Promise<void> {
+  const { results } = await env.DB.prepare(
+    `SELECT e.id, en.asn, en.nameservers, en.tls_cert_sha256 AS cert_sha256,
+            en.content_sha256, en.payment_rails, en.impersonates
+     FROM entities e JOIN enrichments en ON en.entity_id = e.id
+     WHERE en.content_sha256 IS NOT NULL OR en.tls_cert_sha256 IS NOT NULL
+        OR en.payment_rails IS NOT NULL OR en.asn IS NOT NULL`,
+  ).all<any>();
+
+  const brandOf = new Map<number, string | null>();
+  const infra: EntityInfra[] = (results ?? []).map((r: any) => {
+    brandOf.set(r.id, r.impersonates ?? null);
+    let wallets: string[] = [];
+    try {
+      const pr = r.payment_rails ? JSON.parse(r.payment_rails) : null;
+      if (pr) wallets = [...(pr.btc ?? []), ...(pr.eth ?? []), ...(pr.handles ?? [])];
+    } catch { /* malformed rails */ }
+    let nameservers: string[] = [];
+    try { nameservers = r.nameservers ? JSON.parse(r.nameservers) : []; } catch { /* */ }
+    return {
+      entityId: r.id,
+      asn: r.asn ?? undefined,
+      nameservers,
+      cert_sha256: r.cert_sha256 ?? undefined,
+      content_sha256: r.content_sha256 ?? undefined,
+      wallets,
+    };
+  });
+
+  const clusters = clusterEntities(infra);
+  const nowIso = new Date().toISOString();
+
+  for (const c of clusters) {
+    // top_brand = most common impersonated brand across cluster members
+    const counts = new Map<string, number>();
+    for (const id of c.entityIds) {
+      const b = brandOf.get(id);
+      if (b) counts.set(b, (counts.get(b) ?? 0) + 1);
+    }
+    const topBrand = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+    const ph = c.entityIds.map(() => '?').join(',');
+
+    // Stable identity: reuse a campaign_id already stamped on any member.
+    const existing = await env.DB.prepare(
+      `SELECT campaign_id FROM entities WHERE id IN (${ph}) AND campaign_id IS NOT NULL LIMIT 1`,
+    ).bind(...c.entityIds).first<{ campaign_id: number }>();
+
+    let campaignId: number;
+    if (existing?.campaign_id) {
+      campaignId = existing.campaign_id;
+      await env.DB.prepare(
+        `UPDATE campaigns SET size = ?2, last_seen = ?3, top_brand = ?4 WHERE id = ?1`,
+      ).bind(campaignId, c.size, nowIso, topBrand).run();
+    } else {
+      const ins = await env.DB.prepare(
+        `INSERT INTO campaigns (label, size, first_seen, last_seen, top_brand)
+         VALUES (?1, ?2, ?3, ?3, ?4)`,
+      ).bind(topBrand ? `${topBrand}-cluster` : 'infra-cluster', c.size, nowIso, topBrand).run();
+      campaignId = ins.meta.last_row_id as number;
+    }
+
+    await env.DB.prepare(
+      `UPDATE entities SET campaign_id = ?1 WHERE id IN (${ph})`,
+    ).bind(campaignId, ...c.entityIds).run();
+  }
+  console.log(JSON.stringify({ event: 'recluster', clusters: clusters.length, clustered_entities: infra.length }));
 }
 
 // ─── Page renderer (Phase 3.3, staging) ──────────────────────────────────────

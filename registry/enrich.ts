@@ -15,6 +15,8 @@ export interface Enrichment {
   domain_age_days?: number;
   nameservers?: string[];
   a_records?: string[];            // hosting IPs → campaign clustering key
+  asn?: string;                    // hosting ASN, e.g. 'AS13335' — campaign clustering key
+  tls_cert_sha256?: string;        // leaf cert hash from CT logs — campaign clustering key
   impersonates?: string;           // brand slug, e.g. 'paypal' — unlocks brand-protection buyers
   payment_rails?: { btc: string[]; eth: string[]; handles: string[] };
   content_sha256?: string;         // page-structure fingerprint for clone matching
@@ -108,19 +110,72 @@ export async function contentFingerprint(html: string): Promise<string> {
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// ---------- Hosting ASN: Team Cymru origin DNS, free, no key ----------
+async function asnFor(ip: string | undefined): Promise<string | undefined> {
+  if (!ip || !/^\d+\.\d+\.\d+\.\d+$/.test(ip)) return undefined;
+  try {
+    const rev = ip.split('.').reverse().join('.');
+    const r = await fetch(
+      `https://cloudflare-dns.com/dns-query?name=${rev}.origin.asn.cymru.com&type=TXT`,
+      { headers: { accept: 'application/dns-json' } },
+    );
+    if (!r.ok) return undefined;
+    const j: any = await r.json();
+    const txt: string = j.Answer?.[0]?.data ?? '';
+    const m = txt.match(/"?\s*(\d+)\s*\|/);   // '"13335 | 104.16.0.0/13 | US | arin |"'
+    return m ? `AS${m[1]}` : undefined;
+  } catch { return undefined; }
+}
+
+// ---------- TLS cert hash: CertSpotter CT-log API, free tier, no key ----------
+async function tlsCertSha(domain: string): Promise<string | undefined> {
+  try {
+    const r = await fetch(
+      `https://api.certspotter.com/v1/issuances?domain=${domain}&include_subdomains=false&expand=cert`,
+      { headers: { accept: 'application/json' } },
+    );
+    if (!r.ok) return undefined;
+    const j: any = await r.json();
+    return j?.[0]?.cert?.sha256 ?? undefined;
+  } catch { return undefined; }
+}
+
+// ---------- Scam-page fetch: rails + fingerprint source, capped + timeboxed ----------
+async function fetchScamPage(domain: string): Promise<string | undefined> {
+  for (const scheme of ['https', 'http']) {
+    try {
+      const r = await fetch(`${scheme}://${domain}/`, {
+        redirect: 'follow',
+        signal: AbortSignal.timeout(5000),
+        headers: { 'user-agent': 'Mozilla/5.0 (registry-enrichment; abuse contact: see safetyintercept.com)' },
+      });
+      if (!r.ok) continue;
+      const text = await r.text();
+      return text.slice(0, 200_000); // cap: kits fingerprint fine within 200KB
+    } catch { /* try next scheme */ }
+  }
+  return undefined;
+}
+
 // ---------- Main ----------
 export async function enrichDomain(domain: string, pageHtml?: string): Promise<Enrichment> {
-  const [rdapData, nameservers, a_records] = await Promise.all([
-    rdap(domain), doh(domain, 'NS'), doh(domain, 'A'),
+  const [rdapData, nameservers, a_records, cert] = await Promise.all([
+    rdap(domain), doh(domain, 'NS'), doh(domain, 'A'), tlsCertSha(domain),
+  ]);
+  const [asn, html] = await Promise.all([
+    asnFor(a_records[0]),
+    pageHtml !== undefined ? Promise.resolve(pageHtml) : fetchScamPage(domain),
   ]);
   return {
     domain,
     ...rdapData,
     nameservers,
     a_records,
+    asn,
+    tls_cert_sha256: cert,
     impersonates: detectImpersonation(domain),
-    payment_rails: pageHtml ? extractPaymentRails(pageHtml) : undefined,
-    content_sha256: pageHtml ? await contentFingerprint(pageHtml) : undefined,
+    payment_rails: html ? extractPaymentRails(html) : undefined,
+    content_sha256: html ? await contentFingerprint(html) : undefined,
     enriched_at: new Date().toISOString(),
   };
 }
