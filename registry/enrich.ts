@@ -24,7 +24,7 @@ export interface Enrichment {
 }
 
 // ---------- RDAP: registration data, free, no key ----------
-async function rdap(domain: string): Promise<Partial<Enrichment>> {
+export async function rdap(domain: string): Promise<Partial<Enrichment>> {
   try {
     const r = await fetch(`https://rdap.org/domain/${domain}`, {
       headers: { accept: 'application/rdap+json' },

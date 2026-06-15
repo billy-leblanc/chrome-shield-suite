@@ -16,7 +16,7 @@
  */
 
 import { normalizeEvent, type PublishableDetection } from './normalize';
-import { enrichDomain } from './enrich';
+import { enrichDomain, rdap } from './enrich';
 import { clusterEntities, type EntityInfra } from './campaigns';
 
 interface Env {
@@ -51,9 +51,10 @@ export default {
 
   // ─── Feed pollers (cron) ───────────────────────────────────────────────────
   async scheduled(_ctrl: ScheduledController, env: Env): Promise<void> {
-    await Promise.allSettled([pollOpenPhish(env), pollURLhaus(env)]);
+    await Promise.allSettled([pollOpenPhish(env), pollURLhaus(env), pollCT(env)]);
     // Sweeps run after pollers; each is capped per tick to stay polite to RDAP/DoH.
     await enrichSweep(env).catch(e => console.error('enrich sweep', e));
+    await ageBackfillSweep(env).catch(e => console.error('age backfill', e));
     await lifecycleSweep(env).catch(e => console.error('lifecycle sweep', e));
     await reclusterSweep(env).catch(e => console.error('recluster sweep', e));
   },
@@ -167,6 +168,55 @@ async function pollOpenPhish(env: Env): Promise<void> {
   await publishFeedDomains(env, urls, 'openphish', ['credential-phishing']);
 }
 
+// ─── Certificate Transparency cold-start (spec §4) ───────────────────────────
+// High-value brands scammers impersonate. Each tick rotates through a few and
+// queries crt.sh for freshly-issued certs whose domain embeds the brand but is
+// NOT the brand's own domain — i.e. live typosquats, young by definition.
+const CT_BRANDS = [
+  'paypal', 'coinbase', 'binance', 'wellsfargo', 'chase', 'netflix', 'amazon',
+  'apple', 'microsoft', 'usps', 'fedex', 'bankofamerica', 'citibank', 'zelle',
+  'venmo', 'cashapp', 'metamask', 'kraken', 'geeksquad', 'irs', 'roblox', 'bet365',
+];
+
+async function pollCT(env: Env): Promise<void> {
+  const n = CT_BRANDS.length;
+  const start = Math.floor(Date.now() / 1_800_000) % n; // rotate 3 brands per 30-min tick
+  const brands = [CT_BRANDS[start], CT_BRANDS[(start + 1) % n], CT_BRANDS[(start + 2) % n]];
+  const day = new Date().toISOString().slice(0, 10);
+  const cutoff = Date.now() - 3 * 86_400_000; // certs issued in the last 3 days
+  const seen = new Set<string>();
+  const batch: { body: QueueMsg }[] = [];
+
+  for (const brand of brands) {
+    try {
+      const r = await fetch(`https://crt.sh/?q=%25${brand}%25&output=json&exclude=expired`,
+        { signal: AbortSignal.timeout(9000), headers: { 'user-agent': 'safety-intercept-registry' } });
+      if (!r.ok) continue;
+      const rows = await r.json() as Array<{ name_value?: string; not_before?: string }>;
+      for (const c of rows) {
+        const nb = Date.parse(c.not_before ?? '');
+        if (!nb || nb < cutoff) continue;
+        for (let name of String(c.name_value ?? '').split('\n')) {
+          name = name.trim().toLowerCase().replace(/^\*\./, '');
+          if (!name || seen.has(name) || !name.includes(brand)) continue;
+          // skip the brand's own domain / its subdomains; keep typosquats + brand-in-other-domain
+          if (name === `${brand}.com` || name.endsWith(`.${brand}.com`)) continue;
+          seen.add(name);
+          batch.push({ body: { kind: 'feed', detection: {
+            event_key: await sha256Hex(`ct|${name}|${day}`),
+            entity_type: 'domain', entity_value: name, env: 'prod', source: 'ct_scan',
+            score: 72, severity: 'high',
+            techniques: ['lookalike-domain'], platform_cat: 'web',
+            occurred_hour: `${day}T00:00:00.000Z`,
+          } } });
+        }
+      }
+    } catch { /* crt.sh slow/down — skip this brand */ }
+  }
+  for (let i = 0; i < batch.length; i += 100) await env.EVENTS.sendBatch(batch.slice(i, i + 100));
+  console.log(JSON.stringify({ event: 'ct_scan', brands, candidates: batch.length }));
+}
+
 async function pollURLhaus(env: Env): Promise<void> {
   // text_online = currently-live malicious URLs; lines starting with # are comments
   const res = await fetch('https://urlhaus.abuse.ch/downloads/text_online/');
@@ -253,6 +303,36 @@ async function enrichSweep(env: Env): Promise<void> {
     } catch (e) {
       console.error('enrich failed', row.entity_value, e);
     }
+  }
+}
+
+// ─── Paced RDAP age backfill ──────────────────────────────────────────────────
+// Domain age + registrar are the strongest scam signals AND the compromised-
+// legit-site safety filter for publishing. Bulk RDAP gets rate-limited, so this
+// fills the backlog gently: 8 domains/tick, RDAP-only, sequential with a pause.
+// ~8/tick * 48 ticks/day ≈ 384/day — the backlog drains in a few days.
+
+async function ageBackfillSweep(env: Env): Promise<void> {
+  const { results } = await env.DB.prepare(
+    `SELECT e.id, e.entity_value FROM entities e
+     JOIN enrichments en ON en.entity_id = e.id
+     WHERE e.entity_type = 'domain' AND en.domain_age_days IS NULL
+     ORDER BY e.last_seen DESC LIMIT 8`,
+  ).all<{ id: number; entity_value: string }>();
+
+  for (const row of results ?? []) {
+    try {
+      const r = await rdap(row.entity_value);
+      if (r.domain_age_days != null || r.registrar) {
+        await env.DB.prepare(
+          `UPDATE enrichments SET domain_age_days = ?2, registrar = ?3, registered_at = ?4
+           WHERE entity_id = ?1`,
+        ).bind(row.id, r.domain_age_days ?? null, r.registrar ?? null, r.registered_at ?? null).run();
+      }
+    } catch (e) {
+      console.error('age backfill failed', row.entity_value, e);
+    }
+    await new Promise((res) => setTimeout(res, 400)); // polite spacing
   }
 }
 
