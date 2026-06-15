@@ -68,6 +68,10 @@ export default {
 
     if (url.pathname === '/sitemap.xml') return sitemap(env);
 
+    // Public registry stats (aggregate counts only) — readable by the scheduled
+    // age-fill check, which runs in the cloud and can't use local wrangler auth.
+    if (url.pathname === '/stats') return registryStats(env);
+
     const pageMatch = url.pathname.match(/^\/check\/([a-z0-9.-]{4,253})$/i);
     if (pageMatch && request.method === 'GET') return renderPage(pageMatch[1].toLowerCase(), env);
 
@@ -576,6 +580,31 @@ async function openDispute(request: Request, env: Env): Promise<Response> {
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), {
   status, headers: { 'Content-Type': 'application/json', 'X-Robots-Tag': 'noindex' },
 });
+
+// ─── Registry stats (aggregate, public) ─────────────────────────────────────
+
+async function registryStats(env: Env): Promise<Response> {
+  const one = async (sql: string) =>
+    ((await env.DB.prepare(sql).first<{ c: number }>())?.c) ?? 0;
+  const [total, ageCoverage, publishableYoung, publishable] = await Promise.all([
+    one(`SELECT COUNT(*) c FROM entities`),
+    one(`SELECT COUNT(*) c FROM enrichments WHERE domain_age_days IS NOT NULL`),
+    one(`SELECT COUNT(DISTINCT e.id) c FROM entities e
+         JOIN detections d ON d.entity_id = e.id
+         JOIN enrichments en ON en.entity_id = e.id
+         WHERE d.source IN ('urlhaus','ct_scan','extension') AND e.max_score >= 70
+           AND en.domain_age_days IS NOT NULL AND en.domain_age_days <= 60
+           AND NOT EXISTS (SELECT 1 FROM allowlist a WHERE a.pattern = e.entity_value)
+           AND NOT EXISTS (SELECT 1 FROM shared_infra s WHERE e.entity_value = s.suffix OR e.entity_value LIKE '%.' || s.suffix)`),
+    one(`SELECT COUNT(*) c FROM publishable_entities`),
+  ]);
+  return new Response(JSON.stringify({
+    total_entities: total,
+    age_coverage: ageCoverage,
+    publishable_young: publishableYoung,
+    currently_publishable: publishable,
+  }), { headers: { 'Content-Type': 'application/json', 'X-Robots-Tag': 'noindex' } });
+}
 
 // ─── Sitemap (Phase 3.5, staging) ────────────────────────────────────────────
 
