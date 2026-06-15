@@ -382,6 +382,18 @@ body.dir-c [data-dir="c"]{display:block}
 #registry .reg-feed-list li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:rgba(255,255,255,.82);line-height:1.5}
 #registry .reg-feed-list i{color:var(--accent);width:16px;height:16px;flex-shrink:0;margin-top:2px}
 @media(max-width:860px){#registry .reg-stats{grid-template-columns:repeat(2,1fr)}#registry .reg-grid{grid-template-columns:1fr}}
+
+/* ── Scam guides section ──────────────────────────────────────────── */
+#guides .guide-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+#guides .guide-card{display:flex;flex-direction:column;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;text-decoration:none;color:inherit;box-shadow:var(--sh-sm);transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .35s var(--ease)}
+#guides .guide-card:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:var(--line-2)}
+#guides .guide-k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:12px}
+#guides .guide-card h3{font-size:18px;font-weight:700;color:var(--ink);margin:0 0 8px;letter-spacing:-.01em}
+#guides .guide-card p{font-size:14px;color:var(--ink-2);line-height:1.55;margin:0 0 18px;flex:1}
+#guides .guide-go{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--ink)}
+#guides .guide-go i{width:15px;height:15px;transition:transform .25s var(--ease)}
+#guides .guide-card:hover .guide-go i{transform:translateX(3px)}
+@media(max-width:860px){#guides .guide-grid{grid-template-columns:1fr}}
 `,cx=`
 <!-- ============ DIRECTION A — full-bleed photo hero ============ -->
 <header class="heroA" data-dir="a" data-screen-label="Direction A — full-bleed photo hero">
@@ -389,7 +401,7 @@ body.dir-c [data-dir="c"]{display:block}
   <div class="scrim"></div>
   <nav class="nav on-photo">
     <a class="brand" href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom"><svg class="shield" viewBox="0 0 32 32" fill="none"><path d="M16 2.5 27 6.5V15c0 7.5-5 12.5-11 14.5C10 27.5 5 22.5 5 15V6.5Z" fill="var(--accent)"/><path d="M10.8 16.2l3.4 3.4 7-7.4" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Safety Intercept</a>
-    <div class="nav-links"><a href="#how">How it works</a><a href="#registry">Registry</a>
+    <div class="nav-links"><a href="#how">How it works</a><a href="#registry">Registry</a><a href="#guides">Scam guides</a>
         <a href="#demo">See it work</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a></div>
     <div class="nav-cta"><a class="btn btn-white btn-sm" href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom"><span class="chrome-mark"></span> Add to Chrome — Free</a></div>
   </nav>
@@ -593,6 +605,22 @@ body.dir-c [data-dir="c"]{display:block}
 </section>
 
 <!-- ============ FOOTER ============ -->
+<section class="section" id="guides">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker-row"><span class="eyebrow"><i data-lucide="book-open"></i> Scam guides</span></div>
+      <h2 class="h2">Know the playbook.</h2>
+      <p class="lead" style="margin-top:14px">Plain-English breakdowns of the scams we see most — the scripts behind them and exactly how to verify before you send.</p>
+    </div>
+    <div class="guide-grid reveal">
+      <a class="guide-card" href="/scams/grandparent-scam.html"><div class="guide-k">Family emergency</div><h3>Grandparent Scam</h3><p>A caller says your grandchild is in jail or the hospital and needs money now. The scripts, and how to check.</p><span class="guide-go">Read <i data-lucide="arrow-right"></i></span></a>
+      <a class="guide-card" href="/scams/zelle-reversal-scam.html"><div class="guide-k">Payment</div><h3>Zelle Reversal Scam</h3><p>"We sent too much — send the difference back." Why the original payment quietly disappears.</p><span class="guide-go">Read <i data-lucide="arrow-right"></i></span></a>
+      <a class="guide-card" href="/scams/paypal-invoice-scam.html"><div class="guide-k">Phishing</div><h3>PayPal Invoice Scam</h3><p>A fake invoice with a "call to dispute" number that puts a scammer on the line.</p><span class="guide-go">Read <i data-lucide="arrow-right"></i></span></a>
+      <a class="guide-card" href="/scams/pig-butchering-scam.html"><div class="guide-k">Crypto</div><h3>Pig Butchering</h3><p>The crypto romance-investment long con — how trust gets built, then drained.</p><span class="guide-go">Read <i data-lucide="arrow-right"></i></span></a>
+      <a class="guide-card" href="/guides/get-money-back-after-a-scam.html"><div class="guide-k">Recovery</div><h3>Get Money Back</h3><p>Already scammed? The US steps to report it and try to recover your money.</p><span class="guide-go">Read <i data-lucide="arrow-right"></i></span></a>
+    </div>
+  </div>
+</section>
 <footer class="footer">
   <div class="wrap">
     <div>
@@ -600,8 +628,8 @@ body.dir-c [data-dir="c"]{display:block}
       <p>A free Chrome extension that flags scam payments and phishing emails in real time — before you send.</p>
     </div>
     <div class="foot-col"><h4>Product</h4><a href="#how">How it works</a><a href="#demo">See it work</a><a href="#privacy">Privacy</a><a href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom">Add to Chrome</a></div>
-    <div class="foot-col"><h4>Company</h4><a href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom">About</a><a href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom">Blog</a><a href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom">Contact</a></div>
-    <div class="foot-col"><h4>Legal</h4><a href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom">Privacy Policy</a><a href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom">Terms</a></div>
+    <div class="foot-col"><h4>Company</h4><a href="#how">How it works</a><a href="#guides">Scam guides</a><a href="mailto:safetyintercept@gmail.com">Contact</a></div>
+    <div class="foot-col"><h4>Legal</h4><a href="/privacy">Privacy Policy</a><a href="/privacy">Terms</a></div>
   </div>
   <div class="foot-bottom"><span>© 2026 Safety Intercept. Not affiliated with PayPal, Zelle, or Google.</span><span>Made to keep people safe.</span></div>
 </footer>

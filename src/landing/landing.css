@@ -290,3 +290,15 @@ body.dir-c [data-dir="c"]{display:block}
 #registry .reg-feed-list li{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:rgba(255,255,255,.82);line-height:1.5}
 #registry .reg-feed-list i{color:var(--accent);width:16px;height:16px;flex-shrink:0;margin-top:2px}
 @media(max-width:860px){#registry .reg-stats{grid-template-columns:repeat(2,1fr)}#registry .reg-grid{grid-template-columns:1fr}}
+
+/* ── Scam guides section ──────────────────────────────────────────── */
+#guides .guide-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+#guides .guide-card{display:flex;flex-direction:column;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;text-decoration:none;color:inherit;box-shadow:var(--sh-sm);transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .35s var(--ease)}
+#guides .guide-card:hover{transform:translateY(-3px);box-shadow:var(--sh);border-color:var(--line-2)}
+#guides .guide-k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:12px}
+#guides .guide-card h3{font-size:18px;font-weight:700;color:var(--ink);margin:0 0 8px;letter-spacing:-.01em}
+#guides .guide-card p{font-size:14px;color:var(--ink-2);line-height:1.55;margin:0 0 18px;flex:1}
+#guides .guide-go{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--ink)}
+#guides .guide-go i{width:15px;height:15px;transition:transform .25s var(--ease)}
+#guides .guide-card:hover .guide-go i{transform:translateX(3px)}
+@media(max-width:860px){#guides .guide-grid{grid-template-columns:1fr}}
