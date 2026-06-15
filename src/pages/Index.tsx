@@ -11,6 +11,11 @@ import landingJs from "@/landing/landing.js?raw";
  */
 const Index = () => {
   useEffect(() => {
+    // The design gates hero variants with `[data-dir]{display:none}` shown only
+    // under `body.dir-a`. We inject into a div, so set the class on <body> or the
+    // photo hero stays hidden.
+    document.body.classList.add("dir-a");
+
     const runLanding = () => {
       const script = document.createElement("script");
       script.textContent = landingJs;
@@ -31,6 +36,7 @@ const Index = () => {
     }
     return () => {
       document.getElementById("landing-runtime")?.remove();
+      document.body.classList.remove("dir-a");
     };
   }, []);
 
