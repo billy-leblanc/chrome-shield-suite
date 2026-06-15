@@ -1,33 +1,38 @@
 # Safety Intercept
 
-> Free Chrome extension that intercepts payment scams on PayPal and Wells Fargo Zelle and detects phishing emails in Gmail. An AI risk engine reads each outgoing payment memo and inbound email in real time and warns the user before money moves.
+> Free Chrome extension that intercepts payment scams on PayPal and Wells Fargo Zelle and detects phishing emails in Gmail. An AI risk engine reads each outgoing payment memo and inbound email in real time and warns the user in plain English before money moves.
 
-Safety Intercept is built for everyday people — especially older adults and family members helping them — who are targeted by social-engineering scams. The product is consumer-first, with a future B2B fraud-detection API. Detection is powered by Anthropic's Claude (Haiku) running on a Cloudflare Workers relay.
+Safety Intercept is built for everyday people — especially older adults and the family members helping them — who are targeted by social-engineering scams. It is consumer-first (free Chrome extension) and is building a scam-domain threat-intelligence feed for fintechs, marketplaces, and brand-protection firms. Detection is powered by Anthropic's Claude (Haiku) on a Cloudflare Workers relay.
 
 ## Core pages
 
-- [Homepage](https://safetyintercept.com/): What Safety Intercept is, how it works, install link.
-- [Privacy policy](https://safetyintercept.com/privacy): Data handling, telemetry opt-in, what stays on-device.
+- [Homepage](https://safetyintercept.com/): What Safety Intercept is, how it works, the interception demo, and the install link.
+- [Privacy policy](https://safetyintercept.com/privacy): Data handling. Messages and emails are analyzed in transit and never stored; no raw IP (country only); no exact amounts, email subjects/bodies, or message IDs retained; 90-day retention; opt-in correction sharing.
 
 ## Scam guides
 
-- [Grandparent / family emergency scam](https://safetyintercept.com/scams/grandparent-scam.html): How the scam works, scripts callers use, how to verify, how Safety Intercept blocks the payment leg.
-- [Zelle reversal / fake refund scam](https://safetyintercept.com/scams/zelle-reversal-scam.html): The "we overpaid you, send it back" pattern, why Zelle is irreversible, and how the Wells Fargo Zelle interceptor catches it.
-- [Pig butchering / crypto romance scam](https://safetyintercept.com/scams/pig-butchering-scam.html): Long-con investment fraud, USDT node tells, withdrawal-fee escalation, and what the extension flags.
-- [PayPal invoice / refund scam](https://safetyintercept.com/scams/paypal-invoice-scam.html): Fake PayPal invoices, the "call this number" trick, and how the PayPal interceptor sees the memo.
+- [Grandparent / family-emergency scam](https://safetyintercept.com/scams/grandparent-scam.html): How the scam works, the scripts callers use, how to verify, and how Safety Intercept stops the payment leg.
+- [Zelle reversal / fake-refund scam](https://safetyintercept.com/scams/zelle-reversal-scam.html): The "we overpaid you, send it back" pattern, why Zelle is irreversible, and how the Wells Fargo Zelle interceptor catches it.
+- [Pig butchering / crypto romance scam](https://safetyintercept.com/scams/pig-butchering-scam.html): Long-con investment fraud, USDT/withdrawal-fee tells, and what the extension flags.
+- [PayPal invoice / refund scam](https://safetyintercept.com/scams/paypal-invoice-scam.html): Fake PayPal invoices, the "call this number" trick, and how the PayPal interceptor reads the memo.
+- [How to get money back after a scam (US guide)](https://safetyintercept.com/guides/get-money-back-after-a-scam.html): Step-by-step recovery — who to report to (FTC, IC3, your bank), Zelle/wire/gift-card specifics, and realistic odds.
+
+## Scam registry & threat-intelligence feed
+
+Safety Intercept runs a live engine that tracks scam domains, enriches them (registrar, domain age, hosting ASN, TLS cert, impersonated brand, payment rails, phishing-kit fingerprint), and clusters them into campaigns (one actor across many domains). Aggregate, anonymized, scam-side data only — no user PII. A public scam registry and a licensable real-time scam-domain feed are in development. Feed enquiries: bleblanc@berkeley.edu.
 
 ## Tools
 
 - Install (Chrome): https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom
 - Public scam-checker API (no auth): POST https://shield-relay.bleblanc.workers.dev/check with `{ "description": "<situation text>" }`. Returns `verdict`, `confidence`, `tactics`, `headline`, `what_to_do`.
+- Report a scam: the homepage registry section accepts domain submissions.
 
 ## Facts about the product
 
 - Supported surfaces: PayPal payments, Wells Fargo Zelle send flow, Gmail.
-- Manifest V3 Chrome extension. React 18 + Vite. Open source: not yet.
-- Detection model: Anthropic Claude Haiku via Cloudflare Workers relay (~500ms latency).
-- Telemetry is opt-in and PII-stripped. Detection events are logged anonymously to Cloudflare KV.
-- The extension does not see passwords, balances, or account details — it only reads the payment memo / email content that the user is about to act on.
+- Manifest V3 Chrome extension. React 18 + Vite.
+- Detection: Anthropic Claude Haiku via a Cloudflare Workers relay (~500ms).
+- Privacy: content analyzed in transit and never stored; country-only geo (no raw IP); exact amounts bucketed to ranges; random non-identity install id; 90-day retention. The extension never sees passwords, balances, or account details.
 
 ## Contact
 
