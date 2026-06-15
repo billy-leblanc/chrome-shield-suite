@@ -5,7 +5,7 @@
 // Endpoints intentionally reachable cross-origin: the public marketing site
 // (/check, /download) and the extension background worker (/analyze, /event,
 // /telemetry). These keep a wildcard ACAO — the bearer token is their gate.
-const OPEN_CORS_PATHS = new Set(['/check', '/download', '/analyze', '/event', '/telemetry', '/groundtruth']);
+const OPEN_CORS_PATHS = new Set(['/check', '/download', '/analyze', '/event', '/telemetry', '/groundtruth', '/report']);
 
 // Per-request CORS. Open paths get '*'; browser-dashboard paths (/dashboard,
 // /downloads, /checks) are restricted to the ALLOWED_ORIGINS allowlist
@@ -62,6 +62,7 @@ const RATE_LIMITS = {
   '/event': [60, 60],
   '/telemetry': [60, 60],
   '/groundtruth': [10, 60],
+  '/report': [5, 60],
 };
 
 const SYSTEM_PROMPT = `You are the fraud detection engine for Safety Intercept — a product built to protect real people from real harm.
@@ -274,6 +275,41 @@ export default {
           status: 500, headers: { ...cors, 'Content-Type': 'application/json' },
         });
       }
+    }
+
+    // --- CASE: "Report a scam" user submission (spec §4 page fuel) ---
+    // Public, rate-limited. Submissions are LOW confidence (score 50, source
+    // 'submission') so they never publish alone — they corroborate other
+    // detections and feed the dataset. Defamation-safe by the publish gate.
+    if (url.pathname === '/report') {
+      const { url: reportUrl, type } = body ?? {};
+      let domain = '';
+      try {
+        const raw = String(reportUrl || '');
+        domain = new URL(raw.startsWith('http') ? raw : `http://${raw}`).hostname.toLowerCase().replace(/^www\./, '');
+      } catch { /* invalid */ }
+      if (!domain || !domain.includes('.')) {
+        return new Response(JSON.stringify({ error: 'Enter a valid scam URL or domain' }), {
+          status: 400, headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      }
+      if (env.EVENTS) {
+        const day = new Date().toISOString().slice(0, 10);
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`submission|${domain}|${day}`));
+        const event_key = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+        const TECH = { phishing: 'credential-phishing', payment: 'unusual-payment-method', crypto: 'crypto-doubling', romance: 'romance-affinity', shopping: 'lookalike-domain' };
+        try {
+          await env.EVENTS.send({ kind: 'feed', detection: {
+            event_key, entity_type: 'domain', entity_value: domain, env: 'prod', source: 'submission',
+            score: 50, severity: 'medium',
+            techniques: [TECH[type] || 'uncategorized'], platform_cat: 'web',
+            occurred_hour: `${day}T00:00:00.000Z`,
+          } });
+        } catch { /* queue hiccup — still thank the user */ }
+      }
+      return new Response(JSON.stringify({ ok: true, message: "Thanks — we'll review it." }), {
+        status: 200, headers: { ...cors, 'Content-Type': 'application/json' },
+      });
     }
 
     // --- CASE 2: Risk Analysis ---

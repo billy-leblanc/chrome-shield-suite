@@ -302,3 +302,11 @@ body.dir-c [data-dir="c"]{display:block}
 #guides .guide-go i{width:15px;height:15px;transition:transform .25s var(--ease)}
 #guides .guide-card:hover .guide-go i{transform:translateX(3px)}
 @media(max-width:860px){#guides .guide-grid{grid-template-columns:1fr}}
+
+/* report-a-scam form */
+#registry .reg-report{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+#registry .reg-report-q{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:10px}
+#registry .reg-report-q i{width:15px;height:15px;color:var(--accent)}
+#registry #reg-report-form{display:flex;gap:8px}
+#registry #report-url{flex:1;border:1px solid var(--line-2);background:var(--bg);border-radius:var(--r-full);padding:11px 18px;font:500 14px var(--font);color:var(--ink);outline:none}
+#registry .report-msg{font-size:13px;margin-top:9px;min-height:6px;color:var(--safe);font-weight:600}

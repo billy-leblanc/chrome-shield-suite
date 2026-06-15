@@ -394,6 +394,14 @@ body.dir-c [data-dir="c"]{display:block}
 #guides .guide-go i{width:15px;height:15px;transition:transform .25s var(--ease)}
 #guides .guide-card:hover .guide-go i{transform:translateX(3px)}
 @media(max-width:860px){#guides .guide-grid{grid-template-columns:1fr}}
+
+/* report-a-scam form */
+#registry .reg-report{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+#registry .reg-report-q{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:10px}
+#registry .reg-report-q i{width:15px;height:15px;color:var(--accent)}
+#registry #reg-report-form{display:flex;gap:8px}
+#registry #report-url{flex:1;border:1px solid var(--line-2);background:var(--bg);border-radius:var(--r-full);padding:11px 18px;font:500 14px var(--font);color:var(--ink);outline:none}
+#registry .report-msg{font-size:13px;margin-top:9px;min-height:6px;color:var(--safe);font-weight:600}
 `,cx=`
 <!-- ============ DIRECTION A — full-bleed photo hero ============ -->
 <header class="heroA" data-dir="a" data-screen-label="Direction A — full-bleed photo hero">
@@ -543,6 +551,14 @@ body.dir-c [data-dir="c"]{display:block}
         </div>
         <div id="reg-result" class="reg-result"></div>
         <div class="reg-note"><i data-lucide="info"></i> Public lookup opening soon. Verdicts are indicators, not determinations — each carries a dispute process.</div>
+        <div class="reg-report">
+          <div class="reg-report-q"><i data-lucide="flag"></i> Spotted a scam we're missing?</div>
+          <form id="reg-report-form">
+            <input type="text" id="report-url" placeholder="Paste the scam URL or domain" autocomplete="off" spellcheck="false">
+            <button class="btn btn-primary btn-sm" type="submit">Report</button>
+          </form>
+          <div id="report-msg" class="report-msg"></div>
+        </div>
       </div>
       <div class="reg-feed reveal">
         <div class="reg-feed-head"><i data-lucide="rss"></i> Fraud intelligence as a feed</div>
@@ -707,6 +723,24 @@ body.dir-c [data-dir="c"]{display:block}
     }
     inp.addEventListener('input',look);
     setTimeout(function(){inp.value='robiox.com.ua';look();},600);
+  }
+
+  // report-a-scam submission
+  var rf=document.getElementById('reg-report-form');
+  if(rf){
+    rf.addEventListener('submit',function(ev){
+      ev.preventDefault();
+      var inp=document.getElementById('report-url'),msg=document.getElementById('report-msg');
+      var v=(inp.value||'').trim(); if(!v){return;}
+      msg.style.color='var(--ink-3)'; msg.textContent='Sending…';
+      fetch('https://shield-relay.bleblanc.workers.dev/report',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({url:v,type:'other'})
+      }).then(function(r){return r.json();}).then(function(d){
+        if(d&&d.ok){msg.style.color='var(--safe)';msg.textContent='✓ Thanks — we\\'ll review it.';inp.value='';}
+        else{msg.style.color='var(--danger)';msg.textContent=(d&&d.error)||'Please enter a valid domain.';}
+      }).catch(function(){msg.style.color='var(--danger)';msg.textContent='Could not send — try again.';});
+    });
   }
 
   if(window.lucide) window.lucide.createIcons();

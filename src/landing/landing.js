@@ -73,5 +73,23 @@
     setTimeout(function(){inp.value='robiox.com.ua';look();},600);
   }
 
+  // report-a-scam submission
+  var rf=document.getElementById('reg-report-form');
+  if(rf){
+    rf.addEventListener('submit',function(ev){
+      ev.preventDefault();
+      var inp=document.getElementById('report-url'),msg=document.getElementById('report-msg');
+      var v=(inp.value||'').trim(); if(!v){return;}
+      msg.style.color='var(--ink-3)'; msg.textContent='Sending…';
+      fetch('https://shield-relay.bleblanc.workers.dev/report',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({url:v,type:'other'})
+      }).then(function(r){return r.json();}).then(function(d){
+        if(d&&d.ok){msg.style.color='var(--safe)';msg.textContent='✓ Thanks — we\'ll review it.';inp.value='';}
+        else{msg.style.color='var(--danger)';msg.textContent=(d&&d.error)||'Please enter a valid domain.';}
+      }).catch(function(){msg.style.color='var(--danger)';msg.textContent='Could not send — try again.';});
+    });
+  }
+
   if(window.lucide) window.lucide.createIcons();
 })();
