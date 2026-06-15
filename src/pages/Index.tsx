@@ -11,11 +11,26 @@ import landingJs from "@/landing/landing.js?raw";
  */
 const Index = () => {
   useEffect(() => {
-    const script = document.createElement("script");
-    script.textContent = landingJs;
-    document.body.appendChild(script);
+    const runLanding = () => {
+      const script = document.createElement("script");
+      script.textContent = landingJs;
+      script.id = "landing-runtime";
+      document.body.appendChild(script);
+    };
+    // Lucide icons come from a CDN in the original <head>; load it, then run the
+    // landing script (which calls lucide.createIcons + sets up the demos).
+    if ((window as unknown as { lucide?: unknown }).lucide) {
+      runLanding();
+    } else {
+      const lucide = document.createElement("script");
+      lucide.src = "https://unpkg.com/lucide@latest/dist/umd/lucide.min.js";
+      lucide.onload = runLanding;
+      lucide.onerror = runLanding; // run anyway; icons just won't render
+      lucide.id = "lucide-cdn";
+      document.body.appendChild(lucide);
+    }
     return () => {
-      script.remove();
+      document.getElementById("landing-runtime")?.remove();
     };
   }, []);
 
