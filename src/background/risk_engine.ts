@@ -254,18 +254,28 @@ function recordGmailDetection(msg: Record<string, unknown>) {
   });
 }
 
-function findGmailCorrelation(): Promise<{ correlationId: string; gmailEvents: GmailDetection[] } | null> {
+// A payment is only correlated with a recent scam email when there's a REAL
+// link, not mere time co-occurrence (which false-flagged legit payments just
+// because casino spam was in the inbox). Requires: the email was a
+// high-confidence scam (score >= 80, so promos/spam at 54-72 never correlate),
+// AND either it's critical (>= 90) or its key phrases actually appear in the
+// payment memo. `memo` is the payment text; pass '' when unavailable.
+const CORR_MIN_SCORE = 80;
+function findGmailCorrelation(memo = ''): Promise<{ correlationId: string; gmailEvents: GmailDetection[] } | null> {
   return new Promise((resolve) => {
     chrome.storage.local.get(STORAGE_KEY, (data) => {
       const detections: GmailDetection[] = Array.isArray(data[STORAGE_KEY]) ? data[STORAGE_KEY] : [];
       const now = Date.now();
-      // Time-window correlation: any Gmail scam detected in the last 24 hours
-      const recent = detections.filter(d => now - d.timestamp < CORRELATION_WINDOW_MS);
-      if (recent.length === 0) return resolve(null);
+      const memoLower = memo.toLowerCase();
+      const recent = detections.filter(d => now - d.timestamp < CORRELATION_WINDOW_MS && (d.score ?? 0) >= CORR_MIN_SCORE);
+      const linked = recent.filter(d =>
+        (d.score ?? 0) >= 90 ||
+        (d.keywords ?? []).some(k => k.length > 3 && memoLower.includes(k.toLowerCase())));
+      if (linked.length === 0) return resolve(null);
 
       resolve({
         correlationId: `gmail-pay-${now}`,
-        gmailEvents: recent,
+        gmailEvents: linked,
       });
     });
   });
@@ -408,9 +418,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         };
       }
 
-      // Cross-layer correlation: any Gmail scam in the last 24h elevates payment risk
+      // Cross-layer correlation: a recent HIGH-confidence scam email that actually
+      // relates to this payment elevates its risk (not mere time co-occurrence).
       if (platform !== 'Gmail') {
-        const correlation = await findGmailCorrelation();
+        const correlation = await findGmailCorrelation(memo);
         if (correlation) {
           // Boost score — recent scam email + payment attempt = elevated suspicion
           analysis.score = Math.min(100, analysis.score + 30);
