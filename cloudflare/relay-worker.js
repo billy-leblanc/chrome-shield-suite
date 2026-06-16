@@ -5,7 +5,7 @@
 // Endpoints intentionally reachable cross-origin: the public marketing site
 // (/check, /download) and the extension background worker (/analyze, /event,
 // /telemetry). These keep a wildcard ACAO — the bearer token is their gate.
-const OPEN_CORS_PATHS = new Set(['/check', '/download', '/analyze', '/event', '/telemetry', '/groundtruth', '/report']);
+const OPEN_CORS_PATHS = new Set(['/check', '/download', '/analyze', '/event', '/telemetry', '/groundtruth', '/report', '/feedback']);
 
 // Per-request CORS. Open paths get '*'; browser-dashboard paths (/dashboard,
 // /downloads, /checks) are restricted to the ALLOWED_ORIGINS allowlist
@@ -63,6 +63,7 @@ const RATE_LIMITS = {
   '/telemetry': [60, 60],
   '/groundtruth': [10, 60],
   '/report': [5, 60],
+  '/feedback': [5, 60],
 };
 
 const SYSTEM_PROMPT = `You are the fraud detection engine for Safety Intercept — a product built to protect real people from real harm.
@@ -277,6 +278,33 @@ export default {
           status: 500, headers: { ...cors, 'Content-Type': 'application/json' },
         });
       }
+    }
+
+    // --- CASE: User feedback (the "talk to your users" channel) ---
+    // Lets anonymous users reach the maintainer. Email is OPTIONAL and only
+    // stored if the user chooses to leave it (so we can reply / interview them).
+    if (url.pathname === '/feedback') {
+      const { message, email, installId: fbInstall, version } = body ?? {};
+      if (typeof message !== 'string' || message.trim().length < 2) {
+        return new Response(JSON.stringify({ error: 'message required' }), {
+          status: 400, headers: { ...cors, 'Content-Type': 'application/json' },
+        });
+      }
+      if (env.SHIELD_LOGS) {
+        try {
+          await env.SHIELD_LOGS.put(`feedback:${Date.now()}`, JSON.stringify({
+            message: message.slice(0, 2000),
+            email: typeof email === 'string' && email.includes('@') ? email.slice(0, 200) : null,
+            installId: typeof fbInstall === 'string' ? fbInstall : null,
+            version: typeof version === 'string' ? version : null,
+            country: geo.country,
+            at: new Date().toISOString(),
+          }));
+        } catch { /* don't fail the user's thank-you on a KV hiccup */ }
+      }
+      return new Response(JSON.stringify({ ok: true, message: 'Thank you — this genuinely helps.' }), {
+        status: 200, headers: { ...cors, 'Content-Type': 'application/json' },
+      });
     }
 
     // --- CASE: "Report a scam" user submission (spec §4 page fuel) ---

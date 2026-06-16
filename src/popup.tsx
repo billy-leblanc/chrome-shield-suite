@@ -35,7 +35,26 @@ const ShieldIcon = (p: any) => (
 );
 
 function PopupApp() {
-  const [view, setView] = useState<'main' | 'settings'>('main');
+  const [view, setView] = useState<'main' | 'settings' | 'feedback'>('main');
+  const [fbMessage, setFbMessage] = useState('');
+  const [fbEmail, setFbEmail] = useState('');
+  const [fbStatus, setFbStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
+
+  const sendFeedback = useCallback(() => {
+    if (fbMessage.trim().length < 2) return;
+    setFbStatus('sending');
+    chrome.storage.local.get('installId', ({ installId }) => {
+      fetch('https://shield-relay.bleblanc.workers.dev/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: fbMessage, email: fbEmail || undefined,
+          installId, version: chrome.runtime.getManifest().version,
+        }),
+      }).then(() => { setFbStatus('sent'); setFbMessage(''); setFbEmail(''); })
+        .catch(() => setFbStatus('idle'));
+    });
+  }, [fbMessage, fbEmail]);
   const [interceptOn, setInterceptOn] = useState(true);
   const [telemetryEnabled, setTelemetryEnabled] = useState(false);
   const [stats, setStats] = useState({ blocked: 0, warnings: 0, safe: 0 });
@@ -122,6 +141,47 @@ function PopupApp() {
     }
   `;
 
+  if (view === 'feedback') {
+    return (
+      <div style={containerStyle}>
+        <div style={{ padding: '24px 22px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button onClick={() => { setView('settings'); setFbStatus('idle'); }} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', padding: 4, display: 'flex' }}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.3px' }}>Talk to the maker</div>
+        </div>
+        <div style={{ padding: '24px 22px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {fbStatus === 'sent' ? (
+            <div style={{ textAlign: 'center', padding: '32px 0' }}>
+              <div style={{ fontSize: 32, marginBottom: 12 }}>🙏</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: '#F1F5F9' }}>Thank you — this genuinely helps.</div>
+              <div style={{ fontSize: 12, color: '#64748B', marginTop: 8, lineHeight: 1.5 }}>You're one of the first people using this. If you left your email, I'll likely reach out personally.</div>
+            </div>
+          ) : (
+            <>
+              <div style={{ fontSize: 12.5, color: '#94A3B8', lineHeight: 1.6 }}>
+                This is built by one person, and you're one of the very first users. What's useful? What's annoying? What were you actually worried about? I read every one of these.
+              </div>
+              <textarea value={fbMessage} onChange={e => setFbMessage(e.target.value)}
+                placeholder="Tell me anything — the more honest the better…" rows={5}
+                style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9', fontSize: 13, padding: '12px 14px', fontFamily: 'inherit', resize: 'none', outline: 'none' }} />
+              <input value={fbEmail} onChange={e => setFbEmail(e.target.value)}
+                placeholder="Email (optional — only if you'd like a reply)" type="email"
+                style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9', fontSize: 13, padding: '12px 14px', fontFamily: 'inherit', outline: 'none' }} />
+              <button onClick={sendFeedback} disabled={fbStatus === 'sending' || fbMessage.trim().length < 2}
+                style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: fbMessage.trim().length < 2 ? 'rgba(56,189,248,0.2)' : '#38BDF8', color: fbMessage.trim().length < 2 ? '#64748B' : '#0B1120', fontSize: 13, fontWeight: 700, cursor: fbMessage.trim().length < 2 ? 'default' : 'pointer' }}>
+                {fbStatus === 'sending' ? 'Sending…' : 'Send'}
+              </button>
+              <div style={{ fontSize: 10.5, color: '#475569', textAlign: 'center', lineHeight: 1.5 }}>
+                Your email is optional and only stored if you choose to share it.
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   if (view === 'settings') {
     return (
       <div style={containerStyle}>
@@ -153,11 +213,11 @@ function PopupApp() {
           <div style={{ height: '1px', background: 'rgba(255,255,255,0.04)' }} />
 
           {/* Feedback */}
-          <div onClick={() => window.open('https://docs.google.com/forms/d/e/1FAIpQLSed8ont66Fs8Mid9Ys09rl4-wYxhtzy0-nW7_-O2hBkhm4wfA/viewform', '_blank')} 
+          <div onClick={() => setView('feedback')}
                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>Help & Feedback</div>
-              <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>Tell us what's broken or missing</div>
+              <div style={{ fontSize: 13, fontWeight: 600 }}>Talk to the maker</div>
+              <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>Tell us what's useful, annoying, or missing</div>
             </div>
             <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#334155" strokeWidth="2"><path d="M7 3l7 7-7 7"/></svg>
           </div>
