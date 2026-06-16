@@ -603,7 +603,7 @@ async function registryStats(env: Env): Promise<Response> {
     age_coverage: ageCoverage,
     publishable_young: publishableYoung,
     currently_publishable: publishable,
-  }), { headers: { 'Content-Type': 'application/json', 'X-Robots-Tag': 'noindex' } });
+  }), { headers: { 'Content-Type': 'application/json', 'X-Robots-Tag': 'noindex', 'Access-Control-Allow-Origin': '*' } });
 }
 
 // ─── Sitemap (Phase 3.5, staging) ────────────────────────────────────────────
