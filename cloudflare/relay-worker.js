@@ -369,6 +369,8 @@ export default {
             ...(result.otherNote ? { otherNote: result.otherNote } : {}),
             platform: platform || 'unknown',
             amountRange,
+            // env tag so eval/test traffic stays separable from real detections.
+            env: body.env === 'test' ? 'test' : 'prod',
             timestamp: new Date().toISOString(),
             geo,
           }));
@@ -513,6 +515,7 @@ export default {
         if (env.SHIELD_LOGS) {
           await env.SHIELD_LOGS.put(`check:${Date.now()}`, JSON.stringify({
             event: 'scam_check',
+            env: body.env === 'test' ? 'test' : 'prod',
             verdict: result.verdict,
             confidence: result.confidence,
             tactics: result.tactics,

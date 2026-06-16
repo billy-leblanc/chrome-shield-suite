@@ -64,20 +64,21 @@ const PROMPT_VERSION = 'v2';
  * Payment path (payment_interceptor → ANALYZE_RISK): memo = memo text,
  * platform + amount passed through.
  */
-function toAnalyzePayload(sample: GroundTruthSample): { memo: string; platform: string; amount: number } {
+function toAnalyzePayload(sample: GroundTruthSample): { memo: string; platform: string; amount: number; env: string } {
   const i = sample.input as Record<string, any>;
+  // env:'test' tags eval traffic in the relay's KV log so it never pollutes the dashboard.
   if (sample.channel === 'email') {
     const bodyText = String(i.body ?? '').trim().substring(0, 3000);
     const subject = String(i.subject ?? '').trim();
     const paymentLinkMatch = String(i.body ?? '').match(/https?:\/\/(paypal\.me|cash\.app|venmo\.com|link\.cash)[^\s"'<>]*/i);
     const paymentLinkSignal = paymentLinkMatch ? `[PAYMENT LINK DETECTED: ${paymentLinkMatch[0]}]\n\n` : '';
     const analysisText = [paymentLinkSignal + subject, bodyText].filter(Boolean).join('\n\n');
-    return { memo: analysisText.substring(0, 3000).trim(), platform: 'Gmail', amount: 0 };
+    return { memo: analysisText.substring(0, 3000).trim(), platform: 'Gmail', amount: 0, env: 'test' };
   }
   // payment / sms / social: memo-style content
   const memo = String(i.memo ?? i.body ?? '').trim();
   const amount = typeof i.amount === 'number' && isFinite(i.amount) ? i.amount : 0;
-  return { memo, platform: String(i.platform ?? 'unknown'), amount };
+  return { memo, platform: String(i.platform ?? 'unknown'), amount, env: 'test' };
 }
 
 async function scoreLLM(sample: GroundTruthSample): Promise<EngineVerdict> {
