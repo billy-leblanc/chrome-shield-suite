@@ -422,7 +422,7 @@ export default {
         const installs = [...seen.entries()].map(([id, r]) => ({
           installId: id, events: r.events, firstSeen: r.firstSeen,
           lastSeen: r.lastSeen, versions: [...r.versions],
-        })).sort((a, b) => (b.lastSeen || '').localeCompare(a.lastSeen || ''));
+        })).sort((a, b) => String(b.lastSeen || '').localeCompare(String(a.lastSeen || '')));
 
         return new Response(JSON.stringify({ users: installs.length, installs }), {
           status: 200, headers: { ...cors, 'Content-Type': 'application/json' },
