@@ -34,6 +34,7 @@
   .stat-value{font-size:28px;font-weight:700;letter-spacing:-0.5px}
   .stat-value.critical{color:var(--critical)}
   .stat-value.accent{color:var(--accent)}
+  .stat-sub{font-size:11px;color:var(--text-dim);margin-top:5px}
 
   /* section */
   .section{margin-bottom:40px}
@@ -117,6 +118,7 @@
     <label for="cutoffDate" style="font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Since</label>
     <input type="date" id="cutoffDate" style="background:var(--card);border:1px solid var(--card-border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px;color-scheme:dark" onchange="onCutoffChange()">
     <button class="btn" id="clearCutoffBtn" onclick="clearCutoff()" title="Show all entries">All</button>
+    <label style="font-size:12px;color:var(--text-dim);display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="showTest" onchange="loadDashboard()"> show test data</label>
     <button class="btn" id="refreshBtn" onclick="loadDashboard()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
       Refresh
@@ -241,6 +243,26 @@ async function fetchAllEntries() {
   return (data.entries || []).map(e => ({ key: e.key, value: e.data }));
 }
 
+// Real distinct-install count (installId-based).
+async function fetchUsers() {
+  try {
+    const r = await fetch(`${WORKER_URL}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RELAY_AUTH_TOKEN}` },
+      body: JSON.stringify({}),
+    });
+    return r.ok ? await r.json() : null;
+  } catch { return null; }
+}
+
+// Registry pipeline stats (D1): entities, campaigns, enrichment, publishable.
+async function fetchRegistryStats() {
+  try {
+    const r = await fetch('https://registry-ingest.bleblanc.workers.dev/stats');
+    return r.ok ? await r.json() : null;
+  } catch { return null; }
+}
+
 // ── Dashboard Logic ──────────────────────────────────────────────────
 async function loadDashboard() {
   const statsBar = document.getElementById('statsBar');
@@ -249,7 +271,13 @@ async function loadDashboard() {
   content.innerHTML = '<div class="loading"><div class="spinner"></div><div class="loading-text">Fetching threat intelligence...</div></div>';
 
   try {
-    const allEntries = await fetchAllEntries();
+    const [allEntriesRaw, users, regStats] = await Promise.all([
+      fetchAllEntries(), fetchUsers(), fetchRegistryStats(),
+    ]);
+    // Hide test/eval traffic unless the "show test" box is checked.
+    const showTest = document.getElementById('showTest')?.checked;
+    const allEntries = showTest ? allEntriesRaw
+      : allEntriesRaw.filter(e => !(e.value && e.value.env === 'test'));
     const cutoffISO = getCutoffISO();
     const cutoffMs = cutoffISO ? new Date(cutoffISO + 'T00:00:00').getTime() : 0;
     const entries = cutoffMs ? allEntries.filter(e => entryAfterCutoff(e, cutoffMs)) : allEntries;
@@ -345,13 +373,18 @@ async function loadDashboard() {
       }
     }
 
+    const r = regStats || {};
+    const installs = (users && users.installs) || [];
+    const realInstalls = installs.filter(i => (i.versions || []).some(v => v !== '1.0.2')); // exclude dev build
     statsBar.innerHTML = `
+      <div class="stat-card"><div class="stat-label">Distinct Users</div><div class="stat-value" style="color:#38bdf8">${users ? users.users : '--'}</div><div class="stat-sub">${realInstalls.length} on 1.0.3+</div></div>
       <div class="stat-card"><div class="stat-label">Total Detections</div><div class="stat-value accent">${totalDetections}</div></div>
       <div class="stat-card"><div class="stat-label">Critical</div><div class="stat-value critical">${criticalCount}</div></div>
       <div class="stat-card"><div class="stat-label">High</div><div class="stat-value" style="color:#fb923c">${highCount}</div></div>
       <div class="stat-card"><div class="stat-label">Platforms</div><div class="stat-value accent">${platforms.size}</div></div>
       <div class="stat-card"><div class="stat-label">Scam Checks</div><div class="stat-value" style="color:#a78bfa">${checks.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Amount Protected</div><div class="stat-value" style="color:#34d399">${totalProtected > 0 ? '$' + totalProtected.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '--'}</div></div>
+      <div class="stat-card" style="border-color:rgba(56,189,248,.25)"><div class="stat-label">Registry Domains</div><div class="stat-value" style="color:#38bdf8">${r.total_entities != null ? r.total_entities.toLocaleString() : '--'}</div><div class="stat-sub">${r.age_coverage != null ? r.age_coverage + ' aged' : ''}</div></div>
+      <div class="stat-card" style="border-color:rgba(56,189,248,.25)"><div class="stat-label">Publishable</div><div class="stat-value" style="color:#34d399">${r.currently_publishable != null ? r.currently_publishable : '--'}</div><div class="stat-sub">${r.publishable_young != null ? r.publishable_young + ' young / 25' : ''}</div></div>
     `;
 
     // Render
