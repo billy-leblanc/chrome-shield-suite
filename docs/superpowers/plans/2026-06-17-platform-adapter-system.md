@@ -407,9 +407,24 @@ if (a && a.surface === 'payment') runInterceptEngine(a);
 - Create: `src/content/__fixtures__/venmo-pay.html`
 - Test: `src/content/adapters/venmo.test.ts`
 
-- [ ] **Step 1: DOM capture (manual, required).** On `account.venmo.com` at the pay-confirm step, capture the real send button + note field + amount into `venmo-pay.html`. The existing guessed selectors (`button[data-testid="payment-button"]`) are unverified — record the *actual* `data-testid`/ARIA/text. Prefer stable attributes over CSS classes.
-- [ ] **Step 2: Failing test** against the fixture.
-- [ ] **Step 3: Implement the real `venmoAdapter.extract` + `triggerSelectors` + `confirmText: /Pay .*\$/i`.**
+- [ ] **Step 1: DOM capture — DONE (verified 2026-06-17 on account.venmo.com).** Note field `#payment-note` / `[data-testid="payment-note-input"]`; amount `input[aria-label="Amount"]`; send buttons have NO stable id/testid (MUI classes only) → match by text. Save a fixture `venmo-pay.html` with `<textarea id="payment-note">…</textarea><input aria-label="Amount" value="1000.00"><button class="MuiButton-root">Pay</button>`.
+- [ ] **Step 2: Failing test** against the fixture (assert extract returns memo + amount=1000).
+- [ ] **Step 3: Implement the verified `venmoAdapter`:**
+
+```ts
+// src/content/adapters/venmo.ts
+import type { PaymentAdapter } from './types';
+export const venmoAdapter: PaymentAdapter = {
+  id: 'venmo', matches: ['venmo.com'], surface: 'payment',
+  triggerSelectors: ['.MuiButton-root', 'button'],
+  confirmText: /^(Pay|Confirm|Pay without confirming)$/i, // excludes "Request"
+  extract: (doc) => {
+    const memo = (doc.querySelector('#payment-note, [data-testid="payment-note-input"]') as HTMLTextAreaElement | null)?.value ?? '';
+    const amtRaw = (doc.querySelector('input[aria-label="Amount"]') as HTMLInputElement | null)?.value ?? '0';
+    return { memo, amount: parseFloat(amtRaw.replace(/[^0-9.]/g, '')) || 0, recipient: '' };
+  },
+};
+```
 - [ ] **Step 4: Run — expect PASS.**
 - [ ] **Step 5: Commit** `git commit -am "feat(adapters): Venmo payment adapter"`
 
@@ -421,9 +436,25 @@ if (a && a.surface === 'payment') runInterceptEngine(a);
 - Create: `src/content/adapters/cashapp.ts`, `src/content/__fixtures__/cashapp-pay.html`
 - Test: `src/content/adapters/cashapp.test.ts`
 
-- [ ] **Step 1: DOM capture (manual)** from Cash App web pay flow → fixture.
-- [ ] **Step 2: Failing test** against fixture.
-- [ ] **Step 3: Implement `cashapp.ts`** (`matches: ['cash.app']`).
+- [ ] **Step 1: DOM capture — DONE (verified 2026-06-17 on cash.app).** All stable, name-based: note `#note` / `input[name="note"]`; amount `input[name="amount"]` (value like `$100`); recipient `input[name="to"]` (hidden, holds the handle e.g. `billydagoat91`); send button has only Emotion classes → match by text `/^Pay\s*\$/`. Save `cashapp-pay.html` fixture with those elements.
+- [ ] **Step 2: Failing test** against fixture (assert memo, amount=100, recipient).
+- [ ] **Step 3: Implement the verified `cashappAdapter`:**
+
+```ts
+// src/content/adapters/cashapp.ts
+import type { PaymentAdapter } from './types';
+export const cashappAdapter: PaymentAdapter = {
+  id: 'cashapp', matches: ['cash.app'], surface: 'payment',
+  triggerSelectors: ['button'],
+  confirmText: /^Pay\s*\$[\d,.]+$/i,
+  extract: (doc) => {
+    const memo = (doc.querySelector('#note, input[name="note"]') as HTMLInputElement | null)?.value ?? '';
+    const amtRaw = (doc.querySelector('input[name="amount"]') as HTMLInputElement | null)?.value ?? '0';
+    const recipient = (doc.querySelector('input[name="to"]') as HTMLInputElement | null)?.value ?? '';
+    return { memo, amount: parseFloat(amtRaw.replace(/[^0-9.]/g, '')) || 0, recipient };
+  },
+};
+```
 - [ ] **Step 4: Run — expect PASS. Add to registry.**
 - [ ] **Step 5: Commit** `git commit -am "feat(adapters): Cash App payment adapter"`
 
