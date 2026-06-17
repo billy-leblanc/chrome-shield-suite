@@ -1,8 +1,8 @@
 # Safety Intercept
 
-> Free Chrome extension that intercepts payment scams on PayPal and Wells Fargo Zelle and detects phishing emails in Gmail. An AI risk engine reads each outgoing payment memo and inbound email in real time and warns the user in plain English before money moves.
+> Safety Intercept is the trust & safety layer for the intelligent-finance era — a real-time fraud guardrail at the exact moment money moves. A free Chrome extension intercepts payment scams on PayPal and Wells Fargo Zelle and detects phishing emails in Gmail, reading each outgoing payment memo and inbound email and warning the user in plain English before money leaves. For businesses, the same engine is an embeddable fraud-detection + explainability + confirm-before-you-send layer, plus a licensable real-time scam-domain feed.
 
-Safety Intercept is built for everyday people — especially older adults and the family members helping them — who are targeted by social-engineering scams. It is consumer-first (free Chrome extension) and is building a scam-domain threat-intelligence feed for fintechs, marketplaces, and brand-protection firms. Detection is powered by Anthropic's Claude (Haiku) on a Cloudflare Workers relay.
+As AI agents increasingly move money on people's behalf, the highest-value safeguard is a permissioned, explainable checkpoint at the moment of action — proactive fraud prevention, a clear "why," and a human confirm/undo step. Safety Intercept is built for everyday people (especially older adults and the families helping them) and for the fintechs, marketplaces, and brand-protection firms that need to earn user trust. Detection is powered by Anthropic's Claude (Haiku) on a Cloudflare Workers relay. Privacy is permissioned and PII-free by design: content is analyzed in transit and never stored.
 
 ## Core pages
 
