@@ -95,8 +95,8 @@ const injectStyles = (shadow: ShadowRoot) => {
       font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
       margin-bottom: 16px;
     }
-    .badge-critical { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #FBBF24; }
-    .badge-high { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.3); color: #38BDF8; }
+    .badge-critical { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #F0A93B; }
+    .badge-high { background: rgba(232,85,43,0.1); border: 1px solid rgba(232,85,43,0.3); color: #E8552B; }
     .badge-info { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94A3B8; }
     .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     .title {
@@ -127,7 +127,7 @@ const injectStyles = (shadow: ShadowRoot) => {
       position: relative; overflow: hidden;
       background: rgba(245,158,11,0.05);
       border: 1px solid rgba(245,158,11,0.2) !important;
-      color: #FBBF24;
+      color: #F0A93B;
     }
     .btn-fill {
       position: absolute; inset: 0; right: 100%;
@@ -147,9 +147,9 @@ const injectStyles = (shadow: ShadowRoot) => {
     
     /* Jobsian UI Polish: Rebrand red survey markers to Blue */
     .q-item input[type="checkbox"] {
-      accent-color: #38BDF8;
+      accent-color: #E8552B;
     }
-    .badge-critical { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #FBBF24; }
+    .badge-critical { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #F0A93B; }
 
     .q-item {
       display: flex; align-items: flex-start; gap: 12px;
@@ -172,7 +172,7 @@ const injectStyles = (shadow: ShadowRoot) => {
       transition: all 0.15s ease;
     }
     .q-item.checked .q-checkbox {
-      background: #F59E0B; border-color: #F59E0B;
+      background: #F0A93B; border-color: #F0A93B;
       animation: check-bounce 0.28s cubic-bezier(0.34,1.56,0.64,1);
     }
     .q-check-icon { display: none; }
@@ -180,7 +180,7 @@ const injectStyles = (shadow: ShadowRoot) => {
     .q-text { font-size: 13px; color: #94A3B8; line-height: 1.5; }
     .q-item.checked .q-text { color: #F1F5F9; }
     .q-context {
-      font-size: 11px; color: #FBBF24; line-height: 1.5;
+      font-size: 11px; color: #F0A93B; line-height: 1.5;
       margin-top: 4px; padding-left: 0;
       opacity: 0;
       max-height: 0;
@@ -198,12 +198,12 @@ const injectStyles = (shadow: ShadowRoot) => {
       animation: callout-pulse 1.4s ease-out 0.35s 1;
     }
     .correlation-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-    .correlation-text { font-size: 12px; color: #FBBF24; line-height: 1.5; }
+    .correlation-text { font-size: 12px; color: #F0A93B; line-height: 1.5; }
     .btn-continue {
       width: 100%; padding: 12px; border-radius: 10px; margin-top: 16px;
       background: linear-gradient(135deg, #1a3a60 0%, #0f2040 100%);
-      border: 1px solid rgba(56,189,248,0.3) !important;
-      color: #38BDF8; font-size: 13px; font-weight: 700;
+      border: 1px solid rgba(232,85,43,0.3) !important;
+      color: #E8552B; font-size: 13px; font-weight: 700;
       cursor: pointer; transition: opacity 0.15s ease; letter-spacing: 0.02em;
     }
     .btn-continue:hover { opacity: 0.85; }
@@ -236,7 +236,7 @@ const injectStyles = (shadow: ShadowRoot) => {
     }
     .share-btn:hover { opacity: 0.85; }
     .share-btn-wa { background: rgba(37,211,102,0.12); border: 1px solid rgba(37,211,102,0.3) !important; color: #25D366; }
-    .share-btn-sms { background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25) !important; color: #38BDF8; }
+    .share-btn-sms { background: rgba(232,85,43,0.1); border: 1px solid rgba(56,189,248,0.25) !important; color: #E8552B; }
     .share-btn-copy { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1) !important; color: #94A3B8; }
     .share-dismiss {
       width: 100%; background: none; border: none; cursor: pointer;

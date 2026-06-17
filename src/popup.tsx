@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 
 const PLATFORM_META: Record<string, { label: string; color: string; bg: string }> = {
-  paypal:    { label: 'PayPal',    color: '#60A5FA', bg: 'rgba(96,165,250,0.12)'  },
+  paypal:    { label: 'PayPal',    color: '#E8552B', bg: 'rgba(232,85,43,0.12)'  },
   venmo:     { label: 'Venmo',     color: '#34D399', bg: 'rgba(52,211,153,0.12)'  },
   zelle:     { label: 'Zelle',     color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
-  wellsfargo:{ label: 'Wells Fargo',color: '#FBBF24', bg: 'rgba(251,191,36,0.12)' },
+  wellsfargo:{ label: 'Wells Fargo',color: '#F0A93B', bg: 'rgba(251,191,36,0.12)' },
   hsbc:      { label: 'HSBC',      color: '#F87171', bg: 'rgba(248,113,113,0.12)' },
-  barclays:  { label: 'Barclays',  color: '#38BDF8', bg: 'rgba(56,189,248,0.12)'  },
+  barclays:  { label: 'Barclays',  color: '#E8552B', bg: 'rgba(56,189,248,0.12)'  },
   revolut:   { label: 'Revolut',   color: '#818CF8', bg: 'rgba(129,140,248,0.12)' },
 };
 
@@ -113,9 +113,9 @@ function PopupApp() {
 
   const pulseStyle = `
     @keyframes shield-glow {
-      0% { filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4)); transform: scale(1); }
+      0% { filter: drop-shadow(0 0 4px rgba(232,85,43,0.4)); transform: scale(1); }
       50% { filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6)); transform: scale(1.02); }
-      100% { filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4)); transform: scale(1); }
+      100% { filter: drop-shadow(0 0 4px rgba(232,85,43,0.4)); transform: scale(1); }
     }
     .shield-pulse {
       animation: shield-glow 4s ease-in-out infinite;
@@ -169,7 +169,7 @@ function PopupApp() {
                 placeholder="Email (optional — only if you'd like a reply)" type="email"
                 style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, color: '#F1F5F9', fontSize: 13, padding: '12px 14px', fontFamily: 'inherit', outline: 'none' }} />
               <button onClick={sendFeedback} disabled={fbStatus === 'sending' || fbMessage.trim().length < 2}
-                style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: fbMessage.trim().length < 2 ? 'rgba(56,189,248,0.2)' : '#38BDF8', color: fbMessage.trim().length < 2 ? '#64748B' : '#0B1120', fontSize: 13, fontWeight: 700, cursor: fbMessage.trim().length < 2 ? 'default' : 'pointer' }}>
+                style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: fbMessage.trim().length < 2 ? 'rgba(56,189,248,0.2)' : '#E8552B', color: fbMessage.trim().length < 2 ? '#64748B' : '#0B1120', fontSize: 13, fontWeight: 700, cursor: fbMessage.trim().length < 2 ? 'default' : 'pointer' }}>
                 {fbStatus === 'sending' ? 'Sending…' : 'Send'}
               </button>
               <div style={{ fontSize: 10.5, color: '#475569', textAlign: 'center', lineHeight: 1.5 }}>
@@ -203,7 +203,7 @@ function PopupApp() {
             </div>
             <button onClick={toggleTelemetry} style={{
               width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer',
-              background: telemetryEnabled ? '#38BDF8' : 'rgba(255,255,255,0.1)',
+              background: telemetryEnabled ? '#E8552B' : 'rgba(255,255,255,0.1)',
               position: 'relative', flexShrink: 0, transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
             }}>
               <span style={{ position: 'absolute', top: 3, width: 14, height: 14, borderRadius: '50%', background: '#fff', transition: 'left 0.35s cubic-bezier(0.34,1.56,0.64,1)', left: telemetryEnabled ? 19 : 3 }} />
@@ -261,8 +261,8 @@ function PopupApp() {
       <div style={{ padding: '24px 22px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div className="shield-pulse" style={{ 
-            width: 36, height: 36, background: 'rgba(56,189,248,0.1)', borderRadius: 12, 
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38BDF8' 
+            width: 36, height: 36, background: 'rgba(232,85,43,0.1)', borderRadius: 12, 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E8552B' 
           }}>
             <ShieldIcon width="22" height="22" />
           </div>
@@ -274,8 +274,8 @@ function PopupApp() {
               background: interceptOn ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.05)',
               border: `1px solid ${interceptOn ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.08)'}`,
             }}>
-              <div style={{ width: 5, height: 5, borderRadius: '50%', background: interceptOn ? '#F59E0B' : '#334155', animation: interceptOn ? 'amber-breathe 2.5s ease-in-out infinite' : 'none' }} />
-              <span style={{ fontSize: 9, fontWeight: 700, color: interceptOn ? '#F59E0B' : '#334155', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: interceptOn ? '#F0A93B' : '#334155', animation: interceptOn ? 'amber-breathe 2.5s ease-in-out infinite' : 'none' }} />
+              <span style={{ fontSize: 9, fontWeight: 700, color: interceptOn ? '#F0A93B' : '#334155', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 {interceptOn ? 'Protection Active' : 'Paused'}
               </span>
             </div>
@@ -309,14 +309,14 @@ function PopupApp() {
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Protected</div>
-              <div style={{ fontSize: 32, fontWeight: 800, color: '#38BDF8', letterSpacing: '-1.5px', marginTop: 4 }}>{stats.safe}</div>
+              <div style={{ fontSize: 32, fontWeight: 800, color: '#E8552B', letterSpacing: '-1.5px', marginTop: 4 }}>{stats.safe}</div>
             </div>
           </div>
           <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
             <div style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>Real-time scanning {interceptOn ? 'active' : 'paused'}</div>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: interceptOn ? '#3B82F6' : '#334155' }} />
-            {interceptOn && <div style={{ position: 'absolute', top: 0, left: '-100%', height: '100%', width: '40%', background: 'linear-gradient(90deg, transparent, rgba(59,130,246,0.5), transparent)', animation: 'scan-line 3s ease-in-out infinite' }} />}
+            {interceptOn && <div style={{ position: 'absolute', top: 0, left: '-100%', height: '100%', width: '40%', background: 'linear-gradient(90deg, transparent, rgba(232,85,43,0.5), transparent)', animation: 'scan-line 3s ease-in-out infinite' }} />}
           </div>
         </div>
 
@@ -332,7 +332,7 @@ function PopupApp() {
             ) : (
               activities.map((a, i) => (
                 <div key={i} style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, borderBottom: i < activities.length - 1 ? '1px solid rgba(255,255,255,0.02)' : 'none', animation: `feed-in 0.4s ease-out ${i * 80}ms both` }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.type === 'blocked' ? '#38BDF8' : '#64748B', animation: `dot-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) ${i * 80 + 50}ms both` }} />
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.type === 'blocked' ? '#E8552B' : '#64748B', animation: `dot-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) ${i * 80 + 50}ms both` }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.4, fontWeight: 500 }}>{a.text}</div>
                     <div style={{ fontSize: 10, color: '#334155', marginTop: 4, textTransform: 'uppercase', fontWeight: 700 }}>{a.platform || 'System'} • {a.time}</div>

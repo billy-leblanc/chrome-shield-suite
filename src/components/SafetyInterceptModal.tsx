@@ -61,8 +61,8 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
           background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)",
           marginBottom: 16,
         }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F59E0B", boxShadow: "0 0 6px rgba(245,158,11,0.6)" }} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: "#FBBF24", letterSpacing: "0.1em", textTransform: "uppercase" }}>Caution</span>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F0A93B", boxShadow: "0 0 6px rgba(245,158,11,0.6)" }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#F0A93B", letterSpacing: "0.1em", textTransform: "uppercase" }}>Caution</span>
         </div>
 
         {/* Title */}
@@ -85,7 +85,7 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
           animation: "callout-pulse 1.4s ease-out 0.45s 1",
         }}>
           <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>⚠️</span>
-          <span style={{ fontSize: 12, color: "#FBBF24", lineHeight: 1.5 }}>
+          <span style={{ fontSize: 12, color: "#F0A93B", lineHeight: 1.5 }}>
             You received a suspicious email from billing@geeksquad-renewal.com 26 minutes ago. That email and this payment are connected. This is how coordinated scams work.
           </span>
         </div>
@@ -97,8 +97,8 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
             style={{
               flex: 1, padding: "13px 0", borderRadius: 12,
               background: "linear-gradient(135deg, #1a3a60 0%, #0f2040 100%)",
-              border: "1px solid rgba(56,189,248,0.3)",
-              color: "#38BDF8", fontWeight: 700, fontSize: 13, cursor: "pointer",
+              border: "1px solid rgba(232,85,43,0.3)",
+              color: "#E8552B", fontWeight: 700, fontSize: 13, cursor: "pointer",
               letterSpacing: "0.01em", transition: "opacity 0.15s, transform 0.08s ease",
             }}
             onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
@@ -116,7 +116,7 @@ const SafetyInterceptModal = ({ open, onClose }: SafetyInterceptModalProps) => {
               position: "relative", overflow: "hidden",
               background: "rgba(245,158,11,0.04)",
               border: `1px solid rgba(245,158,11,${cooldown > 0 ? 0.15 : 0.4})`,
-              color: cooldown > 0 ? "#64748B" : "#FBBF24",
+              color: cooldown > 0 ? "#64748B" : "#F0A93B",
               fontWeight: 600, fontSize: 13,
               cursor: cooldown > 0 ? "not-allowed" : "pointer",
               transition: "color 0.3s, border-color 0.3s, transform 0.08s ease",

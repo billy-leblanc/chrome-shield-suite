@@ -45,14 +45,14 @@ const injectStyles = (shadow: ShadowRoot) => {
     .icon {
       width: 20px; height: 20px; flex-shrink: 0;
     }
-    .icon-critical { color: #F59E0B; }
-    .icon-high { color: #FBBF24; }
+    .icon-critical { color: #F0A93B; }
+    .icon-high { color: #F0A93B; }
     .text-group { flex: 1; min-width: 0; }
     .title {
       font-size: 13px; font-weight: 700; letter-spacing: -0.2px;
     }
-    .title-critical { color: #F59E0B; }
-    .title-high { color: #FCD34D; }
+    .title-critical { color: #F0A93B; }
+    .title-high { color: #F5C97E; }
     .desc {
       font-size: 12px; color: #94A3B8; line-height: 1.4; margin-top: 2px;
     }
@@ -76,7 +76,7 @@ const injectStyles = (shadow: ShadowRoot) => {
     .consent-q { font-size: 11px; color: #94A3B8; line-height: 1.4; }
     .btn-share {
       padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
-      cursor: pointer; background: #2563EB; border: 1px solid #2563EB;
+      cursor: pointer; background: #E8552B; border: 1px solid #E8552B;
       color: #fff; font-family: inherit; transition: opacity 0.15s ease;
     }
     .btn-share:hover { opacity: 0.85; }
