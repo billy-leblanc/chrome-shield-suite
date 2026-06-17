@@ -20,8 +20,15 @@ const PORTAL_CONFIGS: Record<string, PaymentPortalConfig> = {
     ]
   },
   'venmo.com': {
+    // Buttons are MUI with no stable id/testid — matched by TEXT_FALLBACK below
+    // so "Pay"/"Confirm" intercept but "Request" (asking for money) does not.
     name: 'Venmo',
-    selectors: ['button[data-testid="payment-button"]', 'button.pay-button']
+    selectors: []
+  },
+  'cash.app': {
+    // Send button has only Emotion classes — matched by text "Pay $N".
+    name: 'Cash App',
+    selectors: []
   },
   'wellsfargo.com': {
     name: 'Wells Fargo',
@@ -46,7 +53,8 @@ const PORTAL_CONFIGS: Record<string, PaymentPortalConfig> = {
 
 const TEXT_FALLBACK_PATTERNS: Record<string, RegExp> = {
   'paypal.com': /Send Now|Complete|Pay Now|Send Money Now|Complete Purchase/i,
-  'venmo.com': /Pay .* \$/i,
+  'venmo.com': /^(Pay|Confirm|Pay without confirming)$/i,
+  'cash.app': /^Pay\s*\$[\d,.]+$/i,
   'wellsfargo.com': /^Send$/i,
   'chase.com': /Send Money/i,
   'bankofamerica.com': /Make Payment/i,
@@ -311,7 +319,14 @@ const Interceptor = () => {
       const resolvedBtn = target instanceof HTMLElement ? (target.closest('button') ?? target) : target;
       interceptedButtonRef.current = resolvedBtn instanceof HTMLButtonElement ? resolvedBtn : (resolvedBtn.closest('button') as HTMLButtonElement | null) ?? null;
 
-      const memoEl = document.querySelector('textarea#memo, textarea[name="memo"], textarea, [contenteditable="true"], input[name*="note"], input[name*="memo"]');
+      // Verified per-platform memo fields (Venmo/Cash App) take priority over the
+      // generic fallback so we read the right field, not the first textarea.
+      const memoSelector = domain === 'venmo.com'
+        ? '#payment-note, [data-testid="payment-note-input"]'
+        : domain === 'cash.app'
+          ? '#note, input[name="note"]'
+          : 'textarea#memo, textarea[name="memo"], textarea, [contenteditable="true"], input[name*="note"], input[name*="memo"]';
+      const memoEl = document.querySelector(memoSelector);
       let message = '';
       if (memoEl instanceof HTMLTextAreaElement || memoEl instanceof HTMLInputElement) {
         message = memoEl.value ?? '';
@@ -331,14 +346,15 @@ const Interceptor = () => {
         }
       }
 
-      const amountEl = document.querySelector('input[type="number"], .amount-input, input[name*="amount"]');
+      const amountEl = document.querySelector('input[type="number"], .amount-input, input[name*="amount"], input[aria-label="Amount"]');
       let rawAmount = amountEl instanceof HTMLInputElement ? amountEl.value : '';
       if (!rawAmount) {
         // On confirmation pages the amount is displayed as text — scan the DOM for a dollar value
         const match = document.body.innerText.match(/\$\s*([\d,]+(?:\.\d{1,2})?)/);
         if (match) rawAmount = match[1].replace(/,/g, '');
       }
-      const amount = parseFloat(rawAmount);
+      // Strip currency symbols/commas (Cash App's value is like "$100").
+      const amount = parseFloat(rawAmount.replace(/[^0-9.]/g, ''));
       const safeAmount = isFinite(amount) ? amount : 0;
 
       // Always show questionnaire first — it's the trance-breaker
