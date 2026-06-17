@@ -22,6 +22,7 @@ import { clusterEntities, type EntityInfra } from './campaigns';
 interface Env {
   DB: D1Database;
   EVENTS: Queue;
+  FEED_TOKEN?: string;       // gates the licensable B2B feed API
   PREVIEW_TOKEN?: string;   // gates /preview/:domain staging route
 }
 
@@ -71,6 +72,11 @@ export default {
     // Public registry stats (aggregate counts only) — readable by the scheduled
     // age-fill check, which runs in the cloud and can't use local wrangler auth.
     if (url.pathname === '/stats') return registryStats(env);
+
+    // Licensable B2B scam-domain feed (auth-gated). The product fintechs /
+    // marketplaces / brand-protection firms pilot. Scam-side, PII-free; only
+    // confirmed entities (score >= 70, not allowlisted, not shared-infra).
+    if (url.pathname === '/feed') return scamFeed(request, env, url);
 
     const pageMatch = url.pathname.match(/^\/check\/([a-z0-9.-]{4,253})$/i);
     if (pageMatch && request.method === 'GET') return renderPage(pageMatch[1].toLowerCase(), env);
@@ -580,6 +586,72 @@ async function openDispute(request: Request, env: Env): Promise<Response> {
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), {
   status, headers: { 'Content-Type': 'application/json', 'X-Robots-Tag': 'noindex' },
 });
+
+// ─── B2B scam-domain feed (licensable, auth-gated) ───────────────────────────
+// Returns confirmed scam domains with scam-side enrichment + campaign linkage.
+// Filters mirror the publish-safety rules: score >= 70, prod detection, not
+// allowlisted, not shared-infra. Supports ?since=<ISO> (incremental) & ?limit=.
+
+async function scamFeed(request: Request, env: Env, url: URL): Promise<Response> {
+  const tok = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '').trim();
+  if (!env.FEED_TOKEN || tok !== env.FEED_TOKEN) {
+    return new Response(JSON.stringify({ error: 'Unauthorized — provide a feed API token' }), {
+      status: 401, headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  const since = url.searchParams.get('since');
+  let limit = parseInt(url.searchParams.get('limit') || '500', 10);
+  if (!Number.isFinite(limit) || limit < 1) limit = 500;
+  if (limit > 2000) limit = 2000;
+
+  const params: unknown[] = [];
+  let sinceClause = '';
+  if (since && /^\d{4}-\d{2}-\d{2}/.test(since)) { sinceClause = 'AND e.last_seen >= ?'; params.push(since); }
+
+  const { results } = await env.DB.prepare(
+    `SELECT e.entity_value AS domain, e.first_seen, e.last_seen, e.max_score, e.campaign_id,
+            en.registrar, en.domain_age_days, en.asn, en.impersonates, en.tls_cert_sha256, en.content_sha256,
+            (SELECT GROUP_CONCAT(DISTINCT d.source) FROM detections d WHERE d.entity_id = e.id AND d.env='prod') AS sources,
+            (SELECT GROUP_CONCAT(DISTINCT je.value) FROM detections d, json_each(d.techniques) je WHERE d.entity_id = e.id AND d.env='prod') AS techniques
+     FROM entities e
+     LEFT JOIN enrichments en ON en.entity_id = e.id
+     WHERE e.entity_type = 'domain' AND e.max_score >= 70
+       AND e.entity_value NOT GLOB '[0-9]*.[0-9]*.[0-9]*.[0-9]*'  -- exclude raw IPs
+       AND EXISTS (SELECT 1 FROM detections d WHERE d.entity_id = e.id AND d.env = 'prod')
+       AND NOT EXISTS (SELECT 1 FROM allowlist a WHERE a.pattern = e.entity_value)
+       AND NOT EXISTS (SELECT 1 FROM shared_infra s WHERE e.entity_value = s.suffix OR e.entity_value LIKE '%.' || s.suffix)
+       ${sinceClause}
+     ORDER BY e.last_seen DESC LIMIT ${limit}`,
+  ).bind(...params).all<any>();
+
+  const domains = (results ?? []).map((r) => ({
+    domain: r.domain,
+    first_seen: r.first_seen,
+    last_seen: r.last_seen,
+    score: r.max_score,
+    severity: r.max_score >= 85 ? 'critical' : 'high',
+    techniques: r.techniques ? String(r.techniques).split(',') : [],
+    sources: r.sources ? String(r.sources).split(',') : [],
+    campaign_id: r.campaign_id ?? null,
+    enrichment: {
+      registrar: r.registrar ?? null,
+      domain_age_days: r.domain_age_days ?? null,
+      hosting_asn: r.asn ?? null,
+      impersonates: r.impersonates ?? null,
+      tls_cert_sha256: r.tls_cert_sha256 ?? null,
+      kit_fingerprint: r.content_sha256 ?? null,
+    },
+  }));
+
+  return new Response(JSON.stringify({
+    feed: 'safety-intercept-scam-domains',
+    generated_at: new Date().toISOString(),
+    count: domains.length,
+    domains,
+  }, null, 2), {
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+  });
+}
 
 // ─── Registry stats (aggregate, public) ─────────────────────────────────────
 

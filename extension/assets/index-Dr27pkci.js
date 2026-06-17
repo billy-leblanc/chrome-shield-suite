@@ -415,8 +415,8 @@ body.dir-c [data-dir="c"]{display:block}
   </nav>
   <aside class="quote-glass"><div class="q">"It stopped me right before I paid $1,400 to a fake landlord on Zelle."</div><div class="who"><b>Maria, 67</b> · Phoenix, AZ</div></aside>
   <div class="hero-body"><div class="wrap pad">
-    <h1 class="display">Stop scams before you hit Send.</h1>
-    <p class="lead">Safety Intercept is a free Chrome extension that quietly checks every payment and email — and warns you the moment something looks like a scam.</p>
+    <h1 class="display">Catch the scam. Keep the final call.</h1>
+    <p class="lead">Safety Intercept watches the moment money is about to move — on PayPal, Zelle, and Gmail — and flags the risk before you send. You always decide what happens next. Free, private, and instant.</p>
     <div class="hero-cta">
       <a class="btn btn-primary btn-lg" href="https://chromewebstore.google.com/detail/safety-intercept/bpafnjhfjimdoamnjepkfljpegpmmeom"><span class="chrome-mark"></span> Add to Chrome — Free</a>
       <a class="btn btn-white btn-lg" href="#demo"><i data-lucide="play"></i> Watch it work</a>
@@ -445,6 +445,22 @@ body.dir-c [data-dir="c"]{display:block}
       <div class="step reveal"><div class="step-num">1</div><h3 class="h3">Add it to Chrome</h3><p>One click from the Chrome Web Store. No account, no setup, no card. It starts working immediately.</p></div>
       <div class="step reveal"><div class="step-num">2</div><h3 class="h3">It watches quietly</h3><p>As you pay or read email, AI checks each payment memo and message in real time — right on the page, before anything is sent.</p></div>
       <div class="step reveal"><div class="step-num">3</div><h3 class="h3">It warns you in time</h3><p>If something looks like a scam, a clear warning explains exactly why — so you can stop before you lose a cent.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ALWAYS TELLS YOU WHY ============ -->
+<section class="section" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="kicker-row"><span class="eyebrow"><i data-lucide="message-square-text"></i> Always tells you why</span></div>
+      <h2 class="h2">No black box. Every flag, explained.</h2>
+      <p class="lead" style="margin-top:16px">Most fraud tools just say "blocked" and leave you guessing. Safety Intercept shows you exactly what it saw — the urgency, the impersonation, the pressure to keep it secret — in plain language. You're not asked to trust a score. You're shown the reasons, so the call is genuinely yours.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal"><div class="step-num"><i data-lucide="users"></i></div><p>Someone claims a family member is in trouble and can't be reached directly — a common impersonation setup.</p></div>
+      <div class="step reveal"><div class="step-num"><i data-lucide="clock"></i></div><p>You're being pushed to act before midnight — urgency that stops you from checking.</p></div>
+      <div class="step reveal"><div class="step-num"><i data-lucide="user-plus"></i></div><p>You've never sent money to this recipient before.</p></div>
     </div>
   </div>
 </section>
