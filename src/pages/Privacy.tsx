@@ -23,7 +23,7 @@ export default function Privacy() {
               We do not sell your data. We do not build advertising profiles. We do not store the content of your messages or emails. The only reason any data leaves your device is to run the AI fraud analysis that makes the extension work — and once that analysis runs, the content is discarded.
             </p>
             <p style={{ ...p, marginTop: 16, padding: "14px 18px", background: "#FBE9E0", border: "1px solid rgba(232,85,43,0.25)", borderRadius: 10 }}>
-              <strong style={{ color: "#C8431D" }}>Scope:</strong> Safety Intercept currently covers three surfaces — PayPal, Wells Fargo Zelle, and Gmail. Payments made through other platforms (Chase, Venmo, Coinbase, Cash App, or any mobile banking app) are not monitored or protected by this extension.
+              <strong style={{ color: "#C8431D" }}>Scope:</strong> Safety Intercept currently covers PayPal, Venmo, Cash App, Wells Fargo Zelle, and Gmail. Payments through other platforms (Chase, Bank of America, Coinbase, or other banking apps) are not monitored or protected by this extension.
             </p>
           </section>
 
@@ -32,7 +32,7 @@ export default function Privacy() {
 
             <h3 style={h3}>Payment memo text</h3>
             <p style={p}>
-              When you initiate a payment on PayPal or Wells Fargo Zelle, the memo text is sent to our Cloudflare relay and then to Anthropic's API (Claude) for fraud analysis. It is analyzed in transit and <strong style={{ color: "#16181D" }}>not stored</strong>. We keep only the result of the analysis — a risk score, the fraud techniques detected, the platform, and an amount <em>range</em> (e.g. "medium") — never the memo text and never the exact amount.
+              When you initiate a payment on PayPal, Venmo, Cash App, or Wells Fargo Zelle, the memo/note text is sent to our Cloudflare relay and then to Anthropic's API (Claude) for fraud analysis. It is analyzed in transit and <strong style={{ color: "#16181D" }}>not stored</strong>. We keep only the result of the analysis — a risk score, the fraud techniques detected, the platform, and an amount <em>range</em> (e.g. "medium") — never the memo text and never the exact amount.
             </p>
 
             <h3 style={h3}>Gmail email content</h3>
@@ -94,7 +94,7 @@ export default function Privacy() {
               <li style={li}>Your raw IP address or precise location</li>
               <li style={li}>Your exact payment amounts (stored only as ranges)</li>
               <li style={li}>Your name, email address, account information, or credentials</li>
-              <li style={li}>Your browsing history, or any data from sites other than PayPal, Wells Fargo, and Gmail</li>
+              <li style={li}>Your browsing history, or any data from sites other than PayPal, Venmo, Cash App, Wells Fargo, and Gmail</li>
             </ul>
           </section>
 
