@@ -11,59 +11,67 @@
     :root{
       --bg:#F8F6F3; --card:#FFF; --warm:#F1ECE5; --ink:#16181D; --ink-2:#565C6B; --ink-3:#8B909C;
       --line:#E5E0D8; --accent:#E8552B; --accent-2:#C8431D;
+      --safe:#1E7A4D; --safe-bg:#E6F1EA;
     }
     *{box-sizing:border-box;margin:0;padding:0}
     body{
-      min-height:100vh;background:var(--bg);color:var(--ink);
+      min-height:100vh;color:var(--ink);
+      background:radial-gradient(90% 70% at 50% -10%,#FBEAD9 0%,var(--bg) 55%);
       font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;
       display:flex;align-items:center;justify-content:center;padding:48px 24px;line-height:1.6;
     }
     .card{
-      max-width:560px;width:100%;background:var(--card);border:1px solid var(--line);
-      border-radius:30px;padding:52px 48px;box-shadow:0 24px 60px rgba(20,22,28,.10),0 2px 8px rgba(20,22,28,.05);
-      text-align:center;animation:rise .6s cubic-bezier(.16,1,.3,1);
+      max-width:580px;width:100%;background:var(--card);border:1px solid var(--line);
+      border-radius:30px;padding:52px 50px;box-shadow:0 30px 70px rgba(40,34,24,.14),0 2px 8px rgba(20,22,28,.05);
+      text-align:center;animation:rise .6s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;
     }
+    .card::before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,#F2683E,var(--accent),var(--accent-2))}
     @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
     .mark{
-      width:56px;height:56px;border-radius:16px;background:var(--accent);
-      display:inline-flex;align-items:center;justify-content:center;color:#fff;margin-bottom:26px;
-      box-shadow:0 8px 20px rgba(232,85,43,.32);
+      width:60px;height:60px;border-radius:17px;background:linear-gradient(160deg,#F2683E,var(--accent-2));
+      display:flex;align-items:center;justify-content:center;color:#fff;margin:0 auto 24px;
+      box-shadow:0 10px 24px rgba(232,85,43,.34);
     }
-    .eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+    .mark svg{width:30px;height:30px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--safe);background:var(--safe-bg);border:1px solid rgba(30,122,77,.25);
+      border-radius:9999px;padding:7px 15px;margin-bottom:18px;
+    }
+    .pill svg{width:14px;height:14px}
     h1{font-size:32px;font-weight:800;letter-spacing:-.025em;line-height:1.15;margin-bottom:20px}
     p{font-size:16px;color:var(--ink-2);margin-bottom:16px}
     p strong{color:var(--ink);font-weight:600}
     .punch{font-size:19px;font-weight:700;color:var(--ink);margin:24px 0 8px;letter-spacing:-.01em}
     .punch .ai{color:var(--accent)}
     .quote{
-      margin:34px auto 0;max-width:440px;padding:24px 26px;background:var(--warm);
-      border-left:3px solid var(--accent);border-radius:14px;text-align:left;
+      position:relative;margin:34px auto 0;max-width:460px;padding:26px 30px 24px;
+      background:var(--warm);border-radius:18px;text-align:center;
     }
-    .quote .latin{font-style:italic;font-size:15px;color:var(--ink);margin-bottom:8px}
-    .quote .en{font-size:15px;color:var(--ink-2);margin-bottom:10px}
-    .quote .who{font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.04em}
+    .quote .latin{position:relative;font-style:italic;font-size:15.5px;color:var(--ink);margin-bottom:8px;line-height:1.5}
+    .quote .en{position:relative;font-size:15px;color:var(--ink-2);margin-bottom:10px}
+    .quote .who{position:relative;font-size:12px;font-weight:600;color:var(--ink-3);letter-spacing:.04em}
     .foot{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
-    .surfaces{font-size:13px;color:var(--ink-3);margin-bottom:18px}
+    .surfaces{display:inline-flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--ink-3);margin-bottom:20px;text-align:left}
+    .surfaces svg{width:15px;height:15px;color:var(--safe);flex:none;margin-top:2px}
     .surfaces b{color:var(--ink-2);font-weight:600}
     .btn{
-      display:inline-block;background:var(--accent);color:#fff;font-weight:700;font-size:14px;
-      padding:12px 26px;border-radius:9999px;text-decoration:none;transition:opacity .15s;
+      display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#fff;font-weight:700;font-size:14.5px;
+      padding:14px 28px;border-radius:9999px;text-decoration:none;
+      box-shadow:0 12px 28px rgba(232,85,43,.3);transition:transform .16s cubic-bezier(.22,1,.36,1),box-shadow .16s;
     }
-    .btn:hover{opacity:.88}
-    .sign{margin-top:18px;font-size:13px;color:var(--ink-3)}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 18px 36px rgba(232,85,43,.38)}
+    .btn svg{width:17px;height:17px}
+    .sign{margin-top:20px;font-size:13px;color:var(--ink-3)}
   </style>
 </head>
 <body>
   <div class="card">
     <div class="mark">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-        <path d="M12 2L4 5.5V11c0 5.25 3.4 10.15 8 11.5 4.6-1.35 8-6.25 8-11.5V5.5L12 2z" fill="#fff" opacity=".22"/>
-        <path d="M12 2L4 5.5V11c0 5.25 3.4 10.15 8 11.5 4.6-1.35 8-6.25 8-11.5V5.5L12 2z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/>
-        <path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <svg viewBox="0 0 32 32" fill="none"><path d="M16 2.5 27 6.5V15c0 7.5-5 12.5-11 14.5C10 27.5 5 22.5 5 15V6.5Z" fill="#fff"/><path d="M10.8 16.2l3.4 3.4 7-7.4" stroke="#E8552B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
 
-    <div class="eyebrow">You're protected</div>
+    <div class="pill-removed"></div>
     <h1>Thank you for installing Safety Intercept.</h1>
 
     <p>Together, we'll fight fraud at scale. Fraud is one of the most unethical things a person can do &mdash; and as AI grows more capable, bad actors are handed sharper tools to prey on the people least able to absorb the loss.</p>
@@ -77,10 +85,13 @@
     </div>
 
     <div class="foot">
-      <div class="surfaces">Now watching the moment money moves on <b>PayPal, Venmo, Cash App, Zelle &amp; Gmail</b>.</div>
-      <a class="btn" href="https://safetyintercept.com">Learn how it works</a>
+      <a class="btn" href="https://safetyintercept.com">Learn how it works <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <div class="sign">&mdash; Billy, founder of Safety Intercept</div>
     </div>
   </div>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#F8F6F3"/><path d="M50 26 70 33V48c0 12-8.5 19.5-20 23.5C38.5 67.5 30 60 30 48V33Z" fill="#E8552B"/><path d="M41 49l6 6 13-14" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+</template>
 </body>
 </html>
